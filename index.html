@@ -8,1480 +8,654 @@
 
   <meta
     name="description"
-    content="ROBOTICS PRO — робототехника из Китая. Unitree G1, R1, Go2, Loona и другие робототехнические решения."
+    content="ROBOTICS PRO — подбор и поставка современной робототехники из Китая. Unitree G1, R1 EDU, Go2, Loona, B2."
   >
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-    rel="stylesheet"
-  >
-
-  <style>
-    :root {
-      --bg: #050707;
-      --bg2: #0a0e0d;
-      --card: #0d1211;
-      --card2: #111817;
-      --text: #f5f8f6;
-      --muted: #8e9995;
-      --line: rgba(255,255,255,.09);
-      --green: #b8ff3d;
-      --green2: #8ee522;
-      --max: 1240px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Inter", Arial, sans-serif;
-      line-height: 1.5;
-      overflow-x: hidden;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    img {
-      display: block;
-      width: 100%;
-    }
-
-    .container {
-      width: min(var(--max), calc(100% - 40px));
-      margin: 0 auto;
-    }
-
-    /* HEADER */
-
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(5,7,7,.82);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .nav {
-      height: 78px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 25px;
-    }
-
-    .logo {
-      font-size: 21px;
-      font-weight: 900;
-      letter-spacing: -1px;
-      white-space: nowrap;
-    }
-
-    .logo span {
-      color: var(--green);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 30px;
-    }
-
-    .nav-links a {
-      color: var(--muted);
-      font-size: 13px;
-      transition: .2s;
-    }
-
-    .nav-links a:hover {
-      color: var(--text);
-    }
-
-    .telegram-button {
-      padding: 11px 18px;
-      border-radius: 100px;
-      border: 1px solid rgba(184,255,61,.35);
-      color: var(--green);
-      font-size: 13px;
-      font-weight: 700;
-      transition: .25s;
-    }
-
-    .telegram-button:hover {
-      background: var(--green);
-      color: #071000;
-    }
-
-    /* HERO */
-
-    .hero {
-      min-height: 720px;
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid var(--line);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero:before {
-      content: "";
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      right: -150px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(184,255,61,.08);
-      filter: blur(130px);
-      border-radius: 50%;
-    }
-
-    .hero-grid {
-      position: relative;
-      z-index: 2;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 70px;
-      align-items: center;
-    }
-
-    .eyebrow {
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 3px;
-      margin-bottom: 22px;
-    }
-
-    .hero h1 {
-      font-size: clamp(50px, 7vw, 92px);
-      line-height: .94;
-      letter-spacing: -5px;
-      font-weight: 900;
-      max-width: 700px;
-    }
-
-    .hero h1 span {
-      color: var(--green);
-    }
-
-    .hero-description {
-      max-width: 580px;
-      color: var(--muted);
-      font-size: 18px;
-      margin-top: 30px;
-    }
-
-    .hero-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 35px;
-    }
-
-    .button {
-      min-height: 52px;
-      padding: 0 24px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 100px;
-      font-size: 13px;
-      font-weight: 800;
-      transition: .25s;
-    }
-
-    .button-green {
-      background: var(--green);
-      color: #071000;
-    }
-
-    .button-green:hover {
-      background: #d1ff88;
-      transform: translateY(-2px);
-    }
-
-    .button-outline {
-      border: 1px solid var(--line);
-      color: var(--text);
-    }
-
-    .button-outline:hover {
-      border-color: var(--green);
-      color: var(--green);
-    }
-
-    .hero-note {
-      margin-top: 22px;
-      color: #5f6965;
-      font-size: 11px;
-    }
-
-    /* HERO ROBOT */
-
-    .hero-image {
-      position: relative;
-      min-height: 560px;
-      border: 1px solid var(--line);
-      border-radius: 30px;
-      overflow: hidden;
-      background:
-        linear-gradient(
-          180deg,
-          rgba(5,7,7,.05),
-          rgba(5,7,7,.82)
-        ),
-        url("https://www.unitree.com/images/g1/g1-01.jpg")
-        center / cover no-repeat;
-      box-shadow: 0 40px 100px rgba(0,0,0,.45);
-    }
-
-    .hero-image-overlay {
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(
-          90deg,
-          rgba(5,7,7,.25),
-          transparent 50%,
-          rgba(5,7,7,.2)
-        );
-    }
-
-    .hero-image-info {
-      position: absolute;
-      left: 28px;
-      right: 28px;
-      bottom: 28px;
-      padding: 22px;
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 18px;
-      background: rgba(5,7,7,.68);
-      backdrop-filter: blur(15px);
-    }
-
-    .hero-image-info small {
-      color: var(--green);
-      font-size: 10px;
-      letter-spacing: 2px;
-    }
-
-    .hero-image-info h3 {
-      margin-top: 5px;
-      font-size: 25px;
-    }
-
-    /* BRANDS */
-
-    .brands {
-      border-bottom: 1px solid var(--line);
-    }
-
-    .brands-inner {
-      min-height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 30px;
-      color: #59625f;
-      font-weight: 800;
-      font-size: 12px;
-      letter-spacing: 2px;
-    }
-
-    /* SECTION */
-
-    .section {
-      padding: 125px 0;
-    }
-
-    .section-head {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 50px;
-      margin-bottom: 55px;
-    }
-
-    .section-head h2 {
-      font-size: clamp(38px, 5vw, 62px);
-      line-height: 1;
-      letter-spacing: -3px;
-      max-width: 720px;
-    }
-
-    .section-head h2 span {
-      color: var(--green);
-    }
-
-    .section-head p {
-      max-width: 390px;
-      color: var(--muted);
-    }
-
-    /* PRODUCTS */
-
-    .products {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 16px;
-    }
-
-    .product {
-      border: 1px solid var(--line);
-      border-radius: 23px;
-      overflow: hidden;
-      background: var(--card);
-      transition: .3s;
-    }
-
-    .product:hover {
-      transform: translateY(-6px);
-      border-color: rgba(184,255,61,.3);
-      background: var(--card2);
-    }
-
-    .product-photo {
-      height: 310px;
-      position: relative;
-      overflow: hidden;
-      background: #080b0a;
-    }
-
-    .product-photo img {
-      height: 100%;
-      object-fit: cover;
-      transition: transform .5s;
-    }
-
-    .product:hover .product-photo img {
-      transform: scale(1.05);
-    }
-
-    .product-photo:after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        180deg,
-        transparent 45%,
-        rgba(5,7,7,.72)
-      );
-    }
-
-    .tag {
-      position: absolute;
-      z-index: 2;
-      left: 18px;
-      top: 18px;
-      padding: 7px 10px;
-      border-radius: 100px;
-      background: rgba(5,7,7,.72);
-      border: 1px solid rgba(184,255,61,.25);
-      color: var(--green);
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-    }
-
-    .product-content {
-      padding: 25px;
-    }
-
-    .product-content h3 {
-      font-size: 24px;
-      letter-spacing: -1px;
-    }
-
-    .product-content p {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 9px;
-      min-height: 40px;
-    }
-
-    .product-bottom {
-      margin-top: 24px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .brand-name {
-      color: #59635f;
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-    }
-
-    .details {
-      color: var(--green);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    /* WHY */
-
-    .dark-section {
-      background: var(--bg2);
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-    }
-
-    .advantages {
-      display: grid;
-      grid-template-columns: repeat(4,1fr);
-      border-top: 1px solid var(--line);
-    }
-
-    .advantage {
-      padding: 32px 25px;
-      border-right: 1px solid var(--line);
-    }
-
-    .advantage:first-child {
-      padding-left: 0;
-    }
-
-    .advantage:last-child {
-      border-right: 0;
-    }
-
-    .adv-number {
-      color: var(--green);
-      font-size: 11px;
-      margin-bottom: 45px;
-    }
-
-    .advantage h3 {
-      font-size: 21px;
-    }
-
-    .advantage p {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 10px;
-    }
-
-    /* DELIVERY */
-
-    .delivery {
-      padding: 90px 0;
-    }
-
-    .delivery-box {
-      padding: 60px;
-      border-radius: 28px;
-      border: 1px solid rgba(184,255,61,.2);
-      background:
-        radial-gradient(
-          circle at 80% 20%,
-          rgba(184,255,61,.1),
-          transparent 35%
-        ),
-        var(--card);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 40px;
-    }
-
-    .delivery h2 {
-      font-size: clamp(38px, 5vw, 60px);
-      line-height: 1;
-      letter-spacing: -3px;
-      max-width: 700px;
-    }
-
-    .delivery h2 span {
-      color: var(--green);
-    }
-
-    .delivery p {
-      color: var(--muted);
-      max-width: 620px;
-      margin-top: 20px;
-    }
-
-    /* CONTACTS */
-
-    .contacts {
-      display: grid;
-      grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: 15px;
-    }
-
-    .contact {
-      min-width: 0;
-      min-height: 150px;
-      padding: 28px 70px 28px 28px;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      background: var(--card);
-      position: relative;
-      overflow: hidden;
-      transition: .25s;
-    }
-
-    .contact:hover {
-      transform: translateY(-3px);
-      border-color: rgba(184,255,61,.3);
-      background: var(--card2);
-    }
-
-    .contact-label {
-      color: var(--green);
-      font-size: 9px;
-      letter-spacing: 2px;
-      font-weight: 800;
-    }
-
-    .contact-value {
-      display: block;
-      margin-top: 8px;
-      color: var(--text);
-      font-size: clamp(15px,2vw,20px);
-      font-weight: 700;
-      line-height: 1.35;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-    }
-
-    .contact-arrow {
-      position: absolute;
-      right: 23px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 1px solid rgba(184,255,61,.25);
-      color: var(--green);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 17px;
-    }
-
-    .contact:hover .contact-arrow {
-      background: var(--green);
-      color: #071000;
-    }
-
-    .secondary-email {
-      margin-top: 18px;
-      color: #606b66;
-      font-size: 12px;
-    }
-
-    .secondary-email a {
-      color: var(--green);
-      overflow-wrap: anywhere;
-    }
-
-    /* FOOTER */
-
-    footer {
-      border-top: 1px solid var(--line);
-      padding: 30px 0;
-    }
-
-    .footer-inner {
-      display: flex;
-      justify-content: space-between;
-      gap: 25px;
-      color: #59635f;
-      font-size: 11px;
-    }
-
-    /* MOBILE */
-
-    @media (max-width: 950px) {
-
-      .nav-links {
-        display: none;
-      }
-
-      .hero {
-        padding: 80px 0;
-      }
-
-      .hero-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .products {
-        grid-template-columns: repeat(2,1fr);
-      }
-
-      .advantages {
-        grid-template-columns: repeat(2,1fr);
-      }
-
-      .advantage:nth-child(2) {
-        border-right: 0;
-      }
-
-      .delivery-box {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-    }
-
-    @media (max-width: 620px) {
-
-      .container {
-        width: min(var(--max), calc(100% - 28px));
-      }
-
-      .nav {
-        height: 68px;
-      }
-
-      .telegram-button {
-        padding: 9px 13px;
-        font-size: 11px;
-      }
-
-      .hero {
-        padding: 65px 0;
-      }
-
-      .hero h1 {
-        font-size: 53px;
-        letter-spacing: -3px;
-      }
-
-      .hero-description {
-        font-size: 16px;
-      }
-
-      .hero-image {
-        min-height: 390px;
-        border-radius: 22px;
-      }
-
-      .brands-inner {
-        overflow-x: auto;
-        justify-content: flex-start;
-        white-space: nowrap;
-        padding: 25px 0;
-      }
-
-      .section {
-        padding: 85px 0;
-      }
-
-      .section-head {
-        display: block;
-      }
-
-      .section-head p {
-        margin-top: 20px;
-      }
-
-      .products {
-        grid-template-columns: 1fr;
-      }
-
-      .product-photo {
-        height: 290px;
-      }
-
-      .advantages {
-        grid-template-columns: 1fr;
-      }
-
-      .advantage,
-      .advantage:first-child {
-        padding: 28px 0;
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .advantage:last-child {
-        border-bottom: 0;
-      }
-
-      .delivery {
-        padding: 60px 0;
-      }
-
-      .delivery-box {
-        padding: 35px 25px;
-        border-radius: 22px;
-      }
-
-      .contacts {
-        grid-template-columns: 1fr;
-      }
-
-      .contact {
-        min-height: 125px;
-        padding: 24px 60px 24px 22px;
-      }
-
-      .contact-value {
-        font-size: 16px;
-      }
-
-      .footer-inner {
-        flex-direction: column;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header>
-  <div class="container nav">
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container header-inner">
 
-    <a href="#top" class="logo">
-      ROBOTICS<span>PRO</span>
-    </a>
+      <a href="#top" class="logo">
+        <span class="logo-mark">RP</span>
+        <span>
+          <strong>ROBOTICS</strong>
+          <small>PRO</small>
+        </span>
+      </a>
 
-    <nav class="nav-links">
-      <a href="#catalog">Каталог</a>
-      <a href="#about">О нас</a>
-      <a href="#delivery">Поставка</a>
-      <a href="#contacts">Контакты</a>
-    </nav>
+      <nav class="nav">
+        <a href="#catalog">Каталог</a>
+        <a href="#advantages">Преимущества</a>
+        <a href="#process">Как мы работаем</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
 
-    <a
-      href="https://t.me/CheliUsNick"
-      target="_blank"
-      class="telegram-button"
-    >
-      Telegram
-    </a>
-
-  </div>
-</header>
-
-
-<main id="top">
-
-  <!-- HERO -->
-
-  <section class="hero">
-
-    <div class="container hero-grid">
-
-      <div>
-
-        <div class="eyebrow">
-          CHINA → WORLD · ROBOTICS
-        </div>
-
-        <h1>
-          Робототехника
-          <span>из Китая.</span>
-        </h1>
-
-        <p class="hero-description">
-          Современные роботы для бизнеса, образования,
-          исследований и частных проектов.
-        </p>
-
-        <div class="hero-buttons">
-
-          <a
-            href="#catalog"
-            class="button button-green"
-          >
-            Смотреть каталог
-          </a>
-
-          <a
-            href="https://t.me/CheliUsNick"
-            target="_blank"
-            class="button button-outline"
-          >
-            Написать в Telegram
-          </a>
-
-        </div>
-
-        <div class="hero-note">
-          Подбор · Комплектация · Проверка · Поставка
-        </div>
-
-      </div>
-
-
-      <div class="hero-image">
-
-        <div class="hero-image-overlay"></div>
-
-        <div class="hero-image-info">
-
-          <small>UNITREE · HUMANOID</small>
-
-          <h3>Unitree G1</h3>
-
-        </div>
-
-      </div>
+      <a
+        class="header-button"
+        href="https://t.me/CheliUsNick"
+        target="_blank"
+      >
+        Telegram →
+      </a>
 
     </div>
-
-  </section>
-
-
-  <!-- BRANDS -->
-
-  <section class="brands">
-
-    <div class="container brands-inner">
-
-      <span>UNITREE</span>
-      <span>KEYi TECH</span>
-      <span>AI</span>
-      <span>ROBOTICS</span>
-      <span>R&amp;D</span>
-
-    </div>
-
-  </section>
+  </header>
 
 
-  <!-- CATALOG -->
+  <main id="top">
 
-  <section id="catalog" class="section">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero-grid">
 
-    <div class="container">
-
-      <div class="section-head">
-
-        <div>
+        <div class="hero-content">
 
           <div class="eyebrow">
-            CATALOG
+            ROBOTICS PRO
           </div>
 
-          <h2>
-            Технологии,
-            <span>которые можно купить.</span>
-          </h2>
+          <h1>
+            Робототехника
+            <span>из Китая</span>
+          </h1>
+
+          <p class="hero-text">
+            Подбираем и поставляем современные роботизированные
+            решения для бизнеса, образования, исследований
+            и частных клиентов.
+          </p>
+
+          <div class="hero-buttons">
+            <a href="#catalog" class="button button-primary">
+              Смотреть роботов
+            </a>
+
+            <a
+              href="https://t.me/CheliUsNick"
+              target="_blank"
+              class="button button-secondary"
+            >
+              Получить консультацию
+            </a>
+          </div>
+
+          <div class="hero-info">
+            <div>
+              <strong>China → Worldwide</strong>
+              <span>Поставка из Китая</span>
+            </div>
+
+            <div>
+              <strong>Unitree</strong>
+              <span>Современная робототехника</span>
+            </div>
+
+            <div>
+              <strong>24/7</strong>
+              <span>Связь с менеджером</span>
+            </div>
+          </div>
 
         </div>
 
+        <div class="hero-visual">
+
+          <div class="hero-photo">
+            <img
+              src="images/g1.jpg"
+              alt="Unitree G1"
+              loading="eager"
+            >
+
+            <div class="hero-label">
+              <span>01</span>
+              <strong>UNITREE G1</strong>
+              <small>Humanoid Robot</small>
+            </div>
+          </div>
+
+          <div class="floating-card">
+            <span class="floating-dot"></span>
+            <div>
+              <strong>Future is here.</strong>
+              <small>Современные роботы уже доступны</small>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- CATALOG -->
+    <section class="catalog section" id="catalog">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <div>
+            <span class="section-number">01 / КАТАЛОГ</span>
+
+            <h2>
+              Роботы,
+              <span>которые впечатляют</span>
+            </h2>
+          </div>
+
+          <p>
+            Подбираем конфигурацию под вашу задачу
+            и организуем поставку из Китая.
+          </p>
+
+        </div>
+
+
+        <div class="products-grid">
+
+          <!-- G1 -->
+          <article class="product-card product-large">
+
+            <div class="product-image">
+              <img
+                src="images/g1.jpg"
+                alt="Unitree G1"
+                loading="lazy"
+              >
+
+              <span class="product-number">01</span>
+
+              <span class="product-tag">
+                HUMANOID
+              </span>
+            </div>
+
+            <div class="product-content">
+
+              <div class="product-brand">
+                UNITREE
+              </div>
+
+              <h3>G1</h3>
+
+              <p>
+                Современный гуманоидный робот для исследований,
+                разработки, образования и демонстрационных проектов.
+                Компактная конструкция и широкие возможности
+                для программирования.
+              </p>
+
+              <div class="product-bottom">
+                <span class="product-type">
+                  Гуманоидный робот
+                </span>
+
+                <a
+                  href="https://t.me/CheliUsNick"
+                  target="_blank"
+                  class="product-button"
+                >
+                  Узнать цену →
+                </a>
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- R1 -->
+          <article class="product-card">
+
+            <div class="product-image">
+              <img
+                src="images/r1.jpg"
+                alt="Unitree R1 EDU"
+                loading="lazy"
+              >
+
+              <span class="product-number">02</span>
+
+              <span class="product-tag">
+                EDU
+              </span>
+            </div>
+
+            <div class="product-content">
+
+              <div class="product-brand">
+                UNITREE
+              </div>
+
+              <h3>R1 EDU</h3>
+
+              <p>
+                Гуманоидная робототехническая платформа
+                для обучения, программирования, исследований
+                и разработки собственных роботизированных решений.
+              </p>
+
+              <div class="product-bottom">
+                <span class="product-type">
+                  Education / R&D
+                </span>
+
+                <a
+                  href="https://t.me/CheliUsNick"
+                  target="_blank"
+                  class="product-button"
+                >
+                  Узнать цену →
+                </a>
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- GO2 -->
+          <article class="product-card">
+
+            <div class="product-image">
+              <img
+                src="images/go2.jpg"
+                alt="Unitree Go2"
+                loading="lazy"
+              >
+
+              <span class="product-number">03</span>
+
+              <span class="product-tag">
+                QUADRUPED
+              </span>
+            </div>
+
+            <div class="product-content">
+
+              <div class="product-brand">
+                UNITREE
+              </div>
+
+              <h3>Go2</h3>
+
+              <p>
+                Четвероногий робот нового поколения.
+                Подходит для исследований, обучения,
+                разработки автономных систем и различных
+                прикладных задач.
+              </p>
+
+              <div class="product-bottom">
+                <span class="product-type">
+                  Робот-собака
+                </span>
+
+                <a
+                  href="https://t.me/CheliUsNick"
+                  target="_blank"
+                  class="product-button"
+                >
+                  Узнать цену →
+                </a>
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- LOONA -->
+          <article class="product-card">
+
+            <div class="product-image">
+              <img
+                src="images/loona.jpg"
+                alt="Loona Robot"
+                loading="lazy"
+              >
+
+              <span class="product-number">04</span>
+
+              <span class="product-tag">
+                COMPANION
+              </span>
+            </div>
+
+            <div class="product-content">
+
+              <div class="product-brand">
+                KEYi ROBOT
+              </div>
+
+              <h3>Loona</h3>
+
+              <p>
+                Компактный интерактивный робот-компаньон
+                с интеллектуальными функциями, голосовым
+                взаимодействием и выразительным поведением.
+              </p>
+
+              <div class="product-bottom">
+                <span class="product-type">
+                  Robot Companion
+                </span>
+
+                <a
+                  href="https://t.me/CheliUsNick"
+                  target="_blank"
+                  class="product-button"
+                >
+                  Узнать цену →
+                </a>
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- B2 -->
+          <article class="product-card product-wide">
+
+            <div class="product-image">
+              <img
+                src="images/b2.jpg"
+                alt="Unitree B2"
+                loading="lazy"
+              >
+
+              <span class="product-number">05</span>
+
+              <span class="product-tag">
+                INDUSTRIAL
+              </span>
+            </div>
+
+            <div class="product-content">
+
+              <div class="product-brand">
+                UNITREE
+              </div>
+
+              <h3>B2</h3>
+
+              <p>
+                Профессиональная четырёхногая роботизированная
+                платформа для промышленных задач, исследований,
+                инспекций и разработки автономных систем.
+              </p>
+
+              <div class="product-bottom">
+                <span class="product-type">
+                  Industrial Robotics
+                </span>
+
+                <a
+                  href="https://t.me/CheliUsNick"
+                  target="_blank"
+                  class="product-button"
+                >
+                  Узнать цену →
+                </a>
+              </div>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ADVANTAGES -->
+    <section class="advantages section" id="advantages">
+
+      <div class="container">
+
+        <div class="section-heading">
+          <div>
+            <span class="section-number">02 / ПОЧЕМУ МЫ</span>
+
+            <h2>
+              ROBOTICS PRO —
+              <span>это больше, чем поставка</span>
+            </h2>
+          </div>
+        </div>
+
+
+        <div class="advantages-grid">
+
+          <div class="advantage">
+            <span class="advantage-number">01</span>
+            <div class="advantage-icon">↗</div>
+            <h3>Поставка из Китая</h3>
+            <p>
+              Работаем с китайским рынком робототехники
+              и организуем поставку оборудования.
+            </p>
+          </div>
+
+          <div class="advantage">
+            <span class="advantage-number">02</span>
+            <div class="advantage-icon">◈</div>
+            <h3>Подбор модели</h3>
+            <p>
+              Поможем выбрать подходящую модель
+              и комплектацию под конкретную задачу.
+            </p>
+          </div>
+
+          <div class="advantage">
+            <span class="advantage-number">03</span>
+            <div class="advantage-icon">✓</div>
+            <h3>Консультация</h3>
+            <p>
+              Расскажем о возможностях робота,
+              комплектации и вариантах поставки.
+            </p>
+          </div>
+
+          <div class="advantage">
+            <span class="advantage-number">04</span>
+            <div class="advantage-icon">+</div>
+            <h3>Работа по миру</h3>
+            <p>
+              Работаем с клиентами из России
+              и других стран.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- PROCESS -->
+    <section class="process section" id="process">
+
+      <div class="container">
+
+        <div class="section-heading">
+          <div>
+            <span class="section-number">03 / ПРОЦЕСС</span>
+
+            <h2>
+              Как получить
+              <span>робота</span>
+            </h2>
+          </div>
+
+          <p>
+            Всё максимально просто —
+            от первого сообщения до поставки.
+          </p>
+        </div>
+
+
+        <div class="process-grid">
+
+          <div class="process-step">
+            <span>01</span>
+            <h3>Расскажите о задаче</h3>
+            <p>
+              Напишите нам в Telegram,
+              какая робототехника вам нужна.
+            </p>
+          </div>
+
+          <div class="process-line"></div>
+
+          <div class="process-step">
+            <span>02</span>
+            <h3>Подбираем решение</h3>
+            <p>
+              Предлагаем модель,
+              комплектацию и варианты поставки.
+            </p>
+          </div>
+
+          <div class="process-line"></div>
+
+          <div class="process-step">
+            <span>03</span>
+            <h3>Организуем поставку</h3>
+            <p>
+              Согласовываем детали
+              и организуем отправку.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- CONTACT CTA -->
+    <section class="contact-section" id="contacts">
+
+      <div class="container contact-inner">
+
+        <div>
+          <span class="section-number">04 / КОНТАКТЫ</span>
+
+          <h2>
+            Хотите узнать
+            <span>цену?</span>
+          </h2>
+
+          <p>
+            Напишите нам — расскажем о доступных моделях,
+            комплектациях и условиях поставки.
+          </p>
+        </div>
+
+        <a
+          href="https://t.me/CheliUsNick"
+          target="_blank"
+          class="contact-button"
+        >
+          Написать в Telegram
+          <span>↗</span>
+        </a>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer class="footer">
+
+    <div class="container footer-grid">
+
+      <div class="footer-brand">
+
+        <a href="#top" class="logo footer-logo">
+          <span class="logo-mark">RP</span>
+          <span>
+            <strong>ROBOTICS</strong>
+            <small>PRO</small>
+          </span>
+        </a>
+
         <p>
-          Подберём подходящую модель,
-          комплектацию и организуем поставку
+          Современная робототехника
           из Китая.
         </p>
 
       </div>
 
 
-      <div class="products">
+      <div class="footer-links">
 
+        <strong>Навигация</strong>
 
-        <!-- G1 -->
-
-        <article class="product">
-
-          <div class="product-photo">
-
-            <span class="tag">
-              HUMANOID
-            </span>
-
-            <img
-              src="https://www.unitree.com/images/g1/g1-01.jpg"
-              alt="Unitree G1"
-              loading="lazy"
-            >
-
-          </div>
-
-          <div class="product-content">
-
-            <h3>Unitree G1</h3>
-
-            <p>
-              Гуманоидный робот для AI,
-              исследований и разработки.
-            </p>
-
-            <div class="product-bottom">
-
-              <span class="brand-name">
-                UNITREE
-              </span>
-
-              <a
-                href="https://www.unitree.com/g1/"
-                target="_blank"
-                class="details"
-              >
-                Подробнее →
-              </a>
-
-            </div>
-
-          </div>
-
-        </article>
-
-
-        <!-- R1 -->
-
-        <article class="product">
-
-          <div class="product-photo">
-
-            <span class="tag">
-              EDUCATION
-            </span>
-
-            <img
-              src="https://www.unitree.com/images/r1/r1-01.jpg"
-              alt="Unitree R1"
-              loading="lazy"
-            >
-
-          </div>
-
-          <div class="product-content">
-
-            <h3>Unitree R1 EDU</h3>
-
-            <p>
-              Компактная робототехническая
-              платформа для обучения и разработки.
-            </p>
-
-            <div class="product-bottom">
-
-              <span class="brand-name">
-                UNITREE
-              </span>
-
-              <a
-                href="https://www.unitree.com/"
-                target="_blank"
-                class="details"
-              >
-                Подробнее →
-              </a>
-
-            </div>
-
-          </div>
-
-        </article>
-
-
-        <!-- GO2 -->
-
-        <article class="product">
-
-          <div class="product-photo">
-
-            <span class="tag">
-              QUADRUPED
-            </span>
-
-            <img
-              src="https://www.unitree.com/images/go2/go2-01.jpg"
-              alt="Unitree Go2"
-              loading="lazy"
-            >
-
-          </div>
-
-          <div class="product-content">
-
-            <h3>Unitree Go2</h3>
-
-            <p>
-              Интеллектуальная робособака.
-              Air, Pro, X и EDU.
-            </p>
-
-            <div class="product-bottom">
-
-              <span class="brand-name">
-                UNITREE
-              </span>
-
-              <a
-                href="https://www.unitree.com/go2/"
-                target="_blank"
-                class="details"
-              >
-                Подробнее →
-              </a>
-
-            </div>
-
-          </div>
-
-        </article>
-
-
-        <!-- LOONA -->
-
-        <article class="product">
-
-          <div class="product-photo">
-
-            <span class="tag">
-              AI ROBOT
-            </span>
-
-            <img
-              src="https://keyirobot.com/cdn/shop/files/loona.jpg"
-              alt="Loona robot"
-              loading="lazy"
-            >
-
-          </div>
-
-          <div class="product-content">
-
-            <h3>Loona</h3>
-
-            <p>
-              Интерактивный AI-робот-компаньон
-              с компьютерным зрением.
-            </p>
-
-            <div class="product-bottom">
-
-              <span class="brand-name">
-                KEYi TECH
-              </span>
-
-              <a
-                href="https://keyirobot.com/"
-                target="_blank"
-                class="details"
-              >
-                Подробнее →
-              </a>
-
-            </div>
-
-          </div>
-
-        </article>
-
-
-        <!-- B2 -->
-
-        <article class="product">
-
-          <div class="product-photo">
-
-            <span class="tag">
-              INDUSTRIAL
-            </span>
-
-            <img
-              src="https://www.unitree.com/images/b2/b2-01.jpg"
-              alt="Unitree B2"
-              loading="lazy"
-            >
-
-          </div>
-
-          <div class="product-content">
-
-            <h3>Unitree B2</h3>
-
-            <p>
-              Высокопроизводительная
-              четвероногая роботизированная платформа.
-            </p>
-
-            <div class="product-bottom">
-
-              <span class="brand-name">
-                UNITREE
-              </span>
-
-              <a
-                href="https://www.unitree.com/"
-                target="_blank"
-                class="details"
-              >
-                Подробнее →
-              </a>
-
-            </div>
-
-          </div>
-
-        </article>
-
-
-        <!-- CUSTOM -->
-
-        <article class="product">
-
-          <div
-            class="product-photo"
-            style="
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              background:
-              radial-gradient(
-                circle,
-                rgba(184,255,61,.14),
-                transparent 55%
-              ),
-              #080b0a;
-            "
-          >
-
-            <span
-              style="
-                font-size:100px;
-                font-weight:200;
-                color:#b8ff3d;
-              "
-            >
-              +
-            </span>
-
-          </div>
-
-          <div class="product-content">
-
-            <h3>Другие роботы</h3>
-
-            <p>
-              Не нашли нужную модель?
-              Найдём робототехнику под вашу задачу.
-            </p>
-
-            <div class="product-bottom">
-
-              <span class="brand-name">
-                CHINA SOURCING
-              </span>
-
-              <a
-                href="#contacts"
-                class="details"
-              >
-                Запросить →
-              </a>
-
-            </div>
-
-          </div>
-
-        </article>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- ABOUT -->
-
-  <section id="about" class="section dark-section">
-
-    <div class="container">
-
-      <div class="section-head">
-
-        <div>
-
-          <div class="eyebrow">
-            WHY ROBOTICS PRO
-          </div>
-
-          <h2>
-            От выбора робота
-            <span>до его поставки.</span>
-          </h2>
-
-        </div>
+        <a href="#catalog">Каталог</a>
+        <a href="#advantages">Преимущества</a>
+        <a href="#process">Как мы работаем</a>
+        <a href="#contacts">Контакты</a>
 
       </div>
 
 
-      <div class="advantages">
+      <div class="footer-contact">
 
-        <div class="advantage">
-
-          <div class="adv-number">
-            01
-          </div>
-
-          <h3>Подбор</h3>
-
-          <p>
-            Поможем подобрать модель
-            и подходящую комплектацию.
-          </p>
-
-        </div>
-
-
-        <div class="advantage">
-
-          <div class="adv-number">
-            02
-          </div>
-
-          <h3>Китай</h3>
-
-          <p>
-            Работаем с китайским рынком
-            современной робототехники.
-          </p>
-
-        </div>
-
-
-        <div class="advantage">
-
-          <div class="adv-number">
-            03
-          </div>
-
-          <h3>Проверка</h3>
-
-          <p>
-            Перед отправкой можно организовать
-            проверку комплектации и состояния.
-          </p>
-
-        </div>
-
-
-        <div class="advantage">
-
-          <div class="adv-number">
-            04
-          </div>
-
-          <h3>Поставка</h3>
-
-          <p>
-            Поможем организовать поставку
-            из Китая в Россию и другие направления.
-          </p>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- DELIVERY -->
-
-  <section id="delivery" class="delivery">
-
-    <div class="container">
-
-      <div class="delivery-box">
-
-        <div>
-
-          <div class="eyebrow">
-            DELIVERY
-          </div>
-
-          <h2>
-            Китай →
-            <span>Россия и другие направления.</span>
-          </h2>
-
-          <p>
-            Расскажите, какой робот вам нужен.
-            Обсудим модель, комплектацию и поставку.
-          </p>
-
-        </div>
+        <strong>Связаться</strong>
 
         <a
           href="https://t.me/CheliUsNick"
           target="_blank"
-          class="button button-green"
         >
-          Обсудить поставку
+          Telegram: @CheliUsNick
+        </a>
+
+        <a href="tel:+8618833983072">
+          Китай: +86 188 3398 3072
+        </a>
+
+        <a href="tel:+79520824539">
+          Россия: +7 952 082-45-39
+        </a>
+
+        <a href="mailto:helloitisnick@gmail.com">
+          helloitisnick@gmail.com
         </a>
 
       </div>
 
     </div>
 
-  </section>
 
+    <div class="container footer-bottom">
 
-  <!-- CONTACTS -->
+      <span>
+        © 2026 ROBOTICS PRO
+      </span>
 
-  <section id="contacts" class="section">
-
-    <div class="container">
-
-      <div class="section-head">
-
-        <div>
-
-          <div class="eyebrow">
-            CONTACT
-          </div>
-
-          <h2>
-            Свяжитесь
-            <span>с нами.</span>
-          </h2>
-
-        </div>
-
-      </div>
-
-
-      <div class="contacts">
-
-
-        <a
-          class="contact"
-          href="https://t.me/CheliUsNick"
-          target="_blank"
-        >
-
-          <span class="contact-label">
-            TELEGRAM
-          </span>
-
-          <span class="contact-value">
-            @CheliUsNick
-          </span>
-
-          <span class="contact-arrow">
-            →
-          </span>
-
-        </a>
-
-
-        <a
-          class="contact"
-          href="tel:+79520824539"
-        >
-
-          <span class="contact-label">
-            РОССИЯ
-          </span>
-
-          <span class="contact-value">
-            +7 952 082-45-39
-          </span>
-
-          <span class="contact-arrow">
-            →
-          </span>
-
-        </a>
-
-
-        <a
-          class="contact"
-          href="tel:+8618833983072"
-        >
-
-          <span class="contact-label">
-            КИТАЙ
-          </span>
-
-          <span class="contact-value">
-            +86 188 3398 3072
-          </span>
-
-          <span class="contact-arrow">
-            →
-          </span>
-
-        </a>
-
-
-        <a
-          class="contact"
-          href="mailto:helloitisnick@gmail.com"
-        >
-
-          <span class="contact-label">
-            EMAIL
-          </span>
-
-          <span class="contact-value">
-            helloitisnick@gmail.com
-          </span>
-
-          <span class="contact-arrow">
-            →
-          </span>
-
-        </a>
-
-      </div>
-
-
-      <div class="secondary-email">
-        Дополнительная почта:
-        <a href="mailto:znwq@mail.ru">
-          znwq@mail.ru
-        </a>
-      </div>
+      <span>
+        Робототехника · Китай · Worldwide
+      </span>
 
     </div>
 
-  </section>
-
-</main>
-
-
-<footer>
-
-  <div class="container footer-inner">
-
-    <div class="logo">
-      ROBOTICS<span>PRO</span>
-    </div>
-
-    <div>
-      © 2026 ROBOTICS PRO
-    </div>
-
-    <div>
-      Робототехника из Китая
-    </div>
-
-  </div>
-
-</footer>
+  </footer>
 
 
 </body>
