@@ -3,157 +3,246 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ROBOTICS PRO — Робототехника</title>
-  <meta name="description" content="ROBOTICS PRO — поставка современной робототехники из Китая. Unitree, AI-роботы и роботизированные платформы.">
+
+  <title>ROBOTICS PRO — Future Robotics</title>
+
+  <meta
+    name="description"
+    content="ROBOTICS PRO — современная робототехника из Китая. Unitree, AI-компаньоны и роботизированные платформы."
+  >
+
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header class="header">
+<!-- ================= HEADER ================= -->
+
+<header class="site-header">
+
   <div class="header-inner">
 
-    <a href="#home" class="logo">
-      <span class="logo-icon">RP</span>
-      <span>ROBOTICS PRO</span>
+    <a href="#top" class="brand">
+      <span class="brand-mark">RP</span>
+
+      <span class="brand-name">
+        ROBOTICS PRO
+      </span>
     </a>
 
-    <nav class="desktop-nav">
+
+    <nav class="main-nav">
+
       <a href="#catalog">Каталог</a>
+
       <a href="#humanoid">Гуманоиды</a>
+
       <a href="#quadruped">Четвероногие</a>
-      <a href="#companion">Компаньоны</a>
+
+      <a href="#companion">AI-компаньоны</a>
+
       <a href="#about">О нас</a>
+
     </nav>
 
-    <a href="https://t.me/CheliUsNick" target="_blank" class="header-contact">
-      Связаться
-    </a>
 
-    <button class="mobile-menu-button" id="menuButton" aria-label="Меню">
+    <button
+      class="contact-button"
+      type="button"
+      data-contact-open
+    >
+      Связаться
+    </button>
+
+
+    <button
+      class="mobile-menu-button"
+      type="button"
+      aria-label="Открыть меню"
+      id="mobileMenuButton"
+    >
       <span></span>
       <span></span>
     </button>
 
   </div>
 
+
   <div class="mobile-menu" id="mobileMenu">
+
     <a href="#catalog">Каталог</a>
+
     <a href="#humanoid">Гуманоиды</a>
+
     <a href="#quadruped">Четвероногие</a>
-    <a href="#companion">Компаньоны</a>
+
+    <a href="#companion">AI-компаньоны</a>
+
     <a href="#about">О нас</a>
-    <a href="https://t.me/CheliUsNick" target="_blank">Telegram →</a>
+
+    <button type="button" data-contact-open>
+      Связаться
+    </button>
+
   </div>
+
 </header>
 
 
-<main id="home">
+<main id="top">
 
-  <!-- HERO -->
 
-  <section class="hero">
+<!-- ================= HERO ================= -->
 
-    <div class="hero-copy">
-      <div class="small-label">ROBOTICS PRO / 2026</div>
+<section class="hero">
 
-      <h1>
-        Робототехника<br>
-        нового поколения.
-      </h1>
+  <div class="hero-content">
 
-      <p>
-        Гуманоидные роботы, четвероногие платформы
-        и AI-компаньоны из Китая.
-      </p>
-
-      <div class="hero-buttons">
-        <a href="#catalog" class="btn btn-black">
-          Смотреть каталог
-        </a>
-
-        <a href="https://t.me/CheliUsNick" target="_blank" class="btn btn-outline">
-          Получить предложение
-        </a>
-      </div>
+    <div class="hero-eyebrow">
+      ROBOTICS PRO
+      <span></span>
+      2026
     </div>
 
-    <div class="hero-product">
-      <img src="images/g1.jpg" alt="Unitree G1">
-      <div class="hero-product-name">
-        <span>UNITREE</span>
-        <strong>G1</strong>
-      </div>
+    <h1>
+      Будущее<br>
+      уже здесь.
+    </h1>
+
+    <p>
+      Современная робототехника из Китая —
+      гуманоиды, четвероногие роботы
+      и интеллектуальные AI-компаньоны.
+    </p>
+
+    <div class="hero-actions">
+
+      <a href="#catalog" class="primary-button">
+        Смотреть каталог
+      </a>
+
+      <button
+        class="secondary-button"
+        type="button"
+        data-contact-open
+      >
+        Получить предложение
+      </button>
+
     </div>
 
-  </section>
+  </div>
 
 
-  <!-- CATEGORY BAR -->
+  <div class="hero-visual">
 
-  <section class="category-bar" id="catalog">
+    <img
+      src="https://www.unitree.com/images/a20ba1ebc0724df8a8135744dee8bbea_2740x1720.jpg"
+      alt="Unitree humanoid robot"
+    >
 
-    <a href="#humanoid">
-      <span>01</span>
-      <strong>HUMANOID</strong>
-      <small>Гуманоиды</small>
-    </a>
+  </div>
 
-    <a href="#quadruped">
-      <span>02</span>
-      <strong>QUADRUPED</strong>
-      <small>Четвероногие</small>
-    </a>
-
-    <a href="#companion">
-      <span>03</span>
-      <strong>AI COMPANION</strong>
-      <small>Компаньоны</small>
-    </a>
-
-  </section>
+</section>
 
 
-  <!-- HUMANOID -->
+<!-- ================= INTRO ================= -->
 
-  <section class="catalog-section" id="humanoid">
+<section class="intro">
 
-    <div class="section-header">
+  <div class="intro-label">
+    01 / ROBOTICS
+  </div>
+
+  <div class="intro-content">
+
+    <h2>
+      Технологии,
+      которые меняют
+      представление
+      о роботах.
+    </h2>
+
+    <p>
+      ROBOTICS PRO поставляет современную
+      робототехнику из Китая для бизнеса,
+      образования, исследований и частных
+      проектов.
+    </p>
+
+  </div>
+
+</section>
+
+
+<!-- ================= CATALOG ================= -->
+
+<section class="catalog" id="catalog">
+
+  <div class="catalog-heading">
+
+    <div>
+      <span>PRODUCTS</span>
+      <h2>Каталог</h2>
+    </div>
+
+    <p>
+      Выберите категорию робототехники
+    </p>
+
+  </div>
+
+
+  <!-- ================= HUMANOID ================= -->
+
+  <section class="category" id="humanoid">
+
+    <div class="category-heading">
+
       <div>
-        <span class="section-number">01</span>
-        <h2>Гуманоиды</h2>
+        <span>01</span>
+        <h3>Гуманоиды</h3>
       </div>
 
       <p>
-        Высокотехнологичные двуногие платформы
-        для AI, исследований, образования
-        и разработки робототехники.
+        Двуногие роботизированные платформы
+        для AI, исследований и разработки.
       </p>
+
     </div>
 
 
-    <div class="main-product">
+    <article class="product-main">
 
-      <div class="main-product-image">
-        <img src="images/g1.jpg" alt="Unitree G1">
+      <div class="product-image">
+
+        <img
+          src="https://www.unitree.com/images/a20ba1ebc0724df8a8135744dee8bbea_2740x1720.jpg"
+          alt="Unitree G1"
+        >
+
       </div>
 
-      <div class="main-product-info">
 
-        <div class="product-top">
-          <span>UNITREE</span>
-          <span>HUMANOID / G1</span>
+      <div class="product-details">
+
+        <div class="product-meta">
+          UNITREE
+          <span>G1</span>
         </div>
 
-        <h3>G1</h3>
+        <h4>Unitree G1</h4>
 
-        <p>
-          Продвинутый гуманоидный робот с высокой
-          подвижностью, AI-возможностями и
-          23–43 степенями свободы.
+        <p class="product-description">
+          Высокоподвижный гуманоидный робот
+          нового поколения. G1 сочетает
+          высокую подвижность, AI и систему
+          управления движениями.
         </p>
 
-        <div class="product-specs">
+
+        <div class="spec-grid">
+
           <div>
             <strong>23–43</strong>
             <span>DOF</span>
@@ -173,114 +262,194 @@
             <strong>9000</strong>
             <span>mAh</span>
           </div>
+
         </div>
 
-        <div class="product-footer">
+
+        <div class="product-bottom">
+
           <div>
-            <small>Цена</small>
-            <strong>от 1 666 666 ₽</strong>
+
+            <span>Стоимость</span>
+
+            <strong>
+              от 1 666 666 ₽
+            </strong>
+
           </div>
 
-          <a href="https://t.me/CheliUsNick" target="_blank">
-            Получить предложение →
-          </a>
+
+          <button
+            type="button"
+            class="product-button"
+            data-contact-open
+          >
+            Получить предложение
+          </button>
+
         </div>
 
       </div>
 
-    </div>
+    </article>
 
 
-    <div class="product-row">
+    <article class="product-main product-reverse">
 
-      <article class="product-card">
+      <div class="product-image">
 
-        <div class="product-card-image">
-          <img src="images/r1.jpg" alt="Unitree R1">
+        <img
+          src="https://www.unitree.com/images/920433c1a6c743cf8265fb2ec2eb41a0_1920x1301.png?x-oss-process=image%2Fquality%2Cq_60%2Fformat%2Cwebp"
+          alt="Unitree R1"
+        >
+
+      </div>
+
+
+      <div class="product-details">
+
+        <div class="product-meta">
+          UNITREE
+          <span>R1</span>
         </div>
 
-        <div class="product-card-content">
+        <h4>Unitree R1</h4>
 
-          <div class="card-label">
-            UNITREE / HUMANOID
+        <p class="product-description">
+          Компактный и лёгкий гуманоид
+          для AI, исследований, обучения
+          и робототехнических проектов.
+        </p>
+
+
+        <div class="spec-grid">
+
+          <div>
+            <strong>20–26</strong>
+            <span>DOF</span>
           </div>
 
-          <h3>R1</h3>
-
-          <p>
-            Компактный гуманоид для AI,
-            исследований и образовательных проектов.
-          </p>
-
-          <div class="card-specs">
-            <span>20–26 DOF</span>
-            <span>~29 кг</span>
-            <span>123 см</span>
+          <div>
+            <strong>~29 кг</strong>
+            <span>Вес</span>
           </div>
 
-          <div class="card-footer">
-            <strong>от 1 666 666 ₽</strong>
-            <a href="https://t.me/CheliUsNick" target="_blank">Подробнее →</a>
+          <div>
+            <strong>123 см</strong>
+            <span>Высота</span>
+          </div>
+
+          <div>
+            <strong>Wi-Fi 6</strong>
+            <span>Связь</span>
           </div>
 
         </div>
 
-      </article>
 
-    </div>
+        <div class="product-bottom">
+
+          <div>
+
+            <span>Стоимость</span>
+
+            <strong>
+              от 1 666 666 ₽
+            </strong>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="product-button"
+            data-contact-open
+          >
+            Получить предложение
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
 
   </section>
 
 
-  <!-- QUADRUPED -->
+  <!-- ================= QUADRUPED ================= -->
 
-  <section class="catalog-section light-section" id="quadruped">
+  <section class="category" id="quadruped">
 
-    <div class="section-header">
+    <div class="category-heading">
+
       <div>
-        <span class="section-number">02</span>
-        <h2>Четвероногие</h2>
+        <span>02</span>
+        <h3>Четвероногие</h3>
       </div>
 
       <p>
-        Мобильные роботизированные платформы
-        для навигации, исследований,
-        инспекций и сложных поверхностей.
+        Роботы для навигации,
+        исследований, инспекций
+        и сложных поверхностей.
       </p>
+
     </div>
 
 
     <div class="product-grid">
 
+
       <article class="product-card">
 
-        <div class="product-card-image">
-          <img src="images/go2.jpg" alt="Unitree Go2 AI">
+        <div class="card-image">
+
+          <img
+            src="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
+            alt="Unitree Go2"
+          >
+
         </div>
 
-        <div class="product-card-content">
 
-          <div class="card-label">
+        <div class="card-body">
+
+          <div class="card-meta">
             UNITREE / QUADRUPED
           </div>
 
-          <h3>Go2 AI</h3>
+          <h4>Go2 AI</h4>
 
           <p>
-            Интеллектуальный четвероногий робот
-            с широкоугольным 4D LiDAR
-            и продвинутой навигацией.
+            Интеллектуальная четвероногая
+            платформа с 4D LiDAR,
+            AI-навигацией и высокой
+            мобильностью.
           </p>
 
-          <div class="card-specs">
+
+          <div class="mini-specs">
+
             <span>4D LiDAR</span>
-            <span>до 5 м/с</span>
+
+            <span>≈ 5 м/с</span>
+
             <span>Wi-Fi 6</span>
+
           </div>
 
+
           <div class="card-footer">
+
             <strong>240 000 ₽</strong>
-            <a href="https://t.me/CheliUsNick" target="_blank">Подробнее →</a>
+
+            <button
+              type="button"
+              data-contact-open
+            >
+              Подробнее →
+            </button>
+
           </div>
 
         </div>
@@ -290,33 +459,54 @@
 
       <article class="product-card">
 
-        <div class="product-card-image">
-          <img src="images/go2.jpg" alt="Unitree Go2 Pro">
+        <div class="card-image">
+
+          <img
+            src="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
+            alt="Unitree Go2 Pro"
+          >
+
         </div>
 
-        <div class="product-card-content">
 
-          <div class="card-label">
+        <div class="card-body">
+
+          <div class="card-meta">
             UNITREE / QUADRUPED
           </div>
 
-          <h3>Go2 Pro</h3>
+          <h4>Go2 Pro</h4>
 
           <p>
-            Расширенная версия Go2
-            для задач, где важны мобильность,
-            AI и автономность.
+            Расширенная конфигурация Go2
+            для пользователей, которым
+            нужны дополнительные возможности
+            и автономность.
           </p>
 
-          <div class="card-specs">
+
+          <div class="mini-specs">
+
             <span>4D LiDAR</span>
-            <span>AI Mode</span>
-            <span>до 5 м/с</span>
+
+            <span>≈ 45 Н·м</span>
+
+            <span>2–4 ч</span>
+
           </div>
 
+
           <div class="card-footer">
+
             <strong>350 000 ₽</strong>
-            <a href="https://t.me/CheliUsNick" target="_blank">Подробнее →</a>
+
+            <button
+              type="button"
+              data-contact-open
+            >
+              Подробнее →
+            </button>
+
           </div>
 
         </div>
@@ -328,54 +518,78 @@
   </section>
 
 
-  <!-- COMPANIONS -->
+  <!-- ================= COMPANION ================= -->
 
-  <section class="catalog-section" id="companion">
+  <section class="category" id="companion">
 
-    <div class="section-header">
+    <div class="category-heading">
+
       <div>
-        <span class="section-number">03</span>
-        <h2>AI-компаньоны</h2>
+        <span>03</span>
+        <h3>AI-компаньоны</h3>
       </div>
 
       <p>
-        Интерактивные роботы для дома,
-        развлечений и общения.
+        Интерактивные роботы
+        для дома, общения
+        и развлечений.
       </p>
+
     </div>
 
 
     <div class="product-grid">
 
+
       <article class="product-card">
 
-        <div class="product-card-image">
-          <img src="images/loona.jpg" alt="Loona">
+        <div class="card-image">
+
+          <img
+            src="images/loona.jpg"
+            alt="Loona AI robot"
+          >
+
         </div>
 
-        <div class="product-card-content">
 
-          <div class="card-label">
+        <div class="card-body">
+
+          <div class="card-meta">
             AI COMPANION
           </div>
 
-          <h3>Loona</h3>
+          <h4>Loona</h4>
 
           <p>
             AI-компаньон с камерой,
-            дисплеем, голосовым взаимодействием
-            и системой распознавания.
+            дисплеем и интерактивным
+            голосовым взаимодействием.
           </p>
 
-          <div class="card-specs">
+
+          <div class="mini-specs">
+
             <span>5 TOPS</span>
+
             <span>720p</span>
+
             <span>2.4" LCD</span>
+
           </div>
 
+
           <div class="card-footer">
+
             <strong>60 000 ₽</strong>
-            <a href="https://t.me/CheliUsNick" target="_blank">Подробнее →</a>
+
+            <button
+              type="button"
+              data-contact-open
+            >
+              Подробнее →
+            </button>
+
           </div>
 
         </div>
@@ -385,38 +599,54 @@
 
       <article class="product-card">
 
-        <div class="emo-image">
-          <div class="emo">
-            <div class="emo-eyes">
-              <span></span>
-              <span></span>
-            </div>
-          </div>
+        <div class="card-image emo-photo">
+
+          <img
+            src="https://i0.wp.com/living.ai/wp-content/uploads/2020/12/product2.jpg?fit=1024%2C1024&quality=89&ssl=1"
+            alt="EMO AI desktop pet"
+          >
+
         </div>
 
-        <div class="product-card-content">
 
-          <div class="card-label">
-            AI COMPANION
+        <div class="card-body">
+
+          <div class="card-meta">
+            LIVINGAI / AI PET
           </div>
 
-          <h3>EMO</h3>
+          <h4>EMO</h4>
 
           <p>
-            Настольный AI-компаньон
-            с камерой, сенсорами, голосовым
-            взаимодействием и собственным характером.
+            AI-компаньон с характером,
+            камерой, сенсорами,
+            распознаванием лиц
+            и голосовым взаимодействием.
           </p>
 
-          <div class="card-specs">
+
+          <div class="mini-specs">
+
             <span>1000+ реакций</span>
+
             <span>HD Camera</span>
+
             <span>4 микрофона</span>
+
           </div>
 
+
           <div class="card-footer">
+
             <strong>60 000 ₽</strong>
-            <a href="https://t.me/CheliUsNick" target="_blank">Подробнее →</a>
+
+            <button
+              type="button"
+              data-contact-open
+            >
+              Подробнее →
+            </button>
+
           </div>
 
         </div>
@@ -427,122 +657,370 @@
 
   </section>
 
+</section>
 
-  <!-- ABOUT -->
 
-  <section class="about" id="about">
+<!-- ================= ABOUT ================= -->
 
-    <div class="about-left">
-      <span class="section-number">04</span>
-      <h2>ROBOTICS<br>PRO</h2>
-    </div>
+<section class="about" id="about">
 
-    <div class="about-right">
+  <div class="about-title">
 
-      <h3>
-        Робототехника из Китая —
-        доступная для вашего проекта.
-      </h3>
+    <span>04 / ROBOTICS PRO</span>
 
-      <p>
-        Помогаем подобрать роботизированное
-        оборудование под конкретную задачу,
-        организуем поставку и сопровождаем
-        клиента на всех этапах.
-      </p>
+    <h2>
+      Робототехника
+      из Китая.
+    </h2>
 
-      <div class="about-items">
+  </div>
 
-        <div>
-          <span>01</span>
-          <strong>Подбор</strong>
-          <p>Подбираем модель и комплектацию.</p>
-        </div>
 
-        <div>
-          <span>02</span>
-          <strong>Расчёт</strong>
-          <p>Рассчитываем стоимость поставки.</p>
-        </div>
+  <div class="about-content">
 
-        <div>
-          <span>03</span>
-          <strong>Поставка</strong>
-          <p>Организуем доставку из Китая.</p>
-        </div>
+    <p class="about-lead">
+      Мы помогаем подобрать современную
+      робототехнику под конкретную задачу
+      и организуем поставку.
+    </p>
 
-        <div>
-          <span>04</span>
-          <strong>Поддержка</strong>
-          <p>Остаёмся на связи после покупки.</p>
-        </div>
 
+    <div class="about-grid">
+
+      <div>
+        <span>01</span>
+        <strong>Подбор</strong>
+        <p>
+          Подбираем модель,
+          конфигурацию и комплектацию.
+        </p>
+      </div>
+
+
+      <div>
+        <span>02</span>
+        <strong>Расчёт</strong>
+        <p>
+          Рассчитываем стоимость
+          оборудования и поставки.
+        </p>
+      </div>
+
+
+      <div>
+        <span>03</span>
+        <strong>Поставка</strong>
+        <p>
+          Организуем поставку
+          робототехники из Китая.
+        </p>
+      </div>
+
+
+      <div>
+        <span>04</span>
+        <strong>Поддержка</strong>
+        <p>
+          Остаёмся на связи
+          после покупки.
+        </p>
       </div>
 
     </div>
 
-  </section>
+  </div>
+
+</section>
 
 
-  <!-- CONTACT -->
+<!-- ================= CONTACT ================= -->
 
-  <section class="contact">
+<section class="contact-section">
 
-    <div>
-      <span class="section-number">05</span>
-      <h2>Есть задача?</h2>
-      <p>
-        Напишите нам — подберём робота,
-        комплектацию и рассчитаем поставку.
-      </p>
-    </div>
+  <div>
 
-    <a href="https://t.me/CheliUsNick" target="_blank">
-      Написать в Telegram →
-    </a>
+    <span>ROBOTICS PRO</span>
 
-  </section>
+    <h2>
+      Готовы обсудить
+      проект?
+    </h2>
+
+  </div>
+
+
+  <button
+    type="button"
+    class="contact-large-button"
+    data-contact-open
+  >
+    Связаться →
+  </button>
+
+</section>
+
 
 </main>
 
+
+<!-- ================= FOOTER ================= -->
 
 <footer>
 
   <div class="footer-inner">
 
     <div class="footer-brand">
-      <span class="logo-icon">RP</span>
-      <strong>ROBOTICS PRO</strong>
+
+      <span class="brand-mark">
+        RP
+      </span>
+
+      <div>
+        <strong>ROBOTICS PRO</strong>
+
+        <span>
+          Robotics from China
+        </span>
+      </div>
+
     </div>
 
-    <div class="footer-links">
-      <a href="#catalog">Каталог</a>
-      <a href="#about">О нас</a>
-      <a href="https://t.me/CheliUsNick" target="_blank">Telegram</a>
+
+    <div class="footer-contact">
+
+      <a href="mailto:helloitisnick@gmail.com">
+        helloitisnick@gmail.com
+      </a>
+
+      <a href="tel:+79520824539">
+        +7 952 082-45-39
+      </a>
+
+      <a href="tel:+861883983072">
+        +86 188 3398 3072
+      </a>
+
     </div>
 
-    <span>© 2026</span>
+
+    <div class="footer-social">
+
+      <a
+        href="https://t.me/CheliUsNick"
+        target="_blank"
+      >
+        Telegram
+      </a>
+
+      <span>
+        © 2026 ROBOTICS PRO
+      </span>
+
+    </div>
 
   </div>
 
 </footer>
 
 
+<!-- ================= CONTACT MODAL ================= -->
+
+<div class="contact-modal" id="contactModal">
+
+  <div class="contact-backdrop" data-contact-close></div>
+
+
+  <div class="contact-window">
+
+    <button
+      class="modal-close"
+      type="button"
+      data-contact-close
+      aria-label="Закрыть"
+    >
+      ×
+    </button>
+
+
+    <span class="modal-label">
+      ROBOTICS PRO
+    </span>
+
+    <h3>
+      Как с вами связаться?
+    </h3>
+
+    <p>
+      Выберите удобный способ связи.
+    </p>
+
+
+    <div class="contact-options">
+
+
+      <a
+        href="https://t.me/CheliUsNick"
+        target="_blank"
+        class="contact-option"
+      >
+
+        <span class="option-icon">
+          TG
+        </span>
+
+        <span>
+          <strong>Telegram</strong>
+          <small>@CheliUsNick</small>
+        </span>
+
+        <b>→</b>
+
+      </a>
+
+
+      <a
+        href="mailto:helloitisnick@gmail.com"
+        class="contact-option"
+      >
+
+        <span class="option-icon">
+          @
+        </span>
+
+        <span>
+          <strong>Gmail</strong>
+          <small>helloitisnick@gmail.com</small>
+        </span>
+
+        <b>→</b>
+
+      </a>
+
+
+      <a
+        href="mailto:helloitisnick@gmail.com"
+        class="contact-option"
+      >
+
+        <span class="option-icon">
+          ✉
+        </span>
+
+        <span>
+          <strong>Email</strong>
+          <small>Написать на почту</small>
+        </span>
+
+        <b>→</b>
+
+      </a>
+
+
+      <a
+        href="tel:+79520824539"
+        class="contact-option"
+      >
+
+        <span class="option-icon">
+          ☎
+        </span>
+
+        <span>
+          <strong>Телефон</strong>
+          <small>+7 952 082-45-39</small>
+        </span>
+
+        <b>→</b>
+
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
-const menuButton = document.getElementById('menuButton');
-const mobileMenu = document.getElementById('mobileMenu');
 
-menuButton.addEventListener('click', () => {
-  mobileMenu.classList.toggle('open');
-  menuButton.classList.toggle('active');
-});
+const contactModal =
+  document.getElementById("contactModal");
 
-document.querySelectorAll('.mobile-menu a').forEach(link => {
-  link.addEventListener('click', () => {
-    mobileMenu.classList.remove('open');
-    menuButton.classList.remove('active');
+const mobileMenu =
+  document.getElementById("mobileMenu");
+
+const mobileMenuButton =
+  document.getElementById("mobileMenuButton");
+
+
+function openContact() {
+
+  contactModal.classList.add("active");
+
+  document.body.classList.add("modal-open");
+
+}
+
+
+function closeContact() {
+
+  contactModal.classList.remove("active");
+
+  document.body.classList.remove("modal-open");
+
+}
+
+
+document
+  .querySelectorAll("[data-contact-open]")
+  .forEach(button => {
+
+    button.addEventListener("click", openContact);
+
   });
+
+
+document
+  .querySelectorAll("[data-contact-close]")
+  .forEach(button => {
+
+    button.addEventListener("click", closeContact);
+
+  });
+
+
+mobileMenuButton.addEventListener("click", () => {
+
+  mobileMenu.classList.toggle("active");
+
 });
+
+
+document
+  .querySelectorAll(".mobile-menu a")
+  .forEach(link => {
+
+    link.addEventListener("click", () => {
+
+      mobileMenu.classList.remove("active");
+
+    });
+
+  });
+
+
+document.addEventListener("keydown", event => {
+
+  if (event.key === "Escape") {
+
+    closeContact();
+
+    mobileMenu.classList.remove("active");
+
+  }
+
+});
+
 </script>
 
 </body>
