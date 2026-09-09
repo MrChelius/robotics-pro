@@ -4,23 +4,21 @@
   <meta charset="UTF-8">
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0"
   >
 
-  <title>ROBOTICS PRO — современная робототехника</title>
+  <title>ROBOTICS PRO — Робототехника нового поколения</title>
 
   <meta
     name="description"
-    content="ROBOTICS PRO — поставка современных роботов Unitree и интеллектуальной робототехники."
+    content="ROBOTICS PRO — современные роботы Unitree, AI-роботы и робототехнические решения."
   >
-
-  <meta name="theme-color" content="#f5f5f7">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;750&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   >
 
@@ -29,1123 +27,979 @@
 
 <body>
 
-  <!-- =========================================
-       PAGE SHELL
-  ========================================== -->
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
 
-  <div class="page-shell">
+  <header class="header">
+    <div class="container header__inner">
 
-    <!-- =========================================
-         HEADER
-    ========================================== -->
+      <a href="./index.html" class="logo" aria-label="ROBOTICS PRO">
+        <span class="logo__mark">RP</span>
 
-    <header class="site-header" id="top">
-      <div class="container header-inner">
+        <span class="logo__text">
+          <strong>ROBOTICS</strong>
+          <span>PRO</span>
+        </span>
+      </a>
 
-        <a class="site-logo" href="./index.html" aria-label="ROBOTICS PRO">
-          <span class="site-logo-mark" aria-hidden="true">
-            <span>RP</span>
-          </span>
 
-          <span class="site-logo-copy">
-            <strong>ROBOTICS</strong>
-            <span>PRO</span>
-          </span>
+      <nav class="nav" aria-label="Основная навигация">
+        <a href="#catalog">Каталог</a>
+        <a href="#solutions">Решения</a>
+        <a href="#about">О нас</a>
+        <a href="#delivery">Поставка</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
+
+
+      <div class="header__actions">
+
+        <button
+          type="button"
+          class="header-button header-button--contact"
+          data-open-contact
+        >
+          Связаться
+        </button>
+
+        <button
+          type="button"
+          class="header-button header-button--cart"
+          data-open-cart
+        >
+          <span>Корзина</span>
+
+          <span
+            class="cart-count"
+            id="cartCount"
+          >0</span>
+        </button>
+
+        <button
+          type="button"
+          class="menu-button"
+          data-menu-toggle
+          aria-label="Открыть меню"
+          aria-expanded="false"
+        >
+          <span></span>
+          <span></span>
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+
+  <!-- =====================================================
+       MOBILE MENU
+  ====================================================== -->
+
+  <div class="mobile-menu" id="mobileMenu">
+
+    <div
+      class="mobile-menu__overlay"
+      data-menu-close
+    ></div>
+
+    <div class="mobile-menu__panel">
+
+      <div class="mobile-menu__top">
+
+        <span class="mobile-menu__label">
+          ROBOTICS PRO
+        </span>
+
+        <button
+          type="button"
+          class="mobile-menu__close"
+          data-menu-close
+          aria-label="Закрыть меню"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <nav class="mobile-nav">
+
+        <a href="#catalog" data-menu-link>
+          Каталог
         </a>
 
-        <nav class="desktop-nav" aria-label="Основная навигация">
-          <a href="#catalog">Каталог</a>
-          <a href="#technology">Технологии</a>
-          <a href="#delivery">Поставка</a>
-          <a href="#about">О компании</a>
-          <a href="#contacts">Контакты</a>
-        </nav>
+        <a href="#solutions" data-menu-link>
+          Решения
+        </a>
 
-        <div class="header-actions">
+        <a href="#about" data-menu-link>
+          О нас
+        </a>
 
-          <button
-            class="header-action header-action-secondary"
-            type="button"
-            data-open-contact
-            aria-label="Открыть контакты"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.7 8.7 0 0 1-3.3-.6L4 20l1.8-3.5A7.3 7.3 0 0 1 4.5 12c0-4.1 3.4-7.5 7.5-7.5s8 3.1 8 7Z"/>
-              <path d="M8.5 11.8h.01M12 11.8h.01M15.5 11.8h.01"/>
-            </svg>
+        <a href="#delivery" data-menu-link>
+          Поставка
+        </a>
 
-            <span>Связаться</span>
-          </button>
+        <a href="#contacts" data-menu-link>
+          Контакты
+        </a>
 
-          <button
-            class="header-action header-action-primary cart-trigger"
-            type="button"
-            data-open-cart
-            aria-label="Открыть корзину"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 5h2l1.4 9.1a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"/>
-              <circle cx="10" cy="19" r="1.2"/>
-              <circle cx="17" cy="19" r="1.2"/>
-            </svg>
+      </nav>
 
-            <span>Корзина</span>
 
-            <span
-              class="cart-badge"
-              id="cartCount"
-              aria-live="polite"
-            >0</span>
-          </button>
+      <div class="mobile-menu__bottom">
 
-          <button
-            class="mobile-menu-trigger"
-            type="button"
-            data-mobile-menu
-            aria-label="Открыть меню"
-            aria-expanded="false"
-          >
-            <span></span>
-            <span></span>
-          </button>
+        <button
+          type="button"
+          class="button button--dark button--full"
+          data-open-contact
+        >
+          Получить консультацию
+        </button>
 
-        </div>
+        <button
+          type="button"
+          class="button button--light button--full"
+          data-open-cart
+        >
+          Открыть корзину
+        </button>
 
       </div>
-    </header>
 
-
-    <!-- =========================================
-         MOBILE NAV
-    ========================================== -->
-
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
-
-      <div class="mobile-menu-backdrop" data-close-mobile-menu></div>
-
-      <div class="mobile-menu-panel">
-
-        <div class="mobile-menu-top">
-          <span>ROBOTICS PRO</span>
-
-          <button
-            type="button"
-            class="icon-button"
-            data-close-mobile-menu
-            aria-label="Закрыть меню"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m7 7 10 10M17 7 7 17"/>
-            </svg>
-          </button>
-        </div>
-
-        <nav class="mobile-nav" aria-label="Мобильная навигация">
-          <a href="#catalog">Каталог</a>
-          <a href="#technology">Технологии</a>
-          <a href="#delivery">Поставка</a>
-          <a href="#about">О компании</a>
-          <a href="#contacts">Контакты</a>
-        </nav>
-
-        <div class="mobile-menu-actions">
-
-          <button
-            type="button"
-            class="mobile-menu-button mobile-menu-button-dark"
-            data-open-contact
-          >
-            Получить консультацию
-          </button>
-
-          <button
-            type="button"
-            class="mobile-menu-button"
-            data-open-cart
-          >
-            Открыть корзину
-          </button>
-
-        </div>
-
-      </div>
     </div>
 
+  </div>
 
-    <!-- =========================================
+
+  <main>
+
+    <!-- ===================================================
          HERO
-    ========================================== -->
+    ==================================================== -->
 
-    <main>
+    <section class="hero">
 
-      <section class="hero-section">
+      <div class="container">
 
-        <div class="container">
+        <div class="hero__card">
 
-          <div class="hero-grid">
+          <div class="hero__content">
 
-            <div class="hero-copy">
+            <div class="eyebrow">
+              <span class="eyebrow__line"></span>
+              ROBOTICS PRO
+            </div>
 
-              <div class="eyebrow">
-                <span class="eyebrow-dot"></span>
-                <span>ROBOTICS PRO / 2026</span>
-              </div>
 
-              <h1 class="hero-title">
-                Роботы,
-                <span>которые меняют</span>
-                привычную реальность.
-              </h1>
+            <h1 class="hero__title">
+              Робототехника
+              <span>для реального мира.</span>
+            </h1>
 
-              <p class="hero-description">
-                Современная робототехника для бизнеса, образования,
-                исследований и частных проектов. Подбираем конфигурацию,
-                организуем поставку и сопровождаем запуск.
-              </p>
 
-              <div class="hero-actions">
+            <p class="hero__text">
+              Современные гуманоидные и четвероногие роботы
+              для бизнеса, исследований, образования и частных проектов.
+            </p>
 
-                <a
-                  href="#catalog"
-                  class="button button-dark button-large"
-                >
-                  <span>Смотреть каталог</span>
 
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M5 12h13M13 6l6 6-6 6"/>
-                  </svg>
-                </a>
+            <div class="hero__buttons">
 
-                <button
-                  class="button button-light button-large"
-                  type="button"
-                  data-open-contact
-                >
-                  <span>Получить консультацию</span>
+              <a
+                href="#catalog"
+                class="button button--dark"
+              >
+                <span>Смотреть каталог</span>
 
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 5v14M5 12h14"/>
-                  </svg>
-                </button>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6"/>
+                </svg>
+              </a>
 
-              </div>
 
-              <div class="hero-meta">
+              <button
+                type="button"
+                class="button button--light"
+                data-open-contact
+              >
+                <span>Получить консультацию</span>
 
-                <div class="hero-meta-item">
-                  <strong>01</strong>
-                  <span>Оригинальная техника</span>
-                </div>
-
-                <div class="hero-meta-item">
-                  <strong>02</strong>
-                  <span>Поставка из Китая</span>
-                </div>
-
-                <div class="hero-meta-item">
-                  <strong>03</strong>
-                  <span>Поддержка проекта</span>
-                </div>
-
-              </div>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+              </button>
 
             </div>
 
 
-            <div class="hero-visual">
+            <div class="hero__facts">
 
-              <div class="hero-visual-glow"></div>
-
-              <div class="hero-visual-grid"></div>
-
-              <div class="hero-visual-info">
-                <span>FEATURED SYSTEM</span>
+              <div class="hero-fact">
                 <strong>UNITREE</strong>
+                <span>Роботы нового поколения</span>
               </div>
 
-              <div class="hero-visual-label">
-                <span class="hero-visual-label-line"></span>
-                <span>HUMANOID / QUADRUPED</span>
+              <div class="hero-fact">
+                <strong>AI</strong>
+                <span>Физический искусственный интеллект</span>
               </div>
+
+              <div class="hero-fact">
+                <strong>WORLDWIDE</strong>
+                <span>Поставка и сопровождение</span>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="hero__visual">
+
+            <div class="hero__visual-top">
+              <span>FEATURED</span>
+              <span>UNITREE R1</span>
+            </div>
+
+
+            <div class="hero__visual-grid"></div>
+
+
+            <img
+              class="hero__image"
+              src="https://www.unitree.com/images/920433c1a6c743cf8265fb2ec2eb41a0_1920x1301.png?x-oss-process=image%2Fquality%2Cq_60%2Fformat%2Cwebp"
+              alt="Unitree R1"
+            >
+
+
+            <div class="hero__visual-bottom">
+              <span>HUMANOID ROBOT</span>
+              <span>01</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         CATEGORY BAR
+    ==================================================== -->
+
+    <section class="category-bar">
+
+      <div class="container">
+
+        <div class="category-bar__inner">
+
+          <span class="category-bar__title">
+            Категории
+          </span>
+
+          <div class="category-links">
+
+            <a href="#humanoid">
+              Humanoid
+            </a>
+
+            <a href="#quadruped">
+              Quadruped
+            </a>
+
+            <a href="#companion">
+              AI Companion
+            </a>
+
+            <a href="#all-products">
+              Все роботы
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         CATALOG
+    ==================================================== -->
+
+    <section
+      class="catalog section"
+      id="catalog"
+    >
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <div>
+
+            <span class="section-kicker">
+              CATALOG / 01
+            </span>
+
+            <h2 class="section-title">
+              Выберите
+              <span>своего робота.</span>
+            </h2>
+
+          </div>
+
+
+          <p class="section-description">
+            Подбираем конфигурацию под конкретную задачу.
+            Откройте модель, чтобы посмотреть полные характеристики,
+            возможности и варианты применения.
+          </p>
+
+        </div>
+
+
+        <div
+          class="products-grid"
+          id="all-products"
+        >
+
+
+          <!-- ============================================
+               R1
+          ============================================= -->
+
+          <article
+            class="product product--featured"
+            id="humanoid"
+          >
+
+            <div class="product__image-wrap">
+
+              <span class="product__category">
+                HUMANOID
+              </span>
+
+              <span class="product__model">
+                R1
+              </span>
 
               <img
                 src="https://www.unitree.com/images/920433c1a6c743cf8265fb2ec2eb41a0_1920x1301.png?x-oss-process=image%2Fquality%2Cq_60%2Fformat%2Cwebp"
                 alt="Unitree R1"
-                class="hero-robot-image"
-                loading="eager"
+                class="product__image"
+                loading="lazy"
               >
 
-              <div class="hero-visual-index">01</div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- =========================================
-           TRUST BAR
-      ========================================== -->
-
-      <section class="trust-section">
-
-        <div class="container">
-
-          <div class="trust-grid">
-
-            <div class="trust-card">
-              <span class="trust-number">01</span>
-
-              <div>
-                <strong>Подбор конфигурации</strong>
-                <p>Поможем выбрать подходящую версию робота под вашу задачу.</p>
-              </div>
-            </div>
-
-            <div class="trust-card">
-              <span class="trust-number">02</span>
-
-              <div>
-                <strong>Поставка</strong>
-                <p>Организуем закупку и доставку оборудования из Китая.</p>
-              </div>
-            </div>
-
-            <div class="trust-card">
-              <span class="trust-number">03</span>
-
-              <div>
-                <strong>Сопровождение</strong>
-                <p>Остаёмся на связи после поставки и помогаем с запуском.</p>
-              </div>
-            </div>
-
-            <div class="trust-card">
-              <span class="trust-number">04</span>
-
-              <div>
-                <strong>Для разных сценариев</strong>
-                <p>Бизнес, образование, R&D, автоматизация и частные проекты.</p>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- =========================================
-           CATALOG
-      ========================================== -->
-
-      <section class="catalog-section section" id="catalog">
-
-        <div class="container">
-
-          <div class="section-heading">
-
-            <div>
-              <div class="section-overline">
-                <span>CATALOG / 01</span>
-              </div>
-
-              <h2 class="section-title">
-                Робототехника
-                <span>нового поколения.</span>
-              </h2>
-            </div>
-
-            <p class="section-description">
-              Подбираем оборудование под задачу, а не просто продаём устройство.
-              На странице каждого робота доступны характеристики,
-              возможности и варианты применения.
-            </p>
-
-          </div>
-
-
-          <div class="catalog-grid">
-
-
-            <!-- R1 -->
-
-            <article class="product-card product-card-large">
-
-              <div class="product-card-media">
-
-                <div class="product-card-topline">
-                  <span>HUMANOID</span>
-                  <span>UNITREE</span>
-                </div>
-
-                <div class="product-card-badge">
-                  R1
-                </div>
-
-                <img
-                  src="https://www.unitree.com/images/920433c1a6c743cf8265fb2ec2eb41a0_1920x1301.png?x-oss-process=image%2Fquality%2Cq_60%2Fformat%2Cwebp"
-                  alt="Unitree R1"
-                  loading="lazy"
-                >
-
-                <div class="product-card-number">01</div>
-
-              </div>
-
-              <div class="product-card-content">
-
-                <div class="product-card-heading">
-                  <div>
-                    <span class="product-kicker">Humanoid robot</span>
-                    <h3>Unitree R1</h3>
-                  </div>
-                </div>
-
-                <p>
-                  Компактный гуманоидный робот с высокой подвижностью,
-                  открытыми интерфейсами и возможностями для AI-разработки.
-                </p>
-
-                <div class="product-specs">
-                  <span>20–26+ DOF</span>
-                  <span>≈ 29 кг</span>
-                  <span>AI / Vision</span>
-                </div>
-
-                <div class="product-card-actions">
-
-                  <a
-                    href="./product.html?product=r1"
-                    class="product-link"
-                  >
-                    <span>Подробнее</span>
-
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M5 12h13M13 6l6 6-6 6"/>
-                    </svg>
-                  </a>
-
-                  <button
-                    type="button"
-                    class="button button-dark button-small"
-                    data-add-cart
-                    data-product-id="r1"
-                    data-product-name="Unitree R1"
-                    data-product-price="1666666"
-                  >
-                    В корзину
-                  </button>
-
-                </div>
-
-              </div>
-
-            </article>
-
-
-            <!-- G1 -->
-
-            <article class="product-card">
-
-              <div class="product-card-media">
-
-                <div class="product-card-topline">
-                  <span>HUMANOID</span>
-                  <span>UNITREE</span>
-                </div>
-
-                <div class="product-card-badge">
-                  G1
-                </div>
-
-                <img
-                  src="https://www.unitree.com/images/a20ba1ebc0724df8a8135744dee8bbea_2740x1720.jpg"
-                  alt="Unitree G1"
-                  loading="lazy"
-                >
-
-                <div class="product-card-number">02</div>
-
-              </div>
-
-              <div class="product-card-content">
-
-                <span class="product-kicker">Humanoid robot</span>
-
-                <h3>Unitree G1</h3>
-
-                <p>
-                  Универсальная гуманоидная платформа для исследований,
-                  AI, разработки, обучения и сложных робототехнических задач.
-                </p>
-
-                <div class="product-specs">
-                  <span>23–43 DOF</span>
-                  <span>≈ 35 кг</span>
-                  <span>Depth / LiDAR</span>
-                </div>
-
-                <div class="product-card-actions">
-
-                  <a
-                    href="./product.html?product=g1"
-                    class="product-link"
-                  >
-                    <span>Подробнее</span>
-
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M5 12h13M13 6l6 6-6 6"/>
-                    </svg>
-                  </a>
-
-                  <button
-                    type="button"
-                    class="button button-dark button-small"
-                    data-add-cart
-                    data-product-id="g1"
-                    data-product-name="Unitree G1"
-                    data-product-price="1666666"
-                  >
-                    В корзину
-                  </button>
-
-                </div>
-
-              </div>
-
-            </article>
-
-
-            <!-- GO2 AIR -->
-
-            <article class="product-card">
-
-              <div class="product-card-media">
-
-                <div class="product-card-topline">
-                  <span>QUADRUPED</span>
-                  <span>UNITREE</span>
-                </div>
-
-                <div class="product-card-badge">
-                  GO2
-                </div>
-
-                <img
-                  src="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
-                  alt="Unitree Go2 Air"
-                  loading="lazy"
-                >
-
-                <div class="product-card-number">03</div>
-
-              </div>
-
-              <div class="product-card-content">
-
-                <span class="product-kicker">Quadruped robot</span>
-
-                <h3>Go2 Air</h3>
-
-                <p>
-                  Лёгкая версия четвероногого робота для исследований,
-                  разработки, обучения и мобильных робототехнических проектов.
-                </p>
-
-                <div class="product-specs">
-                  <span>≈ 15 кг</span>
-                  <span>до 2.5 м/с</span>
-                  <span>4D LiDAR</span>
-                </div>
-
-                <div class="product-card-actions">
-
-                  <a
-                    href="./product.html?product=go2-air"
-                    class="product-link"
-                  >
-                    <span>Подробнее</span>
-
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M5 12h13M13 6l6 6-6 6"/>
-                    </svg>
-                  </a>
-
-                  <button
-                    type="button"
-                    class="button button-dark button-small"
-                    data-add-cart
-                    data-product-id="go2-air"
-                    data-product-name="Unitree Go2 Air"
-                    data-product-price="240000"
-                  >
-                    В корзину
-                  </button>
-
-                </div>
-
-              </div>
-
-            </article>
-
-
-            <!-- GO2 PRO -->
-
-            <article class="product-card">
-
-              <div class="product-card-media">
-
-                <div class="product-card-topline">
-                  <span>QUADRUPED</span>
-                  <span>UNITREE</span>
-                </div>
-
-                <div class="product-card-badge">
-                  GO2 PRO
-                </div>
-
-                <img
-                  src="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
-                  alt="Unitree Go2 Pro"
-                  loading="lazy"
-                >
-
-                <div class="product-card-number">04</div>
-
-              </div>
-
-              <div class="product-card-content">
-
-                <span class="product-kicker">Quadruped robot</span>
-
-                <h3>Go2 Pro</h3>
-
-                <p>
-                  Более производительная конфигурация Go2 с расширенными
-                  возможностями вычислений, навигации и автономной работы.
-                </p>
-
-                <div class="product-specs">
-                  <span>≈ 15 кг</span>
-                  <span>до 3.5 м/с</span>
-                  <span>4D LiDAR</span>
-                </div>
-
-                <div class="product-card-actions">
-
-                  <a
-                    href="./product.html?product=go2-pro"
-                    class="product-link"
-                  >
-                    <span>Подробнее</span>
-
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M5 12h13M13 6l6 6-6 6"/>
-                    </svg>
-                  </a>
-
-                  <button
-                    type="button"
-                    class="button button-dark button-small"
-                    data-add-cart
-                    data-product-id="go2-pro"
-                    data-product-name="Unitree Go2 Pro"
-                    data-product-price="350000"
-                  >
-                    В корзину
-                  </button>
-
-                </div>
-
-              </div>
-
-            </article>
-
-
-            <!-- LOONA -->
-
-            <article class="product-card product-card-wide">
-
-              <div class="product-card-media">
-
-                <div class="product-card-topline">
-                  <span>COMPANION ROBOT</span>
-                  <span>KEYI TECH</span>
-                </div>
-
-                <div class="product-card-badge">
-                  LOONA
-                </div>
-
-                <img
-                  src="./images/loona.jpg"
-                  alt="Loona"
-                  loading="lazy"
-                >
-
-                <div class="product-card-number">05</div>
-
-              </div>
-
-              <div class="product-card-content">
-
-                <span class="product-kicker">AI companion robot</span>
-
-                <h3>Loona</h3>
-
-                <p>
-                  Интерактивный AI-компаньон с эмоциональным взаимодействием,
-                  визуальным восприятием, голосовым управлением и мобильной платформой.
-                </p>
-
-                <div class="product-specs">
-                  <span>AI interaction</span>
-                  <span>Vision</span>
-                  <span>Mobile platform</span>
-                </div>
-
-                <div class="product-card-actions">
-
-                  <a
-                    href="./product.html?product=loona"
-                    class="product-link"
-                  >
-                    <span>Подробнее</span>
-
-                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M5 12h13M13 6l6 6-6 6"/>
-                    </svg>
-                  </a>
-
-                  <button
-                    type="button"
-                    class="button button-dark button-small"
-                    data-add-cart
-                    data-product-id="loona"
-                    data-product-name="Loona"
-                    data-product-price="60000"
-                  >
-                    В корзину
-                  </button>
-
-                </div>
-
-              </div>
-
-            </article>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- =========================================
-           TECHNOLOGY
-      ========================================== -->
-
-      <section class="technology-section section" id="technology">
-
-        <div class="container">
-
-          <div class="dark-section">
-
-            <div class="dark-section-header">
-
-              <div>
-                <div class="dark-overline">TECHNOLOGY / 02</div>
-
-                <h2 class="dark-title">
-                  Не просто техника.
-                  <span>Физический AI.</span>
-                </h2>
-              </div>
-
-              <p class="dark-description">
-                Современная робототехника объединяет механику,
-                компьютерное зрение, сенсоры, вычисления и искусственный интеллект.
-              </p>
-
-            </div>
-
-
-            <div class="technology-grid">
-
-              <div class="technology-item">
-                <div class="technology-index">01</div>
-
-                <div class="technology-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 3v18M3 12h18M5 5l14 14M19 5 5 19"/>
-                  </svg>
-                </div>
-
-                <h3>Подвижность</h3>
-
-                <p>
-                  Гуманоидные и четвероногие платформы для сложных
-                  пространственных сценариев.
-                </p>
-              </div>
-
-
-              <div class="technology-item">
-                <div class="technology-index">02</div>
-
-                <div class="technology-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="4" y="4" width="16" height="16" rx="3"/>
-                    <circle cx="9" cy="10" r="1.5"/>
-                    <circle cx="15" cy="10" r="1.5"/>
-                    <path d="M8 15c1.1 1 2.3 1.5 4 1.5s2.9-.5 4-1.5"/>
-                  </svg>
-                </div>
-
-                <h3>Восприятие</h3>
-
-                <p>
-                  Камеры, глубина, LiDAR и сенсоры помогают роботу
-                  ориентироваться в реальном мире.
-                </p>
-              </div>
-
-
-              <div class="technology-item">
-                <div class="technology-index">03</div>
-
-                <div class="technology-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M7 17V7M17 17V7M4 12h16"/>
-                    <circle cx="7" cy="17" r="2"/>
-                    <circle cx="17" cy="7" r="2"/>
-                  </svg>
-                </div>
-
-                <h3>Управление</h3>
-
-                <p>
-                  Открытые интерфейсы и программная экосистема
-                  для разработки собственных решений.
-                </p>
-              </div>
-
-
-              <div class="technology-item">
-                <div class="technology-index">04</div>
-
-                <div class="technology-icon">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 3v18M3 12h18"/>
-                    <circle cx="12" cy="12" r="6"/>
-                  </svg>
-                </div>
-
-                <h3>AI</h3>
-
-                <p>
-                  Искусственный интеллект становится частью физического
-                  взаимодействия с окружающей средой.
-                </p>
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- =========================================
-           ABOUT
-      ========================================== -->
-
-      <section class="about-section section" id="about">
-
-        <div class="container">
-
-          <div class="about-layout">
-
-            <div class="about-side">
-
-              <div class="section-overline">
-                <span>ABOUT / 03</span>
-              </div>
-
-              <h2 class="about-title">
-                Робототехника,
-                которую можно
-                <span>запустить в жизнь.</span>
-              </h2>
-
-            </div>
-
-
-            <div class="about-main">
-
-              <p class="about-lead">
-                ROBOTICS PRO — проект о практическом внедрении современной
-                робототехники. Мы работаем с оборудованием из Китая
-                и подбираем решения под конкретные задачи клиента.
-              </p>
-
-              <div class="about-points">
-
-                <div class="about-point">
-
-                  <div class="about-point-number">01</div>
-
-                  <div>
-                    <h3>От выбора до поставки</h3>
-                    <p>
-                      Помогаем разобраться в различиях конфигураций,
-                      комплектаций и сценариев использования.
-                    </p>
-                  </div>
-
-                </div>
-
-
-                <div class="about-point">
-
-                  <div class="about-point-number">02</div>
-
-                  <div>
-                    <h3>Техника под задачу</h3>
-                    <p>
-                      Не предлагаем один универсальный робот.
-                      Сначала определяем задачу, затем оборудование.
-                    </p>
-                  </div>
-
-                </div>
-
-
-                <div class="about-point">
-
-                  <div class="about-point-number">03</div>
-
-                  <div>
-                    <h3>Прозрачная коммуникация</h3>
-                    <p>
-                      Обсуждаем конфигурацию, сроки и поставку
-                      до подтверждения заказа.
-                    </p>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- =========================================
-           DELIVERY
-      ========================================== -->
-
-      <section class="delivery-section section" id="delivery">
-
-        <div class="container">
-
-          <div class="section-heading section-heading-centered">
-
-            <div>
-
-              <div class="section-overline">
-                <span>PROCESS / 04</span>
-              </div>
-
-              <h2 class="section-title">
-                Поставка
-                <span>без лишней сложности.</span>
-              </h2>
-
-            </div>
-
-            <p class="section-description">
-              Вы рассказываете, что необходимо сделать.
-              Мы помогаем подобрать оборудование и организовать дальнейшие этапы.
-            </p>
-
-          </div>
-
-
-          <div class="process-grid">
-
-            <div class="process-card">
-              <div class="process-number">01</div>
-
-              <div class="process-card-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M4 6h16M4 12h10M4 18h16"/>
-                </svg>
-              </div>
-
-              <h3>Задача</h3>
-
-              <p>
-                Вы описываете сценарий использования и требования.
-              </p>
-            </div>
-
-
-            <div class="process-card">
-              <div class="process-number">02</div>
-
-              <div class="process-card-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="11" cy="11" r="6"/>
-                  <path d="m16 16 4 4"/>
-                </svg>
-              </div>
-
-              <h3>Подбор</h3>
-
-              <p>
-                Сравниваем подходящие модели и конфигурации.
-              </p>
-            </div>
-
-
-            <div class="process-card">
-              <div class="process-number">03</div>
-
-              <div class="process-card-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M4 7h16v12H4zM8 7V4h8v3"/>
-                </svg>
-              </div>
-
-              <h3>Поставка</h3>
-
-              <p>
-                Организуем закупку и логистику оборудования.
-              </p>
-            </div>
-
-
-            <div class="process-card">
-              <div class="process-number">04</div>
-
-              <div class="process-card-icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 3v18M3 12h18"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              </div>
-
-              <h3>Запуск</h3>
-
-              <p>
-                Помогаем перейти от коробки к реальному использованию.
-              </p>
-            </div>
-
-          </div>
-
-
-          <div class="delivery-cta">
-
-            <div>
-
-              <span class="delivery-cta-overline">
-                НЕ ЗНАЕТЕ, ЧТО ВЫБРАТЬ?
+              <span class="product__number">
+                01
               </span>
 
-              <h3>
-                Расскажите о задаче —
-                подберём направление.
-              </h3>
-
             </div>
 
-            <button
-              type="button"
-              class="button button-dark button-large"
-              data-open-contact
-            >
-              <span>Получить консультацию</span>
 
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h13M13 6l6 6-6 6"/>
-              </svg>
-            </button>
+            <div class="product__content">
 
-          </div>
+              <div class="product__meta">
+                Unitree Robotics
+              </div>
 
-        </div>
+              <h3 class="product__name">
+                Unitree R1
+              </h3>
 
-      </section>
+              <p class="product__description">
+                Компактный гуманоидный робот с высокой подвижностью
+                и платформой для AI, исследований и разработки.
+              </p>
 
 
-      <!-- =========================================
-           CONTACT CTA
-      ========================================== -->
+              <div class="product__specs">
 
-      <section class="contact-section" id="contacts">
-
-        <div class="container">
-
-          <div class="contact-block">
-
-            <div class="contact-block-background"></div>
-
-            <div class="contact-block-content">
-
-              <div>
-
-                <div class="contact-overline">
-                  CONTACT / 05
-                </div>
-
-                <h2>
-                  Готовы обсудить
-                  <span>робота?</span>
-                </h2>
-
-                <p>
-                  Напишите нам — расскажите, что именно вы хотите автоматизировать,
-                  исследовать или построить.
-                </p>
+                <span>20–26+ DOF</span>
+                <span>Humanoid</span>
+                <span>AI</span>
 
               </div>
 
-              <div class="contact-block-actions">
+
+              <div class="product__footer">
+
+                <a
+                  href="./product.html?product=r1"
+                  class="product__details"
+                >
+                  Подробнее
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                  </svg>
+                </a>
+
 
                 <button
                   type="button"
-                  class="button button-white button-large"
-                  data-open-contact
+                  class="product__cart"
+                  data-add-cart
+                  data-product-id="r1"
+                  data-product-name="Unitree R1"
+                  data-product-price="1666666"
                 >
-                  <span>Связаться с нами</span>
-
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M5 12h13M13 6l6 6-6 6"/>
-                  </svg>
+                  В корзину
                 </button>
 
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- ============================================
+               G1
+          ============================================= -->
+
+          <article class="product">
+
+            <div class="product__image-wrap">
+
+              <span class="product__category">
+                HUMANOID
+              </span>
+
+              <span class="product__model">
+                G1
+              </span>
+
+              <img
+                src="https://www.unitree.com/images/a20ba1ebc0724df8a8135744dee8bbea_2740x1720.jpg"
+                alt="Unitree G1"
+                class="product__image"
+                loading="lazy"
+              >
+
+              <span class="product__number">
+                02
+              </span>
+
+            </div>
+
+
+            <div class="product__content">
+
+              <div class="product__meta">
+                Unitree Robotics
+              </div>
+
+              <h3 class="product__name">
+                Unitree G1
+              </h3>
+
+              <p class="product__description">
+                Полноценная гуманоидная исследовательская платформа
+                для AI, робототехники и разработки.
+              </p>
+
+
+              <div class="product__specs">
+                <span>23–43 DOF</span>
+                <span>Humanoid</span>
+                <span>AI / Vision</span>
+              </div>
+
+
+              <div class="product__footer">
+
                 <a
-                  href="https://t.me/CheliUsNick"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="contact-direct-link"
+                  href="./product.html?product=g1"
+                  class="product__details"
                 >
-                  Telegram
+                  Подробнее
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                  </svg>
                 </a>
+
+
+                <button
+                  type="button"
+                  class="product__cart"
+                  data-add-cart
+                  data-product-id="g1"
+                  data-product-name="Unitree G1"
+                  data-product-price="1666666"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- ============================================
+               GO2 AIR
+          ============================================= -->
+
+          <article
+            class="product"
+            id="quadruped"
+          >
+
+            <div class="product__image-wrap">
+
+              <span class="product__category">
+                QUADRUPED
+              </span>
+
+              <span class="product__model">
+                GO2 AIR
+              </span>
+
+              <img
+                src="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
+                alt="Unitree Go2 Air"
+                class="product__image"
+                loading="lazy"
+              >
+
+              <span class="product__number">
+                03
+              </span>
+
+            </div>
+
+
+            <div class="product__content">
+
+              <div class="product__meta">
+                Unitree Robotics
+              </div>
+
+              <h3 class="product__name">
+                Go2 Air
+              </h3>
+
+              <p class="product__description">
+                Компактный четвероногий робот для мобильной
+                робототехники, обучения и исследовательских задач.
+              </p>
+
+
+              <div class="product__specs">
+                <span>≈15 кг</span>
+                <span>до 2.5 м/с</span>
+                <span>4D LiDAR</span>
+              </div>
+
+
+              <div class="product__footer">
+
+                <a
+                  href="./product.html?product=go2-air"
+                  class="product__details"
+                >
+                  Подробнее
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                  </svg>
+                </a>
+
+
+                <button
+                  type="button"
+                  class="product__cart"
+                  data-add-cart
+                  data-product-id="go2-air"
+                  data-product-name="Unitree Go2 Air"
+                  data-product-price="240000"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- ============================================
+               GO2 PRO
+          ============================================= -->
+
+          <article class="product">
+
+            <div class="product__image-wrap">
+
+              <span class="product__category">
+                QUADRUPED
+              </span>
+
+              <span class="product__model">
+                GO2 PRO
+              </span>
+
+              <img
+                src="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
+                alt="Unitree Go2 Pro"
+                class="product__image"
+                loading="lazy"
+              >
+
+              <span class="product__number">
+                04
+              </span>
+
+            </div>
+
+
+            <div class="product__content">
+
+              <div class="product__meta">
+                Unitree Robotics
+              </div>
+
+              <h3 class="product__name">
+                Go2 Pro
+              </h3>
+
+              <p class="product__description">
+                Расширенная версия Go2 с более высокой производительностью,
+                навигационными возможностями и дополнительными системами.
+              </p>
+
+
+              <div class="product__specs">
+                <span>≈15 кг</span>
+                <span>до 3.5 м/с</span>
+                <span>4D LiDAR</span>
+              </div>
+
+
+              <div class="product__footer">
+
+                <a
+                  href="./product.html?product=go2-pro"
+                  class="product__details"
+                >
+                  Подробнее
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                  </svg>
+                </a>
+
+
+                <button
+                  type="button"
+                  class="product__cart"
+                  data-add-cart
+                  data-product-id="go2-pro"
+                  data-product-name="Unitree Go2 Pro"
+                  data-product-price="350000"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- ============================================
+               LOONA
+          ============================================= -->
+
+          <article
+            class="product product--loona"
+            id="companion"
+          >
+
+            <div class="product__image-wrap">
+
+              <span class="product__category">
+                AI COMPANION
+              </span>
+
+              <span class="product__model">
+                LOONA
+              </span>
+
+              <img
+                src="./images/loona.jpg"
+                alt="Loona AI companion robot"
+                class="product__image"
+                loading="lazy"
+              >
+
+              <span class="product__number">
+                05
+              </span>
+
+            </div>
+
+
+            <div class="product__content">
+
+              <div class="product__meta">
+                KEYi Tech
+              </div>
+
+              <h3 class="product__name">
+                Loona
+              </h3>
+
+              <p class="product__description">
+                Интерактивный AI-компаньон с компьютерным зрением,
+                голосовым взаимодействием и мобильной платформой.
+              </p>
+
+
+              <div class="product__specs">
+                <span>AI</span>
+                <span>Vision</span>
+                <span>Companion</span>
+              </div>
+
+
+              <div class="product__footer">
+
+                <a
+                  href="./product.html?product=loona"
+                  class="product__details"
+                >
+                  Подробнее
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"/>
+                  </svg>
+                </a>
+
+
+                <button
+                  type="button"
+                  class="product__cart"
+                  data-add-cart
+                  data-product-id="loona"
+                  data-product-name="Loona"
+                  data-product-price="60000"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         SOLUTIONS
+    ==================================================== -->
+
+    <section
+      class="solutions section"
+      id="solutions"
+    >
+
+      <div class="container">
+
+        <div class="section-heading section-heading--compact">
+
+          <div>
+
+            <span class="section-kicker">
+              APPLICATIONS / 02
+            </span>
+
+            <h2 class="section-title">
+              Роботы для
+              <span>разных задач.</span>
+            </h2>
+
+          </div>
+
+          <p class="section-description">
+            Одни платформы создаются для исследований,
+            другие — для мобильных задач, AI-разработки,
+            образования или взаимодействия с человеком.
+          </p>
+
+        </div>
+
+
+        <div class="solution-grid">
+
+          <article class="solution-card">
+            <span class="solution-card__number">01</span>
+
+            <h3>Исследования</h3>
+
+            <p>
+              Робототехнические платформы для R&amp;D,
+              алгоритмов управления, компьютерного зрения
+              и embodied AI.
+            </p>
+          </article>
+
+
+          <article class="solution-card">
+            <span class="solution-card__number">02</span>
+
+            <h3>Образование</h3>
+
+            <p>
+              Практическая работа с современными роботами
+              для университетов, лабораторий и учебных проектов.
+            </p>
+          </article>
+
+
+          <article class="solution-card">
+            <span class="solution-card__number">03</span>
+
+            <h3>Бизнес</h3>
+
+            <p>
+              Демонстрационные системы, автоматизация,
+              разработка новых сервисов и технологические проекты.
+            </p>
+          </article>
+
+
+          <article class="solution-card">
+            <span class="solution-card__number">04</span>
+
+            <h3>Частные проекты</h3>
+
+            <p>
+              Роботы для энтузиастов, разработчиков,
+              создателей и тех, кто хочет работать
+              с современной робототехникой.
+            </p>
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         ABOUT
+    ==================================================== -->
+
+    <section
+      class="about section"
+      id="about"
+    >
+
+      <div class="container">
+
+        <div class="about__layout">
+
+          <div class="about__intro">
+
+            <span class="section-kicker">
+              ABOUT / 03
+            </span>
+
+            <h2 class="section-title">
+              От выбора
+              <span>до запуска.</span>
+            </h2>
+
+          </div>
+
+
+          <div class="about__content">
+
+            <p class="about__lead">
+              ROBOTICS PRO помогает подобрать современную
+              робототехнику под конкретную задачу и организовать
+              поставку из Китая.
+            </p>
+
+
+            <div class="about__steps">
+
+              <div class="about-step">
+
+                <span>01</span>
+
+                <div>
+                  <h3>Вы формулируете задачу</h3>
+
+                  <p>
+                    Рассказываете, что именно должен делать робот
+                    и где он будет использоваться.
+                  </p>
+                </div>
+
+              </div>
+
+
+              <div class="about-step">
+
+                <span>02</span>
+
+                <div>
+                  <h3>Мы подбираем решение</h3>
+
+                  <p>
+                    Сравниваем подходящие модели,
+                    версии и конфигурации.
+                  </p>
+                </div>
+
+              </div>
+
+
+              <div class="about-step">
+
+                <span>03</span>
+
+                <div>
+                  <h3>Организуем поставку</h3>
+
+                  <p>
+                    Согласовываем оборудование,
+                    сроки и логистику.
+                  </p>
+                </div>
+
+              </div>
+
+
+              <div class="about-step">
+
+                <span>04</span>
+
+                <div>
+                  <h3>Остаёмся на связи</h3>
+
+                  <p>
+                    Помогаем разобраться с дальнейшими вопросами
+                    после получения оборудования.
+                  </p>
+                </div>
 
               </div>
 
@@ -1155,49 +1009,99 @@
 
         </div>
 
-      </section>
+      </div>
 
-    </main>
+    </section>
 
 
-    <!-- =========================================
-         FOOTER
-    ========================================== -->
+    <!-- ===================================================
+         DELIVERY
+    ==================================================== -->
 
-    <footer class="site-footer">
+    <section
+      class="delivery section"
+      id="delivery"
+    >
 
       <div class="container">
 
-        <div class="footer-main">
+        <div class="delivery__card">
 
-          <a
-            href="./index.html"
-            class="site-logo footer-logo"
+          <div class="delivery__content">
+
+            <span class="section-kicker section-kicker--light">
+              DELIVERY / 04
+            </span>
+
+            <h2>
+              Не знаете,
+              <span>какой робот выбрать?</span>
+            </h2>
+
+            <p>
+              Опишите задачу, бюджет и требования к оборудованию.
+              Поможем определить подходящую платформу.
+            </p>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="button button--white"
+            data-open-contact
           >
-            <span class="site-logo-mark">
-              <span>RP</span>
+            <span>Получить консультацию</span>
+
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         CONTACTS
+    ==================================================== -->
+
+    <section
+      class="contacts section"
+      id="contacts"
+    >
+
+      <div class="container">
+
+        <div class="contacts__layout">
+
+          <div>
+
+            <span class="section-kicker">
+              CONTACT / 05
             </span>
 
-            <span class="site-logo-copy">
-              <strong>ROBOTICS</strong>
-              <span>PRO</span>
-            </span>
-          </a>
+            <h2 class="section-title">
+              Поговорим
+              <span>о вашей задаче.</span>
+            </h2>
+
+          </div>
 
 
-          <div class="footer-nav">
+          <div class="contacts__content">
 
-            <div class="footer-column">
-              <span class="footer-column-title">Навигация</span>
-              <a href="#catalog">Каталог</a>
-              <a href="#technology">Технологии</a>
-              <a href="#about">О компании</a>
-              <a href="#delivery">Поставка</a>
-            </div>
+            <p>
+              Свяжитесь с нами удобным способом.
+              Ответим на вопросы по моделям, комплектациям,
+              стоимости и поставке.
+            </p>
 
 
-            <div class="footer-column">
-              <span class="footer-column-title">Контакты</span>
+            <div class="contacts__links">
 
               <a
                 href="https://t.me/CheliUsNick"
@@ -1222,216 +1126,214 @@
               <a href="tel:+79520824539">
                 +7 952 082-45-39
               </a>
-            </div>
 
-
-            <div class="footer-column">
-              <span class="footer-column-title">ROBOTICS PRO</span>
-              <span class="footer-muted">
-                Современная робототехника
-              </span>
-              <span class="footer-muted">
-                Поставка из Китая
-              </span>
-              <span class="footer-muted">
-                Россия / СНГ / другие рынки
-              </span>
             </div>
 
           </div>
 
         </div>
 
+      </div>
 
-        <div class="footer-bottom">
+    </section>
 
-          <span>
-            © 2026 ROBOTICS PRO
+  </main>
+
+
+  <!-- =====================================================
+       FOOTER
+  ====================================================== -->
+
+  <footer class="footer">
+
+    <div class="container">
+
+      <div class="footer__top">
+
+        <a
+          href="./index.html"
+          class="logo"
+        >
+          <span class="logo__mark">RP</span>
+
+          <span class="logo__text">
+            <strong>ROBOTICS</strong>
+            <span>PRO</span>
           </span>
+        </a>
 
-          <span>
-            Robotics &amp; AI
-          </span>
+
+        <div class="footer__columns">
+
+          <div class="footer__column">
+
+            <strong>Навигация</strong>
+
+            <a href="#catalog">Каталог</a>
+            <a href="#solutions">Решения</a>
+            <a href="#about">О нас</a>
+            <a href="#delivery">Поставка</a>
+
+          </div>
+
+
+          <div class="footer__column">
+
+            <strong>Контакты</strong>
+
+            <a
+              href="https://t.me/CheliUsNick"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Telegram
+            </a>
+
+            <a
+              href="https://vk.ru/im?sel=1031496517"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              VK
+            </a>
+
+            <a href="mailto:helloitisnick@gmail.com">
+              Email
+            </a>
+
+          </div>
+
+
+          <div class="footer__column">
+
+            <strong>ROBOTICS PRO</strong>
+
+            <span>
+              Современная робототехника
+            </span>
+
+            <span>
+              Поставка из Китая
+            </span>
+
+            <span>
+              Россия / СНГ / другие рынки
+            </span>
+
+          </div>
 
         </div>
 
       </div>
 
-    </footer>
 
-  </div>
+      <div class="footer__bottom">
+
+        <span>
+          © 2026 ROBOTICS PRO
+        </span>
+
+        <span>
+          Robotics &amp; AI
+        </span>
+
+      </div>
+
+    </div>
+
+  </footer>
 
 
-  <!-- =========================================
+  <!-- =====================================================
        CONTACT DRAWER
-  ========================================== -->
+  ====================================================== -->
 
   <div
-    class="overlay-system"
+    class="drawer-system"
     id="contactSystem"
     aria-hidden="true"
   >
 
     <div
-      class="overlay-backdrop"
+      class="drawer-overlay"
       data-close-contact
     ></div>
 
+
     <aside
-      class="drawer drawer-contact"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="contactDrawerTitle"
+      class="drawer"
+      aria-label="Контакты"
     >
 
-      <div class="drawer-head">
+      <div class="drawer__header">
 
         <div>
-          <span class="drawer-overline">ROBOTICS PRO</span>
-
-          <h2 id="contactDrawerTitle">
-            Связаться
-          </h2>
+          <span>ROBOTICS PRO</span>
+          <h2>Связаться</h2>
         </div>
 
         <button
           type="button"
-          class="drawer-close"
+          class="drawer__close"
           data-close-contact
-          aria-label="Закрыть контакты"
+          aria-label="Закрыть"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m7 7 10 10M17 7 7 17"/>
-          </svg>
+          ×
         </button>
 
       </div>
 
 
-      <div class="drawer-body">
+      <div class="drawer__body">
 
-        <p class="drawer-intro">
-          Расскажите, какой робот или решение вас интересует.
-          Можно написать напрямую в любой удобный канал.
+        <p class="drawer__intro">
+          Расскажите о задаче или модели,
+          которая вас заинтересовала.
         </p>
 
 
         <a
-          class="contact-card"
           href="https://t.me/CheliUsNick"
           target="_blank"
           rel="noopener noreferrer"
+          class="contact-item"
         >
-
-          <span class="contact-card-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m21 4-3.2 15.1c-.2 1.1-.9 1.4-1.8.9l-4.9-3.6-2.4 2.3c-.3.3-.6.6-1.2.6l.4-5 9.1-8.2c.4-.4-.1-.6-.6-.2L5.2 13.1.3 11.6c-1-.3-1-.9.2-1.3L19.6 4c.8-.3 1.6-.1 1.4 0Z"/>
-            </svg>
-          </span>
-
-          <span class="contact-card-copy">
-            <strong>Telegram</strong>
-            <span>@CheliUsNick</span>
-          </span>
-
-          <svg
-            class="contact-card-arrow"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M5 12h13M13 6l6 6-6 6"/>
-          </svg>
-
+          <span>Telegram</span>
+          <strong>@CheliUsNick</strong>
+          <b>→</b>
         </a>
 
 
         <a
-          class="contact-card"
           href="https://vk.ru/im?sel=1031496517"
           target="_blank"
           rel="noopener noreferrer"
+          class="contact-item"
         >
-
-          <span class="contact-card-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M5 7.2c.1 3.6 1.7 7.2 6.7 9.2h1.1v-3.1c1.9.2 3.1 1.2 3.8 3.1H20c-.3-1.7-1.5-3.1-3-4 1.2-1 2.3-2.5 2.6-4.2h-3.1c-.5 1.8-1.7 3.2-3.7 3.6V7.2H9.7v6.4C7.7 13.1 6.4 11.5 6.2 7.2H5Z"/>
-            </svg>
-          </span>
-
-          <span class="contact-card-copy">
-            <strong>VK</strong>
-            <span>Написать сообщение</span>
-          </span>
-
-          <svg
-            class="contact-card-arrow"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M5 12h13M13 6l6 6-6 6"/>
-          </svg>
-
+          <span>VK</span>
+          <strong>Написать сообщение</strong>
+          <b>→</b>
         </a>
 
 
         <a
-          class="contact-card"
           href="mailto:helloitisnick@gmail.com"
+          class="contact-item"
         >
-
-          <span class="contact-card-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="3" y="5" width="18" height="14" rx="2"/>
-              <path d="m4 7 8 6 8-6"/>
-            </svg>
-          </span>
-
-          <span class="contact-card-copy">
-            <strong>Email</strong>
-            <span>helloitisnick@gmail.com</span>
-          </span>
-
-          <svg
-            class="contact-card-arrow"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M5 12h13M13 6l6 6-6 6"/>
-          </svg>
-
+          <span>Email</span>
+          <strong>helloitisnick@gmail.com</strong>
+          <b>→</b>
         </a>
 
 
         <a
-          class="contact-card"
           href="tel:+79520824539"
+          class="contact-item"
         >
-
-          <span class="contact-card-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7.5 4h2l1.2 4-2 1.5a13 13 0 0 0 5.8 5.8l1.5-2 4 1.2v2c0 1-1 1.5-2 1.5C10.8 18 6 13.2 6 6c0-1 .5-2 1.5-2Z"/>
-            </svg>
-          </span>
-
-          <span class="contact-card-copy">
-            <strong>Телефон</strong>
-            <span>+7 952 082-45-39</span>
-          </span>
-
-          <svg
-            class="contact-card-arrow"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path d="M5 12h13M13 6l6 6-6 6"/>
-          </svg>
-
+          <span>Телефон</span>
+          <strong>+7 952 082-45-39</strong>
+          <b>→</b>
         </a>
-
-
-        <div class="drawer-note">
-          Обычно быстрее всего отвечаем в Telegram.
-        </div>
 
       </div>
 
@@ -1440,79 +1342,67 @@
   </div>
 
 
-  <!-- =========================================
+  <!-- =====================================================
        CART DRAWER
-  ========================================== -->
+  ====================================================== -->
 
   <div
-    class="overlay-system"
+    class="drawer-system"
     id="cartSystem"
     aria-hidden="true"
   >
 
     <div
-      class="overlay-backdrop"
+      class="drawer-overlay"
       data-close-cart
     ></div>
 
+
     <aside
-      class="drawer drawer-cart"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="cartDrawerTitle"
+      class="drawer drawer--cart"
+      aria-label="Корзина"
     >
 
-      <div class="drawer-head">
+      <div class="drawer__header">
 
         <div>
-
-          <span class="drawer-overline">ROBOTICS PRO</span>
-
-          <h2 id="cartDrawerTitle">
-            Корзина
-          </h2>
-
+          <span>ROBOTICS PRO</span>
+          <h2>Корзина</h2>
         </div>
 
         <button
           type="button"
-          class="drawer-close"
+          class="drawer__close"
           data-close-cart
-          aria-label="Закрыть корзину"
+          aria-label="Закрыть"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m7 7 10 10M17 7 7 17"/>
-          </svg>
+          ×
         </button>
 
       </div>
 
 
-      <div class="cart-content">
+      <div class="cart" id="cart">
 
         <div
           class="cart-empty"
           id="cartEmpty"
         >
 
-          <div class="cart-empty-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 5h2l1.4 9.1a2 2 0 0 0 2 1.7h7.7a2 2 0 0 0 2-1.6L20 8H7"/>
-              <circle cx="10" cy="19" r="1.2"/>
-              <circle cx="17" cy="19" r="1.2"/>
-            </svg>
+          <div class="cart-empty__icon">
+            🛒
           </div>
 
           <h3>Корзина пуста</h3>
 
           <p>
-            Добавьте понравившийся робот,
+            Добавьте робота из каталога,
             чтобы продолжить.
           </p>
 
           <button
             type="button"
-            class="button button-dark"
+            class="button button--dark"
             data-close-cart
           >
             Смотреть каталог
@@ -1533,31 +1423,22 @@
           hidden
         >
 
-          <div class="cart-total-row">
-
+          <div class="cart-total">
             <span>Итого</span>
-
-            <strong id="cartTotal">
-              0 ₽
-            </strong>
-
+            <strong id="cartTotal">0 ₽</strong>
           </div>
 
-          <p class="cart-footer-note">
+          <p>
             Финальная стоимость и комплектация
             подтверждаются менеджером.
           </p>
 
           <button
             type="button"
-            class="button button-dark button-full"
+            class="button button--dark button--full"
             data-open-contact
           >
             Оформить через менеджера
-
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M5 12h13M13 6l6 6-6 6"/>
-            </svg>
           </button>
 
         </div>
@@ -1569,25 +1450,16 @@
   </div>
 
 
-  <!-- =========================================
+  <!-- =====================================================
        TOAST
-  ========================================== -->
+  ====================================================== -->
 
   <div
     class="toast"
-    id="siteToast"
-    role="status"
+    id="toast"
     aria-live="polite"
-    aria-hidden="true"
-  >
-    <span class="toast-dot"></span>
-    <span id="toastMessage">Добавлено в корзину</span>
-  </div>
+  ></div>
 
-
-  <!-- =========================================
-       JAVASCRIPT
-  ========================================== -->
 
   <script src="./script.js" defer></script>
 
