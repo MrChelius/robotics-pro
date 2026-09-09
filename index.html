@@ -8,7 +8,7 @@
 
   <meta
     name="description"
-    content="ROBOTICS PRO — современные роботы Unitree и интеллектуальная робототехника из Китая."
+    content="ROBOTICS PRO — поставка современной робототехники из Китая. Unitree R1, G1, Go2 Air, Go2 Pro и Loona."
   >
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,39 +19,1268 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./style.css">
 </head>
 
-<body>
+<body id="top">
 
-<header class="site-header">
-  <div class="container header-inner">
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="container header-inner">
 
-    <a href="#top" class="brand">
-      <span class="brand-icon">RP</span>
-      <span class="brand-name">ROBOTICS<span>PRO</span></span>
-    </a>
+      <a href="./index.html" class="logo">
+        <span class="logo-mark">RP</span>
+        <span class="logo-text">ROBOTICS PRO</span>
+      </a>
 
-    <nav class="main-nav">
-      <a href="#catalog">Каталог</a>
-      <a href="#about">О нас</a>
-      <a href="#delivery">Поставка</a>
-      <a href="#contacts">Контакты</a>
-    </nav>
+      <nav class="main-nav">
+        <a href="#catalog">Каталог</a>
+        <a href="#about">О нас</a>
+        <a href="#delivery">Поставка</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
 
-    <div class="header-actions">
-      <button class="contact-trigger" id="contactTrigger">
-        Связаться
-      </button>
+      <div class="header-actions">
 
-      <button class="cart-button" id="cartButton">
-        Корзина
-        <span id="cartCount">0</span>
-      </button>
+        <button
+          type="button"
+          class="header-btn contact-trigger"
+          id="contactTrigger"
+        >
+          Связаться
+        </button>
+
+        <button
+          type="button"
+          class="header-btn cart-button"
+          id="cartButton"
+          aria-label="Открыть корзину"
+        >
+          Корзина
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+
+        <button
+          type="button"
+          class="mobile-menu-btn"
+          id="mobileMenuButton"
+          aria-label="Открыть меню"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+
+  <!-- MOBILE NAV -->
+  <div class="mobile-nav" id="mobileNav">
+    <a href="#catalog">Каталог</a>
+    <a href="#about">О нас</a>
+    <a href="#delivery">Поставка</a>
+    <a href="#contacts">Контакты</a>
+  </div>
+
+
+  <!-- HERO -->
+  <main>
+
+    <section class="hero">
+      <div class="container hero-grid">
+
+        <div class="hero-content">
+
+          <div class="hero-kicker">
+            ROBOTICS PRO
+          </div>
+
+          <h1 class="hero-title">
+            Робототехника
+            <span>нового поколения.</span>
+          </h1>
+
+          <p class="hero-description">
+            Современные роботы из Китая для бизнеса, образования,
+            исследований, разработки и частных проектов.
+          </p>
+
+          <div class="hero-actions">
+
+            <a href="#catalog" class="btn btn-dark">
+              Смотреть каталог
+            </a>
+
+            <button
+              type="button"
+              class="btn btn-outline"
+              id="heroContactButton"
+            >
+              Получить консультацию
+            </button>
+
+          </div>
+
+          <p class="hero-note">
+            Поставка из Китая · Россия · Worldwide
+          </p>
+
+        </div>
+
+
+        <div class="hero-visual">
+
+          <img
+            src="https://www.unitree.com/images/a20ba1ebc0724df8a8135744dee8bbea_2740x1720.jpg"
+            alt="Unitree G1"
+          >
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- CATALOG -->
+    <section class="section catalog" id="catalog">
+
+      <div class="container">
+
+        <div class="section-head">
+
+          <div>
+            <span class="section-label">01 / Каталог</span>
+
+            <h2 class="section-title">
+              Роботы, которые
+              впечатляют.
+            </h2>
+          </div>
+
+          <p class="section-text">
+            Подбираем модель и комплектацию под вашу задачу
+            и организуем поставку из Китая.
+          </p>
+
+        </div>
+
+
+        <div class="products-grid">
+
+
+          <!-- R1 -->
+          <article class="product-card">
+
+            <div class="product-image">
+              <img
+                src="https://www.unitree.com/images/920433c1a6c743cf8265fb2ec2eb41a0_1920x1301.png?x-oss-process=image%2Fquality%2Cq_60%2Fformat%2Cwebp"
+                alt="Unitree R1"
+                loading="lazy"
+              >
+            </div>
+
+            <div class="product-info">
+
+              <span class="product-category">
+                HUMANOID
+              </span>
+
+              <h3 class="product-name">
+                Unitree R1
+              </h3>
+
+              <p class="product-description">
+                Гуманоидный робот нового поколения
+                для исследований, разработки, обучения
+                и демонстрационных проектов.
+              </p>
+
+              <div class="product-bottom">
+
+                <a
+                  href="./r1.html"
+                  class="product-link"
+                >
+                  Подробнее
+                </a>
+
+                <button
+                  type="button"
+                  class="add-cart"
+                  data-product="Unitree R1"
+                  data-price="1666666"
+                  data-image="https://www.unitree.com/images/920433c1a6c743cf8265fb2ec2eb41a0_1920x1301.png?x-oss-process=image%2Fquality%2Cq_60%2Fformat%2Cwebp"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- G1 -->
+          <article class="product-card">
+
+            <div class="product-image">
+              <img
+                src="https://www.unitree.com/images/a20ba1ebc0724df8a8135744dee8bbea_2740x1720.jpg"
+                alt="Unitree G1"
+                loading="lazy"
+              >
+            </div>
+
+            <div class="product-info">
+
+              <span class="product-category">
+                HUMANOID
+              </span>
+
+              <h3 class="product-name">
+                Unitree G1
+              </h3>
+
+              <p class="product-description">
+                Компактный гуманоидный робот
+                для исследований, программирования,
+                образования и разработки AI-систем.
+              </p>
+
+              <div class="product-bottom">
+
+                <a
+                  href="./g1.html"
+                  class="product-link"
+                >
+                  Подробнее
+                </a>
+
+                <button
+                  type="button"
+                  class="add-cart"
+                  data-product="Unitree G1"
+                  data-price="1666666"
+                  data-image="https://www.unitree.com/images/a20ba1ebc0724df8a8135744dee8bbea_2740x1720.jpg"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- GO2 AIR -->
+          <article class="product-card">
+
+            <div class="product-image">
+              <img
+                src="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
+                alt="Unitree Go2 Air"
+                loading="lazy"
+              >
+            </div>
+
+            <div class="product-info">
+
+              <span class="product-category">
+                QUADRUPED
+              </span>
+
+              <h3 class="product-name">
+                Go2 Air
+              </h3>
+
+              <p class="product-description">
+                Универсальная робот-собака для обучения,
+                исследований, автономной навигации
+                и разработки роботизированных систем.
+              </p>
+
+              <div class="product-bottom">
+
+                <a
+                  href="./go2-air.html"
+                  class="product-link"
+                >
+                  Подробнее
+                </a>
+
+                <button
+                  type="button"
+                  class="add-cart"
+                  data-product="Unitree Go2 Air"
+                  data-price="240000"
+                  data-image="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- GO2 PRO -->
+          <article class="product-card">
+
+            <div class="product-image">
+              <img
+                src="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
+                alt="Unitree Go2 Pro"
+                loading="lazy"
+              >
+            </div>
+
+            <div class="product-info">
+
+              <span class="product-category">
+                QUADRUPED
+              </span>
+
+              <h3 class="product-name">
+                Go2 Pro
+              </h3>
+
+              <p class="product-description">
+                Более производительная версия Go2
+                с расширенными возможностями,
+                повышенной скоростью и функциональностью.
+              </p>
+
+              <div class="product-bottom">
+
+                <a
+                  href="./go2-pro.html"
+                  class="product-link"
+                >
+                  Подробнее
+                </a>
+
+                <button
+                  type="button"
+                  class="add-cart"
+                  data-product="Unitree Go2 Pro"
+                  data-price="350000"
+                  data-image="https://www.unitree.com/images/b5fffd3e4fc04e6f9fcafedb9516b341_3840x2146.jpg"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- LOONA -->
+          <article class="product-card">
+
+            <div class="product-image">
+
+              <img
+                src="./images/loona.jpg"
+                alt="Loona Robot"
+                loading="lazy"
+              >
+
+            </div>
+
+            <div class="product-info">
+
+              <span class="product-category">
+                COMPANION
+              </span>
+
+              <h3 class="product-name">
+                Loona
+              </h3>
+
+              <p class="product-description">
+                Интерактивный робот-компаньон
+                с голосовым взаимодействием,
+                AI-функциями и выразительным поведением.
+              </p>
+
+              <div class="product-bottom">
+
+                <a
+                  href="./loona.html"
+                  class="product-link"
+                >
+                  Подробнее
+                </a>
+
+                <button
+                  type="button"
+                  class="add-cart"
+                  data-product="Loona"
+                  data-price="60000"
+                  data-image="./images/loona.jpg"
+                >
+                  В корзину
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- FEATURES -->
+    <section class="feature-strip">
+
+      <div class="container">
+
+        <div class="feature-grid">
+
+          <div class="feature-item">
+            <div class="feature-number">01</div>
+            <div class="feature-title">
+              Поставка из Китая
+            </div>
+            <div class="feature-text">
+              Работаем с китайским рынком робототехники.
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-number">02</div>
+            <div class="feature-title">
+              Подбор модели
+            </div>
+            <div class="feature-text">
+              Помогаем подобрать конфигурацию под задачу.
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-number">03</div>
+            <div class="feature-title">
+              Консультация
+            </div>
+            <div class="feature-text">
+              Объясняем возможности и комплектацию.
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-number">04</div>
+            <div class="feature-title">
+              Worldwide
+            </div>
+            <div class="feature-text">
+              Работаем с клиентами из России и других стран.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ABOUT -->
+    <section class="section about" id="about">
+
+      <div class="container about-grid">
+
+        <div>
+
+          <span class="section-label">
+            02 / О нас
+          </span>
+
+          <h2 class="about-title">
+            Робототехника
+            без лишней сложности.
+          </h2>
+
+        </div>
+
+
+        <div>
+
+          <div class="about-copy">
+
+            <p>
+              ROBOTICS PRO специализируется на поставке
+              современной робототехники из Китая.
+            </p>
+
+            <p>
+              Мы помогаем выбрать подходящую модель,
+              разобраться в комплектации и организовать
+              поставку.
+            </p>
+
+          </div>
+
+
+          <div class="about-list">
+
+            <div class="about-item">
+              <strong>Unitree</strong>
+              <span>Гуманоидные и четвероногие роботы</span>
+            </div>
+
+            <div class="about-item">
+              <strong>AI Robotics</strong>
+              <span>Интеллектуальные роботизированные системы</span>
+            </div>
+
+            <div class="about-item">
+              <strong>Для бизнеса</strong>
+              <span>Демонстрации, разработки и исследования</span>
+            </div>
+
+            <div class="about-item">
+              <strong>Для частных клиентов</strong>
+              <span>Современная робототехника для дома и проектов</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- DELIVERY -->
+    <section class="section delivery" id="delivery">
+
+      <div class="container">
+
+        <div class="section-head">
+
+          <div>
+            <span class="section-label">
+              03 / Поставка
+            </span>
+
+            <h2 class="section-title">
+              От задачи
+              до робота.
+            </h2>
+          </div>
+
+          <p class="section-text">
+            Простая схема работы без лишних этапов.
+          </p>
+
+        </div>
+
+
+        <div class="delivery-grid">
+
+          <article class="delivery-card">
+
+            <div class="delivery-icon">
+              01
+            </div>
+
+            <h3>
+              Расскажите о задаче
+            </h3>
+
+            <p>
+              Напишите нам, какая робототехника
+              вам нужна.
+            </p>
+
+          </article>
+
+
+          <article class="delivery-card">
+
+            <div class="delivery-icon">
+              02
+            </div>
+
+            <h3>
+              Подбираем решение
+            </h3>
+
+            <p>
+              Предлагаем модель, конфигурацию
+              и варианты поставки.
+            </p>
+
+          </article>
+
+
+          <article class="delivery-card">
+
+            <div class="delivery-icon">
+              03
+            </div>
+
+            <h3>
+              Организуем поставку
+            </h3>
+
+            <p>
+              Согласовываем детали и организуем
+              отправку оборудования.
+            </p>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- CONTACTS -->
+    <section class="section contact-section" id="contacts">
+
+      <div class="container contact-grid">
+
+        <div>
+
+          <span class="section-label">
+            04 / Контакты
+          </span>
+
+          <h2 class="contact-title">
+            Нужен робот?
+            Давайте обсудим.
+          </h2>
+
+          <p class="section-text" style="margin-top: 25px;">
+            Расскажите о задаче — поможем подобрать
+            подходящую модель и комплектацию.
+          </p>
+
+        </div>
+
+
+        <div class="contact-links">
+
+          <a
+            href="https://t.me/CheliUsNick"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="contact-link"
+          >
+            <span>Telegram</span>
+            <span>→</span>
+          </a>
+
+          <a
+            href="https://vk.ru/im?sel=1031496517"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="contact-link"
+          >
+            <span>VK</span>
+            <span>→</span>
+          </a>
+
+          <a
+            href="mailto:helloitisnick@gmail.com"
+            class="contact-link"
+          >
+            <span>Email</span>
+            <span>→</span>
+          </a>
+
+          <a
+            href="tel:+79520824539"
+            class="contact-link"
+          >
+            <span>Телефон</span>
+            <span>→</span>
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+
+    <div class="container footer-inner">
+
+      <div class="footer-brand">
+        RP ROBOTICS PRO
+      </div>
+
+      <div class="footer-copy">
+        © 2026 ROBOTICS PRO · Robotics from China
+      </div>
+
     </div>
 
-  </div>
-</header>
+  </footer>
 
 
-<aside class
+  <!-- OVERLAY -->
+  <div
+    class="panel-overlay"
+    id="panelOverlay"
+  ></div>
+
+
+  <!-- CONTACT PANEL -->
+  <aside
+    class="side-panel contact-panel"
+    id="contactPanel"
+    aria-hidden="true"
+  >
+
+    <div class="panel-header">
+
+      <h2 class="panel-title">
+        Связаться
+      </h2>
+
+      <button
+        type="button"
+        class="panel-close"
+        data-close-panel
+        aria-label="Закрыть"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <p class="contact-panel-text">
+      Выберите удобный способ связи.
+      Ответим на вопросы по моделям,
+      комплектациям и поставке.
+    </p>
+
+
+    <div class="contact-panel-links">
+
+      <a
+        href="https://t.me/CheliUsNick"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="contact-panel-link"
+      >
+        <span>Telegram</span>
+        <span>Открыть →</span>
+      </a>
+
+      <a
+        href="https://vk.ru/im?sel=1031496517"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="contact-panel-link"
+      >
+        <span>VK</span>
+        <span>Сообщение →</span>
+      </a>
+
+      <a
+        href="mailto:helloitisnick@gmail.com"
+        class="contact-panel-link"
+      >
+        <span>Email</span>
+        <span>Написать →</span>
+      </a>
+
+      <a
+        href="tel:+79520824539"
+        class="contact-panel-link"
+      >
+        <span>Телефон</span>
+        <span>Позвонить →</span>
+      </a>
+
+    </div>
+
+  </aside>
+
+
+  <!-- CART PANEL -->
+  <aside
+    class="side-panel cart-panel"
+    id="cartPanel"
+    aria-hidden="true"
+  >
+
+    <div class="panel-header">
+
+      <h2 class="panel-title">
+        Корзина
+      </h2>
+
+      <button
+        type="button"
+        class="panel-close"
+        data-close-panel
+        aria-label="Закрыть"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <div id="cartContent"></div>
+
+  </aside>
+
+
+  <!-- JAVASCRIPT -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+      const contactPanel = document.getElementById("contactPanel");
+      const cartPanel = document.getElementById("cartPanel");
+      const overlay = document.getElementById("panelOverlay");
+
+      const contactTrigger = document.getElementById("contactTrigger");
+      const heroContactButton = document.getElementById("heroContactButton");
+      const cartButton = document.getElementById("cartButton");
+
+      const cartCount = document.getElementById("cartCount");
+      const cartContent = document.getElementById("cartContent");
+
+      const mobileMenuButton = document.getElementById("mobileMenuButton");
+      const mobileNav = document.getElementById("mobileNav");
+
+
+      /* =========================
+         CART STORAGE
+      ========================= */
+
+      let cart = [];
+
+      try {
+        cart = JSON.parse(
+          localStorage.getItem("roboticsProCart") || "[]"
+        );
+      } catch (error) {
+        cart = [];
+      }
+
+
+      /* =========================
+         FORMAT PRICE
+      ========================= */
+
+      function formatPrice(price) {
+        return new Intl.NumberFormat("ru-RU").format(price) + " ₽";
+      }
+
+
+      /* =========================
+         SAVE CART
+      ========================= */
+
+      function saveCart() {
+        localStorage.setItem(
+          "roboticsProCart",
+          JSON.stringify(cart)
+        );
+      }
+
+
+      /* =========================
+         CART COUNT
+      ========================= */
+
+      function updateCartCount() {
+
+        const count = cart.reduce(
+          (total, item) => total + item.quantity,
+          0
+        );
+
+        cartCount.textContent = count;
+
+      }
+
+
+      /* =========================
+         RENDER CART
+      ========================= */
+
+      function renderCart() {
+
+        if (!cart.length) {
+
+          cartContent.innerHTML = `
+            <div class="cart-empty">
+              <p>Корзина пока пуста.</p>
+              <p style="margin-top:8px;">
+                Добавьте робота из каталога.
+              </p>
+            </div>
+          `;
+
+          return;
+        }
+
+
+        let total = 0;
+
+        const itemsHTML = cart.map((item, index) => {
+
+          const itemTotal =
+            Number(item.price) * item.quantity;
+
+          total += itemTotal;
+
+          return `
+            <div class="cart-item">
+
+              <div class="cart-item-image">
+                <img
+                  src="${item.image}"
+                  alt="${item.name}"
+                >
+              </div>
+
+              <div>
+
+                <div class="cart-item-name">
+                  ${item.name}
+                </div>
+
+                <div class="cart-item-meta">
+                  ${formatPrice(item.price)}
+                </div>
+
+                <div class="cart-item-actions">
+
+                  <div class="quantity-control">
+
+                    <button
+                      type="button"
+                      data-action="decrease"
+                      data-index="${index}"
+                    >
+                      −
+                    </button>
+
+                    <span>
+                      ${item.quantity}
+                    </span>
+
+                    <button
+                      type="button"
+                      data-action="increase"
+                      data-index="${index}"
+                    >
+                      +
+                    </button>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    class="remove-item"
+                    data-action="remove"
+                    data-index="${index}"
+                  >
+                    Удалить
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+        }).join("");
+
+
+        cartContent.innerHTML = `
+
+          <div class="cart-items">
+            ${itemsHTML}
+          </div>
+
+          <div class="cart-footer">
+
+            <div class="cart-total">
+
+              <span>
+                Итого
+              </span>
+
+              <strong>
+                ${formatPrice(total)}
+              </strong>
+
+            </div>
+
+            <a
+              href="https://t.me/CheliUsNick"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-dark checkout-button"
+            >
+              Оформить заказ
+            </a>
+
+          </div>
+
+        `;
+
+      }
+
+
+      /* =========================
+         ADD TO CART
+      ========================= */
+
+      document.querySelectorAll(".add-cart").forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          const name = button.dataset.product;
+          const price = Number(button.dataset.price);
+          const image = button.dataset.image;
+
+          const existing = cart.find(
+            item => item.name === name
+          );
+
+
+          if (existing) {
+
+            existing.quantity += 1;
+
+          } else {
+
+            cart.push({
+              name,
+              price,
+              image,
+              quantity: 1
+            });
+
+          }
+
+
+          saveCart();
+          updateCartCount();
+          renderCart();
+
+
+          const originalText =
+            button.textContent;
+
+          button.textContent = "Добавлено ✓";
+
+          setTimeout(() => {
+            button.textContent = originalText;
+          }, 1200);
+
+        });
+
+      });
+
+
+      /* =========================
+         CART ACTIONS
+      ========================= */
+
+      cartContent.addEventListener("click", event => {
+
+        const button =
+          event.target.closest("[data-action]");
+
+        if (!button) return;
+
+        const index =
+          Number(button.dataset.index);
+
+        const action =
+          button.dataset.action;
+
+
+        if (action === "increase") {
+
+          cart[index].quantity += 1;
+
+        }
+
+
+        if (action === "decrease") {
+
+          cart[index].quantity -= 1;
+
+          if (cart[index].quantity <= 0) {
+            cart.splice(index, 1);
+          }
+
+        }
+
+
+        if (action === "remove") {
+
+          cart.splice(index, 1);
+
+        }
+
+
+        saveCart();
+        updateCartCount();
+        renderCart();
+
+      });
+
+
+      /* =========================
+         PANELS
+      ========================= */
+
+      function closePanels() {
+
+        contactPanel.classList.remove("active");
+        cartPanel.classList.remove("active");
+        overlay.classList.remove("active");
+
+        document.body.classList.remove("no-scroll");
+
+      }
+
+
+      function openContact() {
+
+        cartPanel.classList.remove("active");
+
+        contactPanel.classList.add("active");
+        overlay.classList.add("active");
+
+        document.body.classList.add("no-scroll");
+
+      }
+
+
+      function openCart() {
+
+        contactPanel.classList.remove("active");
+
+        renderCart();
+
+        cartPanel.classList.add("active");
+        overlay.classList.add("active");
+
+        document.body.classList.add("no-scroll");
+
+      }
+
+
+      contactTrigger.addEventListener(
+        "click",
+        openContact
+      );
+
+
+      heroContactButton.addEventListener(
+        "click",
+        openContact
+      );
+
+
+      cartButton.addEventListener(
+        "click",
+        openCart
+      );
+
+
+      overlay.addEventListener(
+        "click",
+        closePanels
+      );
+
+
+      document.querySelectorAll(
+        "[data-close-panel]"
+      ).forEach(button => {
+
+        button.addEventListener(
+          "click",
+          closePanels
+        );
+
+      });
+
+
+      document.addEventListener(
+        "keydown",
+        event => {
+
+          if (event.key === "Escape") {
+            closePanels();
+          }
+
+        }
+      );
+
+
+      /* =========================
+         MOBILE MENU
+      ========================= */
+
+      mobileMenuButton.addEventListener(
+        "click",
+        () => {
+
+          mobileNav.classList.toggle("active");
+
+        }
+      );
+
+
+      mobileNav
+        .querySelectorAll("a")
+        .forEach(link => {
+
+          link.addEventListener(
+            "click",
+            () => {
+              mobileNav.classList.remove("active");
+            }
+          );
+
+        });
+
+
+      /* =========================
+         INIT
+      ========================= */
+
+      updateCartCount();
+      renderCart();
+
+    });
+  </script>
+
+</body>
+</html>
