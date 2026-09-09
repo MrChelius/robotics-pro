@@ -981,6 +981,29 @@ svg {
   letter-spacing: -.045em;
 }
 
+.catalog-card-stock {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 13px;
+
+  padding: 4px 9px;
+
+  border-radius: 5px;
+
+  background: #eef7ee;
+
+  color: #2e7d32;
+
+  font-size: 9px;
+  font-weight: 600;
+
+  letter-spacing: .01em;
+}
+
 .catalog-card-body a {
   display: inline-flex;
 
@@ -1351,6 +1374,10 @@ svg {
   align-items: center;
   justify-content: space-between;
 
+  gap: 10px;
+
+  flex-wrap: wrap;
+
   padding:
     18px
     0;
@@ -1360,6 +1387,19 @@ svg {
   color: #999;
 
   font-size: 8px;
+}
+
+.footer-bottom .visitor-counter {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+}
+
+.footer-bottom .visitor-counter img {
+  height: 24px;
+
+  width: auto;
 }
 
 
@@ -2308,7 +2348,7 @@ input:focus-visible {
     margin-left: auto;
   }
 
-  .header-tool {
+  .header-tool[data-open-contact] {
     display: none;
   }
 
@@ -2709,7 +2749,7 @@ input:focus-visible {
     font-size: 10px;
   }
 
-  .hero-store-copy {
+  .store-hero-copy {
     padding-left: 16px;
     padding-right: 16px;
   }

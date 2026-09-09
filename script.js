@@ -1109,29 +1109,6 @@
         );
     }
 
-
-    $$(
-      "[data-product-add]"
-    ).forEach(
-      (button) => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            addToCart({
-              id: product.id,
-              name: product.name,
-              price: product.price,
-              image: product.image
-            });
-
-          }
-        );
-
-      }
-    );
-
   }
 
 

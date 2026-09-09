@@ -213,6 +213,27 @@
       letter-spacing: -.045em;
     }
 
+    .product-page-stock {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      margin-top: 14px;
+
+      padding: 5px 11px;
+
+      border-radius: 6px;
+
+      background: #eef7ee;
+
+      color: #2e7d32;
+
+      font-size: 11px;
+      font-weight: 600;
+    }
+
     .product-page-actions {
       display: flex;
       flex-wrap: wrap;
@@ -1146,13 +1167,20 @@
           </div>
 
 
+          <div
+            class="product-page-stock"
+            id="productStock"
+          >
+            В наличии: 10 шт
+          </div>
+
+
           <div class="product-page-actions">
 
             <button
               type="button"
               class="product-page-action product-page-action--dark"
               id="productCartButton"
-              data-product-add
             >
               В корзину
             </button>
@@ -1870,6 +1898,7 @@
           type="search"
           id="searchInput"
           placeholder="Поиск робота..."
+          autocomplete="off"
         >
 
       </label>
