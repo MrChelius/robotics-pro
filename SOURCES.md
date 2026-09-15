@@ -10,6 +10,7 @@ Checked 2026-09-12. Product text is an original summary; specifications depend o
 ## Added gallery images
 
 - `images/g1-0.webp`: https://www.unitree.com/images/a20ba1ebc0724df8a8135744dee8bbea_2740x1720.jpg
+- `images/g1-0.png`: https://www.unitree.com/images/55ed583336fb44a1bfe1f0c9fb705501_576x476.png (official transparent product cutout)
 - `images/g1-1.webp`: https://www.unitree.com/images/8992fd91eed0495696ca876f86699523_2740x1720.jpg
 - `images/g1-2.webp`: https://www.unitree.com/images/5e100d4349924287869c7f1ff6c0316b_2740x1720.jpg
 - `images/g1-3.webp`: https://www.unitree.com/images/ee3fc23204054aa491c7950bfa399c1a_2740x1720.jpg

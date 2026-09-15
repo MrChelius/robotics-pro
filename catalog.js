@@ -32,7 +32,7 @@ window.RP = (() => {
       group: "humanoid",
       price: 1666666,
       source: "https://www.unitree.com/g1/",
-      images: ["g1-0.webp", "g1-1.webp", "g1-2.webp", "g1-3.webp"],
+      images: ["g1-0.png", "g1-1.webp", "g1-2.webp", "g1-3.webp"],
       tagline: L(
         "Большие возможности. Компактный гуманоид.",
         "Big potential. Compact humanoid.",
