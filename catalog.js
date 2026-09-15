@@ -195,7 +195,7 @@ window.RP = (() => {
         ["slope", "30°"],
         ["runtime", L("1–2 часа", "1–2 hours", "1–2 小时")],
         ["battery", "8000 mAh"],
-        ["vision", "4D LiDAR + HD camera"],
+        ["vision", L("4D LiDAR + HD-камера", "4D LiDAR + HD camera", "4D LiDAR + 高清摄像头")],
         ["dev", edu],
       ],
       features: [
@@ -256,7 +256,7 @@ window.RP = (() => {
         ["slope", "40°"],
         ["runtime", L("1–2 часа", "1–2 hours", "1–2 小时")],
         ["battery", "8000 mAh"],
-        ["vision", "4D LiDAR + HD camera"],
+        ["vision", L("4D LiDAR + HD-камера", "4D LiDAR + HD camera", "4D LiDAR + 高清摄像头")],
         ["dev", edu],
       ],
       features: [

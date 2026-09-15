@@ -37,3 +37,14 @@ Neutral white/gray visual system and platform-native fonts. Native scroll-snap g
 Run `node tests/catalog.test.cjs` for catalog, translation and asset checks.
 
 Validation for this update: all five model pages checked in RU/EN/ZH at 390 px with no page overflow or external navigation links; desktop mouse drag and native horizontal gallery scroll; zoom arrows; cart quantity focus and local order summary; search reset; no browser console errors in those checks.
+
+## Languages and category pages
+
+- Supported languages: RU, EN, ZH, IT, FR, DE, JA, KO. UI and product translations are local; no translation API is used by visitors.
+- `locales/*.js` hold the five additional complete dictionaries. `localization.js` applies product translations to the single catalog before rendering. `categories.js` defines the category registry and its eight-language copy.
+- Category URLs: `technologies/`, `technologies/robots/`, `technologies/drones/`, `technologies/components/`.
+- Product links use `technologies/robots/product.html?product=<id>&lang=<code>`. Original `product.html` links remain supported.
+- Drones/UAVs and components are intentionally empty upcoming categories. Add only confirmed products, descriptions, images and prices to `catalog.js`; do not use invented stock or placeholder items.
+- Nested HTML entry points share assets using a relative `<base>`; update their script versions when changing the shared application.
+- Verification: `node tests/catalog.test.cjs` and `node tests/localization.test.cjs`, followed by browser checks for languages, mobile, filtering, comparison, galleries, cart persistence and nested links.
+- No video file or embedded video URL was present in the source repository or its earlier commits when this update was prepared. The existing hero image is retained pending the owner's video source.

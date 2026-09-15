@@ -33,7 +33,7 @@
   const initial =
     new URLSearchParams(location.search).get("lang") ||
     get("robotics_pro_language", "ru");
-  let lang = ["ru", "en", "zh"].includes(initial) ? initial : "ru";
+  let lang = Object.hasOwn(window.RP.languages, initial) ? initial : "ru";
   const t = (v) => (typeof v === "object" ? v[lang] || v.ru : v);
   let words = ui[lang],
     filter = "all",
@@ -59,7 +59,7 @@
         }))
     : [];
   const money = (v) =>
-    new Intl.NumberFormat({ ru: "ru-RU", en: "en-US", zh: "zh-CN" }[lang], {
+    new Intl.NumberFormat({ ru: "ru-RU", en: "en-US", zh: "zh-CN", it: "it-IT", fr: "fr-FR", de: "de-DE", ja: "ja-JP", ko: "ko-KR" }[lang], {
       style: "currency",
       currency: "RUB",
       maximumFractionDigits: 0,
@@ -67,7 +67,12 @@
   const productId = new URLSearchParams(location.search).get("product");
   const isProduct = location.pathname.endsWith("product.html");
   const product = products.find((p) => p.id === productId);
-  const href = (p) => `./product.html?product=${p.id}&lang=${lang}`;
+  const href = (p) => `./technologies/robots/product.html?product=${p.id}&lang=${lang}`;
+  const categoryId = Object.keys(window.RP.categories).find(key => location.pathname.includes('/technologies/' + key + '/'));
+  const isTechnology = /\/technologies\/(?:index.html)?$/.test(location.pathname);
+  const categoryHref = key => `./${window.RP.categories[key].path}?lang=${lang}`;
+  const technologyHref = () => `./technologies/?lang=${lang}`;
+  const sectionHref = hash => { const url = new URL(location.href); url.searchParams.set("lang", lang); return `${url.pathname}${url.search}${hash}`; };
   const home = (hash) => `./index.html?lang=${lang}${hash || ""}`;
   const img = (p, i = 0, extra = "") =>
     `<img src="./images/${p.images[i]}" alt="${esc(p.name)} — ${words.photo} ${i + 1}" width="1600" height="1000" ${extra}>`;
@@ -103,11 +108,11 @@
   }
 
   function header() {
-    return html`<a class="skip" href="#main">${words.skip}</a>
+    return html`<a class="skip" href="${sectionHref("#main")}">${words.skip}</a>
       <header class="site-header">
         <a class="brand" href="${home()}"><span>CCCTrade</span></a>
         <nav class="desktop-nav" aria-label="${words.menu}">
-          <a href="${home("#all-products")}">${words.catalog}</a
+          <a href="${technologyHref()}">${words.catalog}</a
           ><a href="${home("#compare")}">${words.compare}</a
           ><a href="${home("#about")}">${words.about}</a>
         </nav>
@@ -115,11 +120,7 @@
           <label class="language"
             ><span aria-hidden="true">◎</span
             ><select id="language" aria-label="${words.language}">
-              <option value="ru" ${lang === "ru" ? "selected" : ""}>RU</option>
-              <option value="en" ${lang === "en" ? "selected" : ""}>EN</option>
-              <option value="zh" ${lang === "zh" ? "selected" : ""}>
-                中文
-              </option>
+              ${Object.entries(window.RP.languages).map(([code,label]) => `<option value="${code}" ${lang === code ? 'selected' : ''}>${label}</option>`).join('')}
             </select></label
           ><button class="cart-button" data-cart aria-label="${words.cart}">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -170,14 +171,23 @@
       </div>
     </article>`;
   }
+  function breadcrumbs() {
+    return `<nav class="category-breadcrumbs" aria-label="${words.categories}"><a href="${home()}">${words.home}</a><span>/</span><a href="${technologyHref()}">${words.technology}</a>${categoryId || isProduct ? `<span>/</span><a href="${categoryHref(categoryId || 'robots')}">${words[categoryId || 'robots']}</a>` : ''}</nav>`;
+  }
+  function categoryCards() {
+    return `<div class="category-grid">${Object.entries(window.RP.categories).map(([key,category]) => `<a class="category-card" href="${categoryHref(key)}"><span class="eyebrow">${words.technology}</span><h3>${words[key]} <span aria-hidden="true">↗</span></h3><p>${words[key+'Text']}</p><span class="category-status">${category.available ? words.goCatalog : words.comingSoon}</span></a>`).join('')}</div>`;
+  }
+  function categoryPage() {
+    return `${breadcrumbs()}<section class="section category-page"><div class="section-heading"><div><span class="eyebrow">${words.technology}</span><h1>${isTechnology ? words.categoryTitle : words[categoryId]}</h1></div><p>${isTechnology ? words.categoryText : words[categoryId+'Text']}</p></div>${isTechnology ? categoryCards() : `<div class="empty category-empty"><span class="eyebrow">${words.comingSoon}</span><p>${words.categoryEmpty}</p><button class="button" data-contact>${words.contact} ↗</button></div><a class="text-button" href="${technologyHref()}">← ${words.categories}</a>`}</section>`;
+  }
   function homePage() {
-    return html`<section class="hero" id="professional">
+    return html`${categoryId ? breadcrumbs() : ""}<section class="hero" id="professional">
         <div class="hero-copy">
           <span class="eyebrow"><i></i>${words.heroLabel}</span>
           <h1>${words.heroTitle}</h1>
           <p>${words.heroText}</p>
           <div class="actions">
-            <a class="button" href="#all-products"
+            <a class="button" href="${sectionHref("#all-products")}"
               >${words.explore}<span>↗</span></a
             ><button class="text-button" data-contact>
               ${words.consult}<span>→</span>
@@ -205,6 +215,7 @@
         <span>UNITREE ROBOTICS</span><span>HUMANOID</span><span>QUADRUPED</span
         ><span>KEYi TECH</span><span>AI COMPANION</span>
       </div>
+      <section class="section category-navigation" aria-label="${words.categories}"><div class="section-heading"><div><span class="eyebrow">${words.technology}</span><h2>${words.categories}</h2></div></div>${categoryCards()}</section>
       <section class="section catalog" id="all-products">
         <div class="section-heading">
           <div>
@@ -326,7 +337,7 @@
     const p = product;
     return html`<section class="product-top section">
         <nav class="breadcrumb">
-          <a href="${home("#all-products")}">${words.catalog}</a><span>/</span
+          <a href="${technologyHref()}">${words.catalog}</a><span>/</span
           ><span>${p.name}</span>
         </nav>
         <div class="product-layout">
@@ -431,9 +442,9 @@
         </div>
       </section>
       <nav class="product-tabs">
-        <a href="#overview">${words.overview}</a
-        ><a href="#specifications">${words.specifications}</a
-        ><a href="#applications">${words.applications}</a>
+        <a href="${sectionHref("#overview")}">${words.overview}</a
+        ><a href="${sectionHref("#specifications")}">${words.specifications}</a
+        ><a href="${sectionHref("#applications")}">${words.applications}</a>
       </nav>
       <section class="section product-overview" id="overview">
         <div>
@@ -515,6 +526,7 @@
       ${cta()}`;
   }
   function renderCatalog() {
+    if (!$("#catalogGrid")) return;
     const matches = products.filter(
       (p) =>
         (filter === "all" || p.group === filter) &&
@@ -528,6 +540,7 @@
   }
   function renderCompare() {
     const el = $("#comparison");
+    if (!el) return;
     if (!el) return;
     const ps = selected.map((id) => products.find((p) => p.id === id));
     el.innerHTML = ps.length
@@ -556,7 +569,7 @@
           .join(
             "",
           )}<tr><th scope="row">${words.price}</th>${ps.map((p) => html`<td>${money(p.price)}</td>`).join("")}</tr></tbody></table></div><button class="text-button" data-clear-compare>${words.clearCompare} ×</button>`
-      : `<div class="compare-empty"><span>＋</span><p>${words.chooseCompare}</p><a class="text-button" href="#all-products">${words.goCatalog} ↑</a></div>`;
+      : `<div class="compare-empty"><span>＋</span><p>${words.chooseCompare}</p><a class="text-button" href="${sectionHref("#all-products")}">${words.goCatalog} ↑</a></div>`;
   }
   function orderText() {
     return (
@@ -677,14 +690,14 @@
     document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
     document.title = isProduct
       ? `${product?.name || words.notFound} — CCCTrade`
-      : `CCCTrade — ${words.catalog}`;
+      : `CCCTrade — ${categoryId ? words[categoryId] : isTechnology ? words.technology : words.catalog}`;
     document.querySelector('meta[name="description"]').content = product
       ? t(product.description)
-      : words.heroText;
+      : categoryId ? words[categoryId + "Text"] : isTechnology ? words.categoryText : words.heroText;
     $("#app").innerHTML =
       header() +
-      `<main id="main">${isProduct ? productPage() : homePage()}</main><footer><a class="brand" href="${home()}"><span>CCCTrade</span></a><p>${words.footer}</p><div><button class="footer-contact" data-contact>${words.contact}</button><span class="footer-office">${words.office}: Yiwu, China</span><span>© ${new Date().getFullYear()} CCCTrade</span></div></footer>${dialogs()}`;
-    if (!isProduct) {
+      `<main id="main">${isProduct ? breadcrumbs() + productPage() : isTechnology || (categoryId && categoryId !== "robots") ? categoryPage() : homePage()}</main><footer><a class="brand" href="${home()}"><span>CCCTrade</span></a><p>${words.footer}</p><div><button class="footer-contact" data-contact>${words.contact}</button><span class="footer-office">${words.office}: Yiwu, China</span><span>© ${new Date().getFullYear()} CCCTrade</span></div></footer>${dialogs()}`;
+    if ($("#catalogGrid")) {
       renderCatalog();
       renderCompare();
     }
