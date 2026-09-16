@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tech & IT News — CCCTrade</title>
-  <meta name="description" content="Daily technology, AI, robotics and IT news in English from CCCTrade." />
+  <meta name="description" content="Daily technology, AI, robotics and IT news from CCCTrade." />
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./style.css?v=20260915c" />
   <style>
@@ -37,94 +37,166 @@
       </label>
     </div>
   </header>
+
   <main class="news-page">
     <section class="news-hero">
       <div>
         <span class="eyebrow">CCCTrade / DAILY BRIEF</span>
         <h1 data-i18n="news">Tech &amp; IT News</h1>
-        <p data-i18n="newsText">A concise English-language feed covering artificial intelligence, robotics, chips, software and major technology developments.</p>
+        <p data-i18n="newsText">A concise feed covering artificial intelligence, robotics, chips, software and major technology developments.</p>
       </div>
       <div class="news-meta">
-        <strong data-i18n="latest">Latest edition</strong><br />September 16, 2026
+        <strong data-i18n="latest">Latest edition</strong><br />
+        <span id="latestDate">September 16, 2026</span>
       </div>
     </section>
 
-    <section class="news-grid" aria-label="Latest technology news">
-      <article class="news-card">
-        <div><span class="tag">AI Safety</span><br /><time datetime="2026-09-16">Sep 16, 2026</time></div>
-        <h2>Meta’s Zuckerberg argues AI labs already have strong incentives to build safely</h2>
-        <p>Mark Zuckerberg said competition, liability and company-level responsibility give AI labs reasons to manage safety without a coordinated industry slowdown, highlighting a growing split among technology leaders over how frontier AI should be governed.</p>
-        <a href="https://www.reuters.com/business/metas-zuckerberg-says-ai-labs-have-enough-incentive-build-safely-2026-09-16/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
-      </article>
-      <article class="news-card">
-        <div><span class="tag">AI Policy</span><br /><time datetime="2026-09-16">Sep 16, 2026</time></div>
-        <h2>EU plans talks with frontier AI labs as debate over development speed intensifies</h2>
-        <p>European Commission President Ursula von der Leyen said major AI labs would be invited to discuss risk management as European policymakers consider how to balance rapid AI development with verification, safety and regulation.</p>
-        <a href="https://www.reuters.com/world/eus-von-der-leyen-invite-frontier-labs-talks-tackling-ai-risks-2026-09-16/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
-      </article>
-      <article class="news-card">
-        <div><span class="tag">AI Infrastructure</span><br /><time datetime="2026-09-16">Sep 16, 2026</time></div>
-        <h2>Anthropic signs its first Australian data-centre agreement</h2>
-        <p>Anthropic has agreed to lease capacity at a large Australian data-centre campus expected to begin operations in 2027, expanding the company’s infrastructure footprint for AI inference workloads.</p>
-        <a href="https://www.reuters.com/world/asia-pacific/anthropic-signs-first-australia-data-centre-agreement-2026-09-16/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
-      </article>
-      <article class="news-card">
-        <div><span class="tag">Semiconductors</span><br /><time datetime="2026-09-15">Sep 15, 2026</time></div>
-        <h2>MediaTek launches new flagship mobile chip built on TSMC’s 2nm process</h2>
-        <p>MediaTek introduced the Dimensity 9600 Pro, positioning the processor for premium smartphones and placing greater emphasis on on-device generative AI performance.</p>
-        <a href="https://www.reuters.com/business/media-telecom/mediatek-launches-new-mobile-chip-using-tsmcs-most-advanced-technology-2026-09-15/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
-      </article>
-      <article class="news-card">
-        <div><span class="tag">AI Industry</span><br /><time datetime="2026-09-15">Sep 15, 2026</time></div>
-        <h2>OpenAI, Anthropic and Google are reported to be coordinating on AI safety</h2>
-        <p>OpenAI is reportedly discussing AI safety issues with Anthropic and Google DeepMind, reflecting unusual cooperation among major rivals as concerns around advanced model risks increase.</p>
-        <a href="https://www.reuters.com/technology/openai-is-working-with-anthropic-google-ai-safety-bloomberg-news-reports-2026-09-15/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
-      </article>
-      <article class="news-card">
-        <div><span class="tag">Robotics</span><br /><time datetime="2026-09-10">Sep 10, 2026</time></div>
-        <h2>AI software is changing how industrial robots learn new tasks</h2>
-        <p>TechCrunch highlighted work on natural-language systems that can teach industrial robots new skills, illustrating how AI is moving deeper into factories and physical automation.</p>
-        <a href="https://techcrunch.com/video/the-robotics-revolution-wont-be-humanoid/" target="_blank" rel="noopener">Read source at TechCrunch ↗</a>
-      </article>
-    </section>
+    <section class="news-grid" id="newsGrid" aria-label="Latest technology news"></section>
 
-    <p class="source-note" data-i18n="sourceNote">News summaries are written in English and link to the original publisher. New editions are intended to be added daily while older stories remain available below newer entries.</p>
+    <p class="source-note" data-i18n="sourceNote">News summaries are available in the selected language and link to the original publisher. New editions are added daily while older stories remain available below newer entries.</p>
     <a class="back" href="./index.html" data-i18n="back">← Back to CCCTrade</a>
   </main>
+
   <script>
     (() => {
       const supported = ["ru","en","zh","it","fr","de","ja","ko"];
-      const copy = {
-        ru:{technology:"Технологии",compare:"Сравнение",about:"О нас",partners:"Партнёры",news:"Новости технологий и IT",newsText:"Краткая англоязычная лента об искусственном интеллекте, робототехнике, чипах, программном обеспечении и главных технологических событиях.",latest:"Последний выпуск",sourceNote:"Сводки новостей публикуются на английском языке и ведут на оригинальный источник. Новые выпуски добавляются ежедневно, старые материалы сохраняются ниже.",back:"← Назад в CCCTrade"},
-        en:{technology:"Technology",compare:"Compare",about:"About",partners:"Partners",news:"Tech & IT News",newsText:"A concise English-language feed covering artificial intelligence, robotics, chips, software and major technology developments.",latest:"Latest edition",sourceNote:"News summaries are written in English and link to the original publisher. New editions are intended to be added daily while older stories remain available below newer entries.",back:"← Back to CCCTrade"},
-        zh:{technology:"技术",compare:"对比",about:"关于我们",partners:"合作伙伴",news:"科技与 IT 新闻",newsText:"简洁的英文科技资讯，涵盖人工智能、机器人、芯片、软件和重要科技动态。",latest:"最新一期",sourceNote:"新闻摘要以英文发布并链接至原始媒体。新内容计划每日添加，较早报道将保留在下方。",back:"← 返回 CCCTrade"},
-        it:{technology:"Tecnologia",compare:"Confronta",about:"Chi siamo",partners:"Partner",news:"Notizie Tech & IT",newsText:"Una selezione sintetica in inglese su AI, robotica, chip, software e principali sviluppi tecnologici.",latest:"Ultima edizione",sourceNote:"I riassunti sono in inglese e rimandano alla fonte originale. Le nuove edizioni vengono aggiunte ogni giorno mantenendo le precedenti.",back:"← Torna a CCCTrade"},
-        fr:{technology:"Technologies",compare:"Comparer",about:"À propos",partners:"Partenaires",news:"Actualités Tech & IT",newsText:"Un fil concis en anglais sur l’intelligence artificielle, la robotique, les puces, les logiciels et les grands développements technologiques.",latest:"Dernière édition",sourceNote:"Les résumés sont rédigés en anglais et renvoient vers la source originale. De nouvelles éditions sont ajoutées chaque jour tout en conservant les précédentes.",back:"← Retour à CCCTrade"},
-        de:{technology:"Technologie",compare:"Vergleichen",about:"Über uns",partners:"Partner",news:"Tech- & IT-News",newsText:"Ein kompakter englischsprachiger Feed zu KI, Robotik, Chips, Software und wichtigen Technologieentwicklungen.",latest:"Neueste Ausgabe",sourceNote:"Die Zusammenfassungen sind auf Englisch und verlinken auf die Originalquelle. Neue Ausgaben werden täglich ergänzt, ältere Meldungen bleiben erhalten.",back:"← Zurück zu CCCTrade"},
-        ja:{technology:"テクノロジー",compare:"比較",about:"会社情報",partners:"パートナー",news:"テック＆ITニュース",newsText:"AI、ロボティクス、半導体、ソフトウェア、主要な技術動向を扱う簡潔な英語ニュースフィードです。",latest:"最新号",sourceNote:"ニュース要約は英語で掲載し、元の出版社にリンクします。新しい版を毎日追加し、過去の記事も残します。",back:"← CCCTradeに戻る"},
-        ko:{technology:"기술",compare:"비교",about:"회사 소개",partners:"파트너",news:"테크 & IT 뉴스",newsText:"AI, 로보틱스, 반도체, 소프트웨어 및 주요 기술 동향을 다루는 간결한 영어 뉴스 피드입니다.",latest:"최신판",sourceNote:"뉴스 요약은 영어로 제공되며 원문 출처로 연결됩니다. 새 소식은 매일 추가되고 이전 기사도 보존됩니다.",back:"← CCCTrade로 돌아가기"}
+      const ui = {
+        ru:{technology:"Технологии",compare:"Сравнение",about:"О нас",partners:"Партнёры",news:"Новости технологий и IT",newsText:"Краткая лента об искусственном интеллекте, робототехнике, чипах, программном обеспечении и главных технологических событиях.",latest:"Последний выпуск",sourceNote:"Сводки новостей доступны на выбранном языке и ведут на оригинальный источник. Новые выпуски добавляются ежедневно, старые материалы сохраняются ниже.",back:"← Назад в CCCTrade",read:"Читать источник"},
+        en:{technology:"Technology",compare:"Compare",about:"About",partners:"Partners",news:"Tech & IT News",newsText:"A concise feed covering artificial intelligence, robotics, chips, software and major technology developments.",latest:"Latest edition",sourceNote:"News summaries are available in the selected language and link to the original publisher. New editions are added daily while older stories remain available below newer entries.",back:"← Back to CCCTrade",read:"Read source"},
+        zh:{technology:"技术",compare:"对比",about:"关于我们",partners:"合作伙伴",news:"科技与 IT 新闻",newsText:"简洁的科技资讯，涵盖人工智能、机器人、芯片、软件和重要科技动态。",latest:"最新一期",sourceNote:"新闻摘要可按所选语言查看，并链接到原始媒体。新内容每日添加，较早报道将继续保留。",back:"← 返回 CCCTrade",read:"阅读原文"},
+        it:{technology:"Tecnologia",compare:"Confronta",about:"Chi siamo",partners:"Partner",news:"Notizie Tech & IT",newsText:"Una selezione sintetica su AI, robotica, chip, software e principali sviluppi tecnologici.",latest:"Ultima edizione",sourceNote:"I riassunti sono disponibili nella lingua selezionata e rimandano alla fonte originale. Le nuove edizioni vengono aggiunte ogni giorno mantenendo le precedenti.",back:"← Torna a CCCTrade",read:"Leggi la fonte"},
+        fr:{technology:"Technologies",compare:"Comparer",about:"À propos",partners:"Partenaires",news:"Actualités Tech & IT",newsText:"Un fil concis sur l’intelligence artificielle, la robotique, les puces, les logiciels et les grands développements technologiques.",latest:"Dernière édition",sourceNote:"Les résumés sont disponibles dans la langue sélectionnée et renvoient vers la source originale. De nouvelles éditions sont ajoutées chaque jour tout en conservant les précédentes.",back:"← Retour à CCCTrade",read:"Lire la source"},
+        de:{technology:"Technologie",compare:"Vergleichen",about:"Über uns",partners:"Partner",news:"Tech- & IT-News",newsText:"Ein kompakter Feed zu KI, Robotik, Chips, Software und wichtigen Technologieentwicklungen.",latest:"Neueste Ausgabe",sourceNote:"Die Zusammenfassungen sind in der gewählten Sprache verfügbar und verlinken auf die Originalquelle. Neue Ausgaben werden täglich ergänzt, ältere Meldungen bleiben erhalten.",back:"← Zurück zu CCCTrade",read:"Quelle lesen"},
+        ja:{technology:"テクノロジー",compare:"比較",about:"会社情報",partners:"パートナー",news:"テック＆ITニュース",newsText:"AI、ロボティクス、半導体、ソフトウェア、主要な技術動向を扱う簡潔なニュースフィードです。",latest:"最新号",sourceNote:"ニュース要約は選択した言語で表示され、元の出版社にリンクします。新しい版を毎日追加し、過去の記事も残します。",back:"← CCCTradeに戻る",read:"元記事を読む"},
+        ko:{technology:"기술",compare:"비교",about:"회사 소개",partners:"파트너",news:"테크 & IT 뉴스",newsText:"AI, 로보틱스, 반도체, 소프트웨어 및 주요 기술 동향을 다루는 간결한 뉴스 피드입니다.",latest:"최신판",sourceNote:"뉴스 요약은 선택한 언어로 제공되며 원문 출처로 연결됩니다. 새 소식은 매일 추가되고 이전 기사도 보존됩니다.",back:"← CCCTrade로 돌아가기",read:"원문 보기"}
       };
+
+      const articles = [
+        {
+          date:"2026-09-16",displayDate:"Sep 16, 2026",sourceName:"Reuters",url:"https://www.reuters.com/business/metas-zuckerberg-says-ai-labs-have-enough-incentive-build-safely-2026-09-16/",
+          text:{
+            en:{tag:"AI Safety",title:"Meta’s Zuckerberg argues AI labs already have strong incentives to build safely",summary:"Mark Zuckerberg said competition, liability and company-level responsibility give AI labs reasons to manage safety without a coordinated industry slowdown, highlighting a growing split among technology leaders over how frontier AI should be governed."},
+            ru:{tag:"Безопасность ИИ",title:"Цукерберг: у AI-лабораторий уже есть сильные стимулы развивать ИИ безопасно",summary:"Марк Цукерберг заявил, что конкуренция, юридическая ответственность и ответственность самих компаний уже дают AI-лабораториям причины серьёзно относиться к безопасности без общего замедления отрасли. Его позиция подчёркивает растущие разногласия среди технологических лидеров о регулировании передовых моделей ИИ."},
+            zh:{tag:"AI 安全",title:"扎克伯格称 AI 实验室已经有足够动力安全开发人工智能",summary:"马克·扎克伯格表示，竞争、法律责任以及企业自身责任已经促使 AI 实验室重视安全，不必通过整个行业统一放慢研发速度。这也凸显了科技领袖之间对前沿 AI 应如何治理的分歧。"},
+            it:{tag:"Sicurezza AI",title:"Zuckerberg: i laboratori AI hanno già forti incentivi a sviluppare in sicurezza",summary:"Mark Zuckerberg ha affermato che concorrenza, responsabilità legale e responsabilità aziendale spingono già i laboratori AI a gestire la sicurezza senza un rallentamento coordinato del settore, evidenziando divisioni crescenti su come governare l’AI avanzata."},
+            fr:{tag:"Sécurité de l’IA",title:"Zuckerberg estime que les laboratoires d’IA ont déjà de fortes incitations à développer en sécurité",summary:"Mark Zuckerberg a déclaré que la concurrence, la responsabilité juridique et la responsabilité des entreprises donnent déjà aux laboratoires d’IA des raisons de gérer les risques sans ralentissement coordonné du secteur, révélant des divergences croissantes sur la gouvernance de l’IA avancée."},
+            de:{tag:"KI-Sicherheit",title:"Zuckerberg: KI-Labore haben bereits starke Anreize für sichere Entwicklung",summary:"Mark Zuckerberg sagte, Wettbewerb, Haftung und unternehmerische Verantwortung gäben KI-Laboren bereits Gründe, Sicherheitsrisiken ernst zu nehmen, ohne die gesamte Branche koordiniert zu verlangsamen. Das zeigt wachsende Meinungsunterschiede über die Regulierung fortgeschrittener KI."},
+            ja:{tag:"AI安全性",title:"ザッカーバーグ氏、AI研究所にはすでに安全開発への強い動機があると主張",summary:"マーク・ザッカーバーグ氏は、競争、法的責任、企業責任により、業界全体で開発速度を落とさなくてもAI研究所には安全性を管理する十分な動機があると述べました。高度なAIの統治を巡る技術業界内の見解の違いが浮き彫りになっています。"},
+            ko:{tag:"AI 안전",title:"저커버그, AI 연구소는 이미 안전한 개발에 강한 동기를 갖고 있다고 주장",summary:"마크 저커버그는 경쟁, 법적 책임, 기업 차원의 책임이 AI 연구소로 하여금 업계 전체의 공동 감속 없이도 안전을 관리하게 만드는 충분한 동기가 된다고 말했습니다. 이는 첨단 AI 거버넌스를 둘러싼 기술 리더들의 시각 차이를 보여줍니다."}
+          }
+        },
+        {
+          date:"2026-09-16",displayDate:"Sep 16, 2026",sourceName:"Reuters",url:"https://www.reuters.com/world/eus-von-der-leyen-invite-frontier-labs-talks-tackling-ai-risks-2026-09-16/",
+          text:{
+            en:{tag:"AI Policy",title:"EU plans talks with frontier AI labs as debate over development speed intensifies",summary:"European Commission President Ursula von der Leyen said major AI labs would be invited to discuss risk management as European policymakers consider how to balance rapid AI development with verification, safety and regulation."},
+            ru:{tag:"Политика ИИ",title:"ЕС планирует переговоры с ведущими AI-лабораториями на фоне споров о скорости развития ИИ",summary:"Председатель Еврокомиссии Урсула фон дер Ляйен заявила, что крупные AI-лаборатории пригласят обсудить управление рисками. Европейские политики ищут баланс между быстрым развитием ИИ, проверкой систем, безопасностью и регулированием."},
+            zh:{tag:"AI 政策",title:"欧盟计划与前沿 AI 实验室会谈，讨论发展速度与风险管理",summary:"欧盟委员会主席乌尔苏拉·冯德莱恩表示，将邀请主要 AI 实验室讨论风险管理。欧洲政策制定者正在研究如何在快速发展 AI 与验证、安全和监管之间取得平衡。"},
+            it:{tag:"Politica AI",title:"L’UE prepara colloqui con i principali laboratori AI sul ritmo di sviluppo",summary:"La presidente della Commissione europea Ursula von der Leyen ha dichiarato che i principali laboratori AI saranno invitati a discutere la gestione dei rischi mentre i decisori europei cercano un equilibrio tra sviluppo rapido, verifica, sicurezza e regolamentazione."},
+            fr:{tag:"Politique IA",title:"L’UE prévoit des discussions avec les principaux laboratoires d’IA sur le rythme du développement",summary:"Ursula von der Leyen a annoncé que les grands laboratoires d’IA seraient invités à discuter de la gestion des risques, alors que les responsables européens cherchent à concilier développement rapide, vérification, sécurité et réglementation."},
+            de:{tag:"KI-Politik",title:"EU plant Gespräche mit führenden KI-Laboren über Entwicklungstempo und Risiken",summary:"EU-Kommissionspräsidentin Ursula von der Leyen sagte, große KI-Labore sollten zu Gesprächen über Risikomanagement eingeladen werden. Europäische Entscheidungsträger suchen nach einem Gleichgewicht zwischen schneller Entwicklung, Überprüfung, Sicherheit und Regulierung."},
+            ja:{tag:"AI政策",title:"EU、AI開発速度を巡る議論の中で主要AI研究所との協議を計画",summary:"欧州委員会のウルズラ・フォン・デア・ライエン委員長は、主要AI研究所を招き、リスク管理について協議すると述べました。欧州では、急速なAI開発と検証、安全性、規制のバランスが検討されています。"},
+            ko:{tag:"AI 정책",title:"EU, AI 개발 속도 논쟁 속 첨단 AI 연구소들과 협의 추진",summary:"우르줄라 폰데어라이엔 유럽연합 집행위원장은 주요 AI 연구소들을 초청해 위험 관리 방안을 논의할 것이라고 밝혔습니다. 유럽 정책당국은 빠른 AI 발전과 검증, 안전, 규제 사이의 균형을 모색하고 있습니다."}
+          }
+        },
+        {
+          date:"2026-09-16",displayDate:"Sep 16, 2026",sourceName:"Reuters",url:"https://www.reuters.com/world/asia-pacific/anthropic-signs-first-australia-data-centre-agreement-2026-09-16/",
+          text:{
+            en:{tag:"AI Infrastructure",title:"Anthropic signs its first Australian data-centre agreement",summary:"Anthropic has agreed to lease capacity at a large Australian data-centre campus expected to begin operations in 2027, expanding the company’s infrastructure footprint for AI inference workloads."},
+            ru:{tag:"AI-инфраструктура",title:"Anthropic подписала первое соглашение о дата-центре в Австралии",summary:"Anthropic договорилась арендовать мощности в крупном австралийском дата-центре, запуск которого ожидается в 2027 году. Сделка расширит инфраструктуру компании для обработки AI-нагрузок и инференса."},
+            zh:{tag:"AI 基础设施",title:"Anthropic 签署首份澳大利亚数据中心协议",summary:"Anthropic 已同意租用澳大利亚一座大型数据中心园区的算力资源，该园区预计于 2027 年投入运营。这将扩大公司用于 AI 推理工作负载的基础设施布局。"},
+            it:{tag:"Infrastruttura AI",title:"Anthropic firma il suo primo accordo per un data center in Australia",summary:"Anthropic ha accettato di affittare capacità in un grande campus di data center australiano che dovrebbe entrare in funzione nel 2027, ampliando l’infrastruttura destinata ai carichi di inferenza AI."},
+            fr:{tag:"Infrastructure IA",title:"Anthropic signe son premier accord de centre de données en Australie",summary:"Anthropic a accepté de louer de la capacité dans un grand campus de centres de données australien dont l’ouverture est prévue en 2027, renforçant son infrastructure pour les charges d’inférence d’IA."},
+            de:{tag:"KI-Infrastruktur",title:"Anthropic schließt erstes Rechenzentrumsabkommen in Australien",summary:"Anthropic will Kapazitäten in einem großen australischen Rechenzentrum mieten, das voraussichtlich 2027 in Betrieb geht. Damit erweitert das Unternehmen seine Infrastruktur für KI-Inferenz-Workloads."},
+            ja:{tag:"AIインフラ",title:"Anthropic、オーストラリアで初のデータセンター契約を締結",summary:"Anthropicは、2027年の稼働開始が見込まれるオーストラリアの大規模データセンターで容量を借りる契約を結びました。AI推論向けインフラの拡大につながります。"},
+            ko:{tag:"AI 인프라",title:"Anthropic, 호주에서 첫 데이터센터 계약 체결",summary:"Anthropic은 2027년 가동 예정인 대형 호주 데이터센터 캠퍼스의 용량을 임대하기로 했습니다. 이를 통해 AI 추론 워크로드를 위한 인프라 기반을 확대하게 됩니다."}
+          }
+        },
+        {
+          date:"2026-09-15",displayDate:"Sep 15, 2026",sourceName:"Reuters",url:"https://www.reuters.com/business/media-telecom/mediatek-launches-new-mobile-chip-using-tsmcs-most-advanced-technology-2026-09-15/",
+          text:{
+            en:{tag:"Semiconductors",title:"MediaTek launches new flagship mobile chip built on TSMC’s 2nm process",summary:"MediaTek introduced the Dimensity 9600 Pro, positioning the processor for premium smartphones and placing greater emphasis on on-device generative AI performance."},
+            ru:{tag:"Полупроводники",title:"MediaTek представила новый флагманский мобильный чип на 2-нм техпроцессе TSMC",summary:"MediaTek представила Dimensity 9600 Pro для премиальных смартфонов. Компания делает особый акцент на производительности генеративного ИИ непосредственно на устройстве."},
+            zh:{tag:"半导体",title:"联发科发布采用台积电 2nm 工艺的新旗舰移动芯片",summary:"联发科推出 Dimensity 9600 Pro，面向高端智能手机，并进一步强调设备端生成式 AI 的性能。"},
+            it:{tag:"Semiconduttori",title:"MediaTek lancia un nuovo chip mobile di punta basato sul processo TSMC a 2 nm",summary:"MediaTek ha presentato Dimensity 9600 Pro per smartphone premium, con una maggiore attenzione alle prestazioni dell’AI generativa direttamente sul dispositivo."},
+            fr:{tag:"Semi-conducteurs",title:"MediaTek lance une nouvelle puce mobile haut de gamme gravée en 2 nm chez TSMC",summary:"MediaTek a présenté le Dimensity 9600 Pro pour les smartphones premium, en mettant davantage l’accent sur les performances de l’IA générative directement sur l’appareil."},
+            de:{tag:"Halbleiter",title:"MediaTek stellt neues Flaggschiff-Mobilchip auf TSMCs 2-nm-Prozess vor",summary:"MediaTek präsentierte den Dimensity 9600 Pro für Premium-Smartphones und legt besonderen Wert auf die Leistung generativer KI direkt auf dem Gerät."},
+            ja:{tag:"半導体",title:"MediaTek、TSMCの2nmプロセスを採用した新フラッグシップモバイルチップを発表",summary:"MediaTekはプレミアムスマートフォン向けのDimensity 9600 Proを発表し、端末上で動作する生成AI性能をより重視しています。"},
+            ko:{tag:"반도체",title:"MediaTek, TSMC 2nm 공정 기반의 새 플래그십 모바일 칩 공개",summary:"MediaTek은 프리미엄 스마트폰용 Dimensity 9600 Pro를 공개했으며, 기기 내 생성형 AI 성능을 더욱 강조했습니다."}
+          }
+        },
+        {
+          date:"2026-09-15",displayDate:"Sep 15, 2026",sourceName:"Reuters",url:"https://www.reuters.com/technology/openai-is-working-with-anthropic-google-ai-safety-bloomberg-news-reports-2026-09-15/",
+          text:{
+            en:{tag:"AI Industry",title:"OpenAI, Anthropic and Google are reported to be coordinating on AI safety",summary:"OpenAI is reportedly discussing AI safety issues with Anthropic and Google DeepMind, reflecting unusual cooperation among major rivals as concerns around advanced model risks increase."},
+            ru:{tag:"AI-индустрия",title:"OpenAI, Anthropic и Google, как сообщается, координируют работу по безопасности ИИ",summary:"По сообщениям, OpenAI обсуждает вопросы безопасности ИИ с Anthropic и Google DeepMind. Такое сотрудничество между крупными конкурентами необычно и отражает растущую обеспокоенность рисками продвинутых моделей."},
+            zh:{tag:"AI 行业",title:"据报道 OpenAI、Anthropic 和 Google 正在协调 AI 安全工作",summary:"据报道，OpenAI 正与 Anthropic 和 Google DeepMind 讨论 AI 安全问题。随着人们对先进模型风险的担忧增加，这种主要竞争对手之间的合作显得格外罕见。"},
+            it:{tag:"Industria AI",title:"OpenAI, Anthropic e Google starebbero coordinandosi sulla sicurezza dell’AI",summary:"Secondo quanto riportato, OpenAI sta discutendo temi di sicurezza AI con Anthropic e Google DeepMind, un raro esempio di cooperazione tra grandi rivali mentre aumentano le preoccupazioni sui rischi dei modelli avanzati."},
+            fr:{tag:"Industrie IA",title:"OpenAI, Anthropic et Google coordonneraient leurs efforts sur la sécurité de l’IA",summary:"OpenAI discuterait de sécurité de l’IA avec Anthropic et Google DeepMind, une coopération inhabituelle entre grands concurrents alors que les inquiétudes liées aux risques des modèles avancés augmentent."},
+            de:{tag:"KI-Branche",title:"OpenAI, Anthropic und Google sollen sich bei KI-Sicherheit abstimmen",summary:"Berichten zufolge spricht OpenAI mit Anthropic und Google DeepMind über KI-Sicherheit. Die ungewöhnliche Zusammenarbeit großer Konkurrenten spiegelt wachsende Sorgen über Risiken fortgeschrittener Modelle wider."},
+            ja:{tag:"AI業界",title:"OpenAI、Anthropic、GoogleがAI安全性で連携していると報道",summary:"OpenAIはAnthropicやGoogle DeepMindとAI安全性について協議していると報じられています。高度なモデルのリスクへの懸念が高まる中、大手競合企業同士としては異例の協力です。"},
+            ko:{tag:"AI 산업",title:"OpenAI, Anthropic, Google이 AI 안전 분야에서 협력 중인 것으로 보도",summary:"OpenAI가 Anthropic 및 Google DeepMind와 AI 안전 문제를 논의 중인 것으로 알려졌습니다. 고도화된 모델의 위험에 대한 우려가 커지는 가운데 주요 경쟁사 간의 이례적인 협력입니다."}
+          }
+        },
+        {
+          date:"2026-09-10",displayDate:"Sep 10, 2026",sourceName:"TechCrunch",url:"https://techcrunch.com/video/the-robotics-revolution-wont-be-humanoid/",
+          text:{
+            en:{tag:"Robotics",title:"AI software is changing how industrial robots learn new tasks",summary:"TechCrunch highlighted work on natural-language systems that can teach industrial robots new skills, illustrating how AI is moving deeper into factories and physical automation."},
+            ru:{tag:"Робототехника",title:"AI-софт меняет то, как промышленные роботы осваивают новые задачи",summary:"TechCrunch рассказал о системах на естественном языке, которые помогают промышленным роботам обучаться новым навыкам. Это показывает, как ИИ всё глубже проникает в производство и физическую автоматизацию."},
+            zh:{tag:"机器人",title:"AI 软件正在改变工业机器人学习新任务的方式",summary:"TechCrunch 介绍了利用自然语言系统教工业机器人掌握新技能的工作，这表明 AI 正进一步深入工厂和实体自动化。"},
+            it:{tag:"Robotica",title:"Il software AI sta cambiando il modo in cui i robot industriali imparano nuovi compiti",summary:"TechCrunch ha evidenziato sistemi in linguaggio naturale capaci di insegnare nuove abilità ai robot industriali, mostrando come l’AI stia entrando sempre più nelle fabbriche e nell’automazione fisica."},
+            fr:{tag:"Robotique",title:"Les logiciels d’IA changent la manière dont les robots industriels apprennent de nouvelles tâches",summary:"TechCrunch a mis en avant des systèmes en langage naturel capables d’enseigner de nouvelles compétences aux robots industriels, montrant comment l’IA pénètre davantage les usines et l’automatisation physique."},
+            de:{tag:"Robotik",title:"KI-Software verändert, wie Industrieroboter neue Aufgaben lernen",summary:"TechCrunch stellte natürlichsprachliche Systeme vor, mit denen Industrieroboter neue Fähigkeiten erlernen können. Das zeigt, wie KI immer tiefer in Fabriken und physische Automatisierung vordringt."},
+            ja:{tag:"ロボティクス",title:"AIソフトウェアが産業用ロボットの新しい作業習得を変えつつある",summary:"TechCrunchは、自然言語を使って産業用ロボットに新しい技能を教えるシステムを紹介しました。AIが工場や物理的な自動化へさらに深く入り込んでいることを示しています。"},
+            ko:{tag:"로보틱스",title:"AI 소프트웨어가 산업용 로봇의 새로운 작업 학습 방식을 바꾸고 있다",summary:"TechCrunch는 자연어 시스템을 활용해 산업용 로봇에 새로운 기술을 가르치는 사례를 소개했습니다. 이는 AI가 공장과 물리적 자동화 영역으로 더욱 깊이 확장되고 있음을 보여줍니다."}
+          }
+        }
+      ];
+
       const params = new URLSearchParams(location.search);
       let stored = "";
       try { stored = JSON.parse(localStorage.getItem("robotics_pro_language") || '""'); } catch {}
       let lang = params.get("lang") || stored || "en";
       if (!supported.includes(lang)) lang = "en";
-      document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
-      document.querySelector("#pageLanguage").value = lang;
-      document.querySelectorAll("[data-i18n]").forEach(el => { const value = copy[lang][el.dataset.i18n]; if (value) el.textContent = value; });
-      document.querySelectorAll('a[href]').forEach(a => {
-        const raw = a.getAttribute('href');
-        if (!raw || raw.startsWith('http') || raw.startsWith('mailto:') || raw.startsWith('tel:') || raw.startsWith('#')) return;
-        const url = new URL(raw, location.href);
-        url.searchParams.set('lang', lang);
-        a.href = url.pathname + url.search + url.hash;
-      });
+
+      function applyLanguage() {
+        document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
+        document.querySelector("#pageLanguage").value = lang;
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+          const value = ui[lang][el.dataset.i18n];
+          if (value) el.textContent = value;
+        });
+
+        document.title = `${ui[lang].news} — CCCTrade`;
+        document.querySelector('meta[name="description"]').content = ui[lang].newsText;
+
+        document.querySelector("#newsGrid").innerHTML = articles.map(article => {
+          const a = article.text[lang] || article.text.en;
+          return `<article class="news-card">
+            <div><span class="tag">${a.tag}</span><br /><time datetime="${article.date}">${article.displayDate}</time></div>
+            <h2>${a.title}</h2>
+            <p>${a.summary}</p>
+            <a href="${article.url}" target="_blank" rel="noopener">${ui[lang].read} · ${article.sourceName} ↗</a>
+          </article>`;
+        }).join("");
+
+        document.querySelectorAll('a[href]').forEach(a => {
+          const raw = a.getAttribute('href');
+          if (!raw || raw.startsWith('http') || raw.startsWith('mailto:') || raw.startsWith('tel:') || raw.startsWith('#')) return;
+          const url = new URL(raw, location.href);
+          url.searchParams.set('lang', lang);
+          a.href = url.pathname + url.search + url.hash;
+        });
+      }
+
+      applyLanguage();
+
       document.querySelector("#pageLanguage").addEventListener("change", e => {
-        const next = e.target.value;
-        localStorage.setItem("robotics_pro_language", JSON.stringify(next));
+        lang = e.target.value;
+        localStorage.setItem("robotics_pro_language", JSON.stringify(lang));
         const url = new URL(location.href);
-        url.searchParams.set("lang", next);
-        location.href = url.toString();
+        url.searchParams.set("lang", lang);
+        history.replaceState(null, "", url);
+        applyLanguage();
       });
     })();
   </script>
