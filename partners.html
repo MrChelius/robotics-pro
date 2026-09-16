@@ -8,26 +8,78 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./style.css?v=20260915c" />
   <style>
-    .simple-page{min-height:70vh;padding:8vw 7vw 10vw}.simple-page .eyebrow{display:block;margin-bottom:18px}.simple-page h1{font-size:clamp(3rem,8vw,8rem);line-height:.9;margin:0 0 28px}.simple-page p{max-width:760px;font-size:1.1rem;line-height:1.7;color:#666}.empty-partners{margin-top:70px;border-top:1px solid #d8d8dc;padding-top:36px;min-height:260px}.simple-nav{display:flex;align-items:center;justify-content:space-between;padding:22px 7vw;border-bottom:1px solid #ddd;gap:24px}.simple-nav .links{display:flex;gap:24px;flex-wrap:wrap}.simple-nav a{text-decoration:none;color:inherit}.simple-nav .brand{font-weight:700}.back{display:inline-flex;margin-top:40px;text-decoration:none;color:inherit;font-weight:600}@media(max-width:760px){.simple-nav{align-items:flex-start;flex-direction:column}.simple-nav .links{gap:14px}.simple-page{padding-top:14vw}}
+    .simple-page{min-height:70vh;padding:8vw 7vw 10vw}.simple-page .eyebrow{display:block;margin-bottom:18px}.simple-page h1{font-size:clamp(3rem,8vw,8rem);line-height:.9;margin:0 0 28px}.simple-page p{max-width:760px;font-size:1.1rem;line-height:1.7;color:#666}.empty-partners{margin-top:70px;border-top:1px solid #d8d8dc;padding-top:36px;min-height:260px}.simple-nav{display:flex;align-items:center;justify-content:space-between;padding:22px 7vw;border-bottom:1px solid #ddd;gap:24px}.simple-nav .nav-right{display:flex;align-items:center;gap:24px}.simple-nav .links{display:flex;gap:24px;flex-wrap:wrap}.simple-nav a{text-decoration:none;color:inherit}.simple-nav .brand{font-weight:700}.language-picker{display:flex;align-items:center;gap:8px;border:1px solid #d7d7db;border-radius:999px;padding:8px 12px;background:#fff}.language-picker span{font-size:.9rem}.language-picker select{border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;outline:none}.back{display:inline-flex;margin-top:40px;text-decoration:none;color:inherit;font-weight:600}@media(max-width:960px){.simple-nav{align-items:flex-start;flex-direction:column}.simple-nav .nav-right{width:100%;align-items:flex-start;flex-direction:column;gap:16px}.simple-nav .links{gap:14px}.simple-page{padding-top:14vw}}
   </style>
 </head>
 <body>
   <header class="simple-nav">
     <a class="brand" href="./index.html">CCCTrade</a>
-    <nav class="links" aria-label="Main navigation">
-      <a href="./technologies/">Technology</a>
-      <a href="./index.html#compare">Compare</a>
-      <a href="./index.html#about">About</a>
-      <a href="./partners.html" aria-current="page">Partners</a>
-      <a href="./news.html">Tech &amp; IT News</a>
-    </nav>
+    <div class="nav-right">
+      <nav class="links" aria-label="Main navigation">
+        <a href="./technologies/" data-i18n="technology">Technology</a>
+        <a href="./index.html#compare" data-i18n="compare">Compare</a>
+        <a href="./index.html#about" data-i18n="about">About</a>
+        <a href="./partners.html" aria-current="page" data-i18n="partners">Partners</a>
+        <a href="./news.html" data-i18n="news">Tech &amp; IT News</a>
+      </nav>
+      <label class="language-picker">
+        <span aria-hidden="true">◎</span>
+        <select id="pageLanguage" aria-label="Language">
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+          <option value="zh">中文</option>
+          <option value="it">Italiano</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+        </select>
+      </label>
+    </div>
   </header>
   <main class="simple-page">
     <span class="eyebrow">CCCTrade / PARTNERS</span>
-    <h1>Partners</h1>
-    <p>This section is reserved for CCCTrade partners and future collaborations.</p>
+    <h1 data-i18n="partners">Partners</h1>
+    <p data-i18n="partnerText">This section is reserved for CCCTrade partners and future collaborations.</p>
     <section class="empty-partners" aria-label="Partners list"></section>
-    <a class="back" href="./index.html">← Back to CCCTrade</a>
+    <a class="back" href="./index.html" data-i18n="back">← Back to CCCTrade</a>
   </main>
+  <script>
+    (() => {
+      const supported = ["ru","en","zh","it","fr","de","ja","ko"];
+      const copy = {
+        ru:{technology:"Технологии",compare:"Сравнение",about:"О нас",partners:"Партнёры",news:"Новости технологий и IT",partnerText:"Этот раздел предназначен для партнёров CCCTrade и будущих сотрудничеств.",back:"← Назад в CCCTrade"},
+        en:{technology:"Technology",compare:"Compare",about:"About",partners:"Partners",news:"Tech & IT News",partnerText:"This section is reserved for CCCTrade partners and future collaborations.",back:"← Back to CCCTrade"},
+        zh:{technology:"技术",compare:"对比",about:"关于我们",partners:"合作伙伴",news:"科技与 IT 新闻",partnerText:"此页面用于展示 CCCTrade 合作伙伴及未来合作项目。",back:"← 返回 CCCTrade"},
+        it:{technology:"Tecnologia",compare:"Confronta",about:"Chi siamo",partners:"Partner",news:"Notizie Tech & IT",partnerText:"Questa sezione è riservata ai partner CCCTrade e alle future collaborazioni.",back:"← Torna a CCCTrade"},
+        fr:{technology:"Technologies",compare:"Comparer",about:"À propos",partners:"Partenaires",news:"Actualités Tech & IT",partnerText:"Cette section est réservée aux partenaires CCCTrade et aux futures collaborations.",back:"← Retour à CCCTrade"},
+        de:{technology:"Technologie",compare:"Vergleichen",about:"Über uns",partners:"Partner",news:"Tech- & IT-News",partnerText:"Dieser Bereich ist für CCCTrade-Partner und zukünftige Kooperationen vorgesehen.",back:"← Zurück zu CCCTrade"},
+        ja:{technology:"テクノロジー",compare:"比較",about:"会社情報",partners:"パートナー",news:"テック＆ITニュース",partnerText:"このセクションはCCCTradeのパートナーおよび今後の協業のためのページです。",back:"← CCCTradeに戻る"},
+        ko:{technology:"기술",compare:"비교",about:"회사 소개",partners:"파트너",news:"테크 & IT 뉴스",partnerText:"이 섹션은 CCCTrade 파트너 및 향후 협업을 위한 공간입니다.",back:"← CCCTrade로 돌아가기"}
+      };
+      const params = new URLSearchParams(location.search);
+      let stored = "";
+      try { stored = JSON.parse(localStorage.getItem("robotics_pro_language") || '""'); } catch {}
+      let lang = params.get("lang") || stored || "en";
+      if (!supported.includes(lang)) lang = "en";
+      document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
+      document.querySelector("#pageLanguage").value = lang;
+      document.querySelectorAll("[data-i18n]").forEach(el => { const value = copy[lang][el.dataset.i18n]; if (value) el.textContent = value; });
+      document.querySelectorAll('a[href]').forEach(a => {
+        const raw = a.getAttribute('href');
+        if (!raw || raw.startsWith('http') || raw.startsWith('mailto:') || raw.startsWith('tel:') || raw.startsWith('#')) return;
+        const url = new URL(raw, location.href);
+        url.searchParams.set('lang', lang);
+        a.href = url.pathname + url.search + url.hash;
+      });
+      document.querySelector("#pageLanguage").addEventListener("change", e => {
+        const next = e.target.value;
+        localStorage.setItem("robotics_pro_language", JSON.stringify(next));
+        const url = new URL(location.href);
+        url.searchParams.set("lang", next);
+        location.href = url.toString();
+      });
+    })();
+  </script>
 </body>
 </html>
