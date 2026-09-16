@@ -1,21 +1,48 @@
 (() => {
   'use strict';
-  const root = new URL('./', document.baseURI);
-  const fix = () => {
-    document.querySelectorAll('a[href]').forEach(a => {
-      const raw = a.getAttribute('href');
-      if (!raw || raw.startsWith('http') || raw.startsWith('mailto:') || raw.startsWith('tel:') || raw.startsWith('#')) return;
-      const marker = '/robotics-pro/';
-      let path = raw;
-      const index = raw.indexOf(marker);
-      if (index >= 0) path = raw.slice(index + marker.length);
-      path = path.replace(/^\.\//, '').replace(/^\/robotics-pro\//, '');
-      const target = new URL(path, root);
-      const currentLang = new URLSearchParams(location.search).get('lang');
-      if (currentLang) target.searchParams.set('lang', currentLang);
-      a.href = target.pathname + target.search + target.hash;
-    });
+  const projectRoot = new URL('./', document.baseURI);
+
+  const lang = () => new URLSearchParams(location.search).get('lang') || 'ru';
+  const build = path => {
+    const u = new URL(path, projectRoot);
+    u.searchParams.set('lang', lang());
+    return u.pathname + u.search + u.hash;
   };
+
+  function fix() {
+    const brand = document.querySelector('.dji-brand');
+    if (brand) brand.href = build('./index.html');
+
+    const nav = document.querySelectorAll('.dji-nav a');
+    const navPaths = [
+      './technologies/',
+      './technologies/robots/',
+      './technologies/drones/',
+      './partners.html',
+      './news.html'
+    ];
+    nav.forEach((a, i) => {
+      if (navPaths[i]) a.href = build(navPaths[i]);
+    });
+
+    document.querySelectorAll('.dji-card-media, .dji-card h3 a').forEach(a => {
+      const u = new URL(a.href, location.href);
+      const product = u.searchParams.get('product');
+      if (product) a.href = build(`./technologies/drones/product.html?product=${encodeURIComponent(product)}`);
+    });
+
+    const crumbs = document.querySelectorAll('.dji-breadcrumbs a');
+    if (crumbs[0]) crumbs[0].href = build('./index.html');
+    if (crumbs[1]) crumbs[1].href = build('./technologies/drones/');
+
+    document.querySelectorAll('.dji-info .dji-btn.secondary').forEach(a => {
+      a.href = build('./technologies/drones/');
+    });
+  }
+
   fix();
-  new MutationObserver(() => requestAnimationFrame(fix)).observe(document.documentElement, {subtree:true, childList:true});
+  new MutationObserver(() => requestAnimationFrame(fix)).observe(document.documentElement, {
+    subtree: true,
+    childList: true
+  });
 })();
