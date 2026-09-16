@@ -8,29 +8,44 @@
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./style.css?v=20260915c" />
   <style>
-    .simple-nav{display:flex;align-items:center;justify-content:space-between;padding:22px 7vw;border-bottom:1px solid #ddd;gap:24px}.simple-nav .links{display:flex;gap:24px;flex-wrap:wrap}.simple-nav a{text-decoration:none;color:inherit}.simple-nav .brand{font-weight:700}.news-page{padding:7vw}.news-hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr);gap:50px;padding-bottom:60px;border-bottom:1px solid #ddd}.news-hero h1{font-size:clamp(3.2rem,8vw,8rem);line-height:.9;margin:12px 0 28px}.news-hero p{font-size:1.1rem;line-height:1.7;color:#666;max-width:760px}.news-meta{align-self:end;color:#777}.news-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#ddd;margin-top:1px}.news-card{background:#f5f5f7;padding:42px;min-height:330px;display:flex;flex-direction:column}.news-card .tag{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#777}.news-card h2{font-size:clamp(1.6rem,3vw,2.7rem);line-height:1.06;margin:18px 0}.news-card p{line-height:1.65;color:#666}.news-card a{margin-top:auto;padding-top:28px;text-decoration:none;color:inherit;font-weight:700}.news-card time{font-size:.85rem;color:#888}.source-note{margin-top:36px;color:#777;line-height:1.6}.back{display:inline-flex;margin-top:42px;text-decoration:none;color:inherit;font-weight:600}@media(max-width:800px){.simple-nav,.news-hero{grid-template-columns:1fr;flex-direction:column;align-items:flex-start}.simple-nav .links{gap:14px}.news-page{padding:12vw 6vw}.news-grid{grid-template-columns:1fr}.news-card{padding:30px}}
+    .simple-nav{display:flex;align-items:center;justify-content:space-between;padding:22px 7vw;border-bottom:1px solid #ddd;gap:24px}.simple-nav .nav-right{display:flex;align-items:center;gap:24px}.simple-nav .links{display:flex;gap:24px;flex-wrap:wrap}.simple-nav a{text-decoration:none;color:inherit}.simple-nav .brand{font-weight:700}.language-picker{display:flex;align-items:center;gap:8px;border:1px solid #d7d7db;border-radius:999px;padding:8px 12px;background:#fff}.language-picker select{border:0;background:transparent;font:inherit;color:inherit;cursor:pointer;outline:none}.news-page{padding:7vw}.news-hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr);gap:50px;padding-bottom:60px;border-bottom:1px solid #ddd}.news-hero h1{font-size:clamp(3.2rem,8vw,8rem);line-height:.9;margin:12px 0 28px}.news-hero p{font-size:1.1rem;line-height:1.7;color:#666;max-width:760px}.news-meta{align-self:end;color:#777}.news-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#ddd;margin-top:1px}.news-card{background:#f5f5f7;padding:42px;min-height:330px;display:flex;flex-direction:column}.news-card .tag{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#777}.news-card h2{font-size:clamp(1.6rem,3vw,2.7rem);line-height:1.06;margin:18px 0}.news-card p{line-height:1.65;color:#666}.news-card a{margin-top:auto;padding-top:28px;text-decoration:none;color:inherit;font-weight:700}.news-card time{font-size:.85rem;color:#888}.source-note{margin-top:36px;color:#777;line-height:1.6}.back{display:inline-flex;margin-top:42px;text-decoration:none;color:inherit;font-weight:600}@media(max-width:960px){.simple-nav,.news-hero{grid-template-columns:1fr;flex-direction:column;align-items:flex-start}.simple-nav .nav-right{width:100%;align-items:flex-start;flex-direction:column;gap:16px}.simple-nav .links{gap:14px}.news-page{padding:12vw 6vw}.news-grid{grid-template-columns:1fr}.news-card{padding:30px}}
   </style>
 </head>
 <body>
   <header class="simple-nav">
     <a class="brand" href="./index.html">CCCTrade</a>
-    <nav class="links" aria-label="Main navigation">
-      <a href="./technologies/">Technology</a>
-      <a href="./index.html#compare">Compare</a>
-      <a href="./index.html#about">About</a>
-      <a href="./partners.html">Partners</a>
-      <a href="./news.html" aria-current="page">Tech &amp; IT News</a>
-    </nav>
+    <div class="nav-right">
+      <nav class="links" aria-label="Main navigation">
+        <a href="./technologies/" data-i18n="technology">Technology</a>
+        <a href="./index.html#compare" data-i18n="compare">Compare</a>
+        <a href="./index.html#about" data-i18n="about">About</a>
+        <a href="./partners.html" data-i18n="partners">Partners</a>
+        <a href="./news.html" aria-current="page" data-i18n="news">Tech &amp; IT News</a>
+      </nav>
+      <label class="language-picker">
+        <span aria-hidden="true">◎</span>
+        <select id="pageLanguage" aria-label="Language">
+          <option value="ru">Русский</option>
+          <option value="en">English</option>
+          <option value="zh">中文</option>
+          <option value="it">Italiano</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+        </select>
+      </label>
+    </div>
   </header>
   <main class="news-page">
     <section class="news-hero">
       <div>
         <span class="eyebrow">CCCTrade / DAILY BRIEF</span>
-        <h1>Tech &amp; IT News</h1>
-        <p>A concise English-language feed covering artificial intelligence, robotics, chips, software and major technology developments.</p>
+        <h1 data-i18n="news">Tech &amp; IT News</h1>
+        <p data-i18n="newsText">A concise English-language feed covering artificial intelligence, robotics, chips, software and major technology developments.</p>
       </div>
       <div class="news-meta">
-        <strong>Latest edition</strong><br />September 16, 2026
+        <strong data-i18n="latest">Latest edition</strong><br />September 16, 2026
       </div>
     </section>
 
@@ -41,35 +56,30 @@
         <p>Mark Zuckerberg said competition, liability and company-level responsibility give AI labs reasons to manage safety without a coordinated industry slowdown, highlighting a growing split among technology leaders over how frontier AI should be governed.</p>
         <a href="https://www.reuters.com/business/metas-zuckerberg-says-ai-labs-have-enough-incentive-build-safely-2026-09-16/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
       </article>
-
       <article class="news-card">
         <div><span class="tag">AI Policy</span><br /><time datetime="2026-09-16">Sep 16, 2026</time></div>
         <h2>EU plans talks with frontier AI labs as debate over development speed intensifies</h2>
         <p>European Commission President Ursula von der Leyen said major AI labs would be invited to discuss risk management as European policymakers consider how to balance rapid AI development with verification, safety and regulation.</p>
         <a href="https://www.reuters.com/world/eus-von-der-leyen-invite-frontier-labs-talks-tackling-ai-risks-2026-09-16/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
       </article>
-
       <article class="news-card">
         <div><span class="tag">AI Infrastructure</span><br /><time datetime="2026-09-16">Sep 16, 2026</time></div>
         <h2>Anthropic signs its first Australian data-centre agreement</h2>
         <p>Anthropic has agreed to lease capacity at a large Australian data-centre campus expected to begin operations in 2027, expanding the company’s infrastructure footprint for AI inference workloads.</p>
         <a href="https://www.reuters.com/world/asia-pacific/anthropic-signs-first-australia-data-centre-agreement-2026-09-16/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
       </article>
-
       <article class="news-card">
         <div><span class="tag">Semiconductors</span><br /><time datetime="2026-09-15">Sep 15, 2026</time></div>
         <h2>MediaTek launches new flagship mobile chip built on TSMC’s 2nm process</h2>
         <p>MediaTek introduced the Dimensity 9600 Pro, positioning the processor for premium smartphones and placing greater emphasis on on-device generative AI performance.</p>
         <a href="https://www.reuters.com/business/media-telecom/mediatek-launches-new-mobile-chip-using-tsmcs-most-advanced-technology-2026-09-15/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
       </article>
-
       <article class="news-card">
         <div><span class="tag">AI Industry</span><br /><time datetime="2026-09-15">Sep 15, 2026</time></div>
         <h2>OpenAI, Anthropic and Google are reported to be coordinating on AI safety</h2>
         <p>OpenAI is reportedly discussing AI safety issues with Anthropic and Google DeepMind, reflecting unusual cooperation among major rivals as concerns around advanced model risks increase.</p>
         <a href="https://www.reuters.com/technology/openai-is-working-with-anthropic-google-ai-safety-bloomberg-news-reports-2026-09-15/" target="_blank" rel="noopener">Read source at Reuters ↗</a>
       </article>
-
       <article class="news-card">
         <div><span class="tag">Robotics</span><br /><time datetime="2026-09-10">Sep 10, 2026</time></div>
         <h2>AI software is changing how industrial robots learn new tasks</h2>
@@ -78,8 +88,45 @@
       </article>
     </section>
 
-    <p class="source-note">News summaries are written in English and link to the original publisher. New editions are intended to be added daily while older stories remain available below newer entries.</p>
-    <a class="back" href="./index.html">← Back to CCCTrade</a>
+    <p class="source-note" data-i18n="sourceNote">News summaries are written in English and link to the original publisher. New editions are intended to be added daily while older stories remain available below newer entries.</p>
+    <a class="back" href="./index.html" data-i18n="back">← Back to CCCTrade</a>
   </main>
+  <script>
+    (() => {
+      const supported = ["ru","en","zh","it","fr","de","ja","ko"];
+      const copy = {
+        ru:{technology:"Технологии",compare:"Сравнение",about:"О нас",partners:"Партнёры",news:"Новости технологий и IT",newsText:"Краткая англоязычная лента об искусственном интеллекте, робототехнике, чипах, программном обеспечении и главных технологических событиях.",latest:"Последний выпуск",sourceNote:"Сводки новостей публикуются на английском языке и ведут на оригинальный источник. Новые выпуски добавляются ежедневно, старые материалы сохраняются ниже.",back:"← Назад в CCCTrade"},
+        en:{technology:"Technology",compare:"Compare",about:"About",partners:"Partners",news:"Tech & IT News",newsText:"A concise English-language feed covering artificial intelligence, robotics, chips, software and major technology developments.",latest:"Latest edition",sourceNote:"News summaries are written in English and link to the original publisher. New editions are intended to be added daily while older stories remain available below newer entries.",back:"← Back to CCCTrade"},
+        zh:{technology:"技术",compare:"对比",about:"关于我们",partners:"合作伙伴",news:"科技与 IT 新闻",newsText:"简洁的英文科技资讯，涵盖人工智能、机器人、芯片、软件和重要科技动态。",latest:"最新一期",sourceNote:"新闻摘要以英文发布并链接至原始媒体。新内容计划每日添加，较早报道将保留在下方。",back:"← 返回 CCCTrade"},
+        it:{technology:"Tecnologia",compare:"Confronta",about:"Chi siamo",partners:"Partner",news:"Notizie Tech & IT",newsText:"Una selezione sintetica in inglese su AI, robotica, chip, software e principali sviluppi tecnologici.",latest:"Ultima edizione",sourceNote:"I riassunti sono in inglese e rimandano alla fonte originale. Le nuove edizioni vengono aggiunte ogni giorno mantenendo le precedenti.",back:"← Torna a CCCTrade"},
+        fr:{technology:"Technologies",compare:"Comparer",about:"À propos",partners:"Partenaires",news:"Actualités Tech & IT",newsText:"Un fil concis en anglais sur l’intelligence artificielle, la robotique, les puces, les logiciels et les grands développements technologiques.",latest:"Dernière édition",sourceNote:"Les résumés sont rédigés en anglais et renvoient vers la source originale. De nouvelles éditions sont ajoutées chaque jour tout en conservant les précédentes.",back:"← Retour à CCCTrade"},
+        de:{technology:"Technologie",compare:"Vergleichen",about:"Über uns",partners:"Partner",news:"Tech- & IT-News",newsText:"Ein kompakter englischsprachiger Feed zu KI, Robotik, Chips, Software und wichtigen Technologieentwicklungen.",latest:"Neueste Ausgabe",sourceNote:"Die Zusammenfassungen sind auf Englisch und verlinken auf die Originalquelle. Neue Ausgaben werden täglich ergänzt, ältere Meldungen bleiben erhalten.",back:"← Zurück zu CCCTrade"},
+        ja:{technology:"テクノロジー",compare:"比較",about:"会社情報",partners:"パートナー",news:"テック＆ITニュース",newsText:"AI、ロボティクス、半導体、ソフトウェア、主要な技術動向を扱う簡潔な英語ニュースフィードです。",latest:"最新号",sourceNote:"ニュース要約は英語で掲載し、元の出版社にリンクします。新しい版を毎日追加し、過去の記事も残します。",back:"← CCCTradeに戻る"},
+        ko:{technology:"기술",compare:"비교",about:"회사 소개",partners:"파트너",news:"테크 & IT 뉴스",newsText:"AI, 로보틱스, 반도체, 소프트웨어 및 주요 기술 동향을 다루는 간결한 영어 뉴스 피드입니다.",latest:"최신판",sourceNote:"뉴스 요약은 영어로 제공되며 원문 출처로 연결됩니다. 새 소식은 매일 추가되고 이전 기사도 보존됩니다.",back:"← CCCTrade로 돌아가기"}
+      };
+      const params = new URLSearchParams(location.search);
+      let stored = "";
+      try { stored = JSON.parse(localStorage.getItem("robotics_pro_language") || '""'); } catch {}
+      let lang = params.get("lang") || stored || "en";
+      if (!supported.includes(lang)) lang = "en";
+      document.documentElement.lang = lang === "zh" ? "zh-CN" : lang;
+      document.querySelector("#pageLanguage").value = lang;
+      document.querySelectorAll("[data-i18n]").forEach(el => { const value = copy[lang][el.dataset.i18n]; if (value) el.textContent = value; });
+      document.querySelectorAll('a[href]').forEach(a => {
+        const raw = a.getAttribute('href');
+        if (!raw || raw.startsWith('http') || raw.startsWith('mailto:') || raw.startsWith('tel:') || raw.startsWith('#')) return;
+        const url = new URL(raw, location.href);
+        url.searchParams.set('lang', lang);
+        a.href = url.pathname + url.search + url.hash;
+      });
+      document.querySelector("#pageLanguage").addEventListener("change", e => {
+        const next = e.target.value;
+        localStorage.setItem("robotics_pro_language", JSON.stringify(next));
+        const url = new URL(location.href);
+        url.searchParams.set("lang", next);
+        location.href = url.toString();
+      });
+    })();
+  </script>
 </body>
 </html>
