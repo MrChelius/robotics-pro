@@ -83,6 +83,38 @@
     document.head.append(config);
   }
 
+  function addLocalStyle(hrefValue, marker) {
+    if (document.querySelector(`link[data-${marker}]`)) return;
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = hrefValue;
+    style.setAttribute(`data-${marker}`, '1');
+    document.head.append(style);
+  }
+
+  function addLocalScript(src, marker) {
+    if (document.querySelector(`script[data-${marker}]`)) return;
+    const script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
+    script.setAttribute(`data-${marker}`, '1');
+    document.head.append(script);
+  }
+
+  function loadRoboChelSafely() {
+    try {
+      const version = '20260917-safe-ai-1';
+      addLocalStyle(`./ai-assistant.css?v=${version}`, 'robochel-chat-style');
+      addLocalScript(`./ai-assistant.js?v=${version}`, 'robochel-chat-script');
+      setTimeout(() => {
+        addLocalStyle(`./robochel-mascot.css?v=${version}`, 'robochel-mascot-style');
+        addLocalScript(`./robochel-mascot.js?v=${version}`, 'robochel-mascot-script');
+      }, 250);
+    } catch (error) {
+      console.warn('RoboChel AI failed to load safely:', error);
+    }
+  }
+
   function syncLinks() {
     const lang = currentLanguage();
     document.querySelectorAll('[data-extra-nav]').forEach(a => {
@@ -115,4 +147,7 @@
   syncLinks();
   new MutationObserver(() => requestAnimationFrame(syncLinks)).observe(document.documentElement, { subtree: true, childList: true });
   window.addEventListener('popstate', syncLinks);
+
+  if (document.readyState === 'complete') setTimeout(loadRoboChelSafely, 700);
+  else window.addEventListener('load', () => setTimeout(loadRoboChelSafely, 700), { once: true });
 })();
