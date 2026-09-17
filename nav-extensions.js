@@ -2,14 +2,21 @@
   'use strict';
 
   const labels = {
-    ru: { partners: 'Партнёры', news: 'Новости технологий и IT' },
-    en: { partners: 'Partners', news: 'Tech & IT News' },
-    zh: { partners: '合作伙伴', news: '科技与 IT 新闻' },
-    it: { partners: 'Partner', news: 'Notizie Tech & IT' },
-    fr: { partners: 'Partenaires', news: 'Actualités Tech & IT' },
-    de: { partners: 'Partner', news: 'Tech- & IT-News' },
-    ja: { partners: 'パートナー', news: 'テック＆ITニュース' },
-    ko: { partners: '파트너', news: '테크 & IT 뉴스' },
+    ru: { services: 'Услуги', partners: 'Партнёры', news: 'Новости технологий и IT', blog: 'Блог' },
+    en: { services: 'Services', partners: 'Partners', news: 'Tech & IT News', blog: 'Blog' },
+    zh: { services: '服务', partners: '合作伙伴', news: '科技与 IT 新闻', blog: '博客' },
+    it: { services: 'Servizi', partners: 'Partner', news: 'Notizie Tech & IT', blog: 'Blog' },
+    fr: { services: 'Services', partners: 'Partenaires', news: 'Actualités Tech & IT', blog: 'Blog' },
+    de: { services: 'Services', partners: 'Partner', news: 'Tech- & IT-News', blog: 'Blog' },
+    ja: { services: 'サービス', partners: 'パートナー', news: 'テック＆ITニュース', blog: 'ブログ' },
+    ko: { services: '서비스', partners: '파트너', news: '테크 & IT 뉴스', blog: '블로그' },
+  };
+
+  const paths = {
+    services: 'services.html',
+    partners: 'partners.html',
+    news: 'news.html',
+    blog: 'blog.html',
   };
 
   function currentLanguage() {
@@ -30,7 +37,7 @@
     const lang = currentLanguage();
     const a = document.createElement('a');
     a.dataset.extraNav = kind;
-    a.href = href(kind === 'partners' ? 'partners.html' : 'news.html', lang);
+    a.href = href(paths[kind], lang);
     a.textContent = labels[lang][kind] + (mobile ? ' ↗' : '');
     return a;
   }
@@ -39,21 +46,24 @@
     const lang = currentLanguage();
     document.querySelectorAll('[data-extra-nav]').forEach(a => {
       const kind = a.dataset.extraNav;
+      if (!paths[kind]) return;
       const mobile = !!a.closest('#menuDialog');
-      a.href = href(kind === 'partners' ? 'partners.html' : 'news.html', lang);
+      a.href = href(paths[kind], lang);
       a.textContent = labels[lang][kind] + (mobile ? ' ↗' : '');
     });
 
     const desktopNav = document.querySelector('.desktop-nav');
     if (desktopNav) {
-      if (!desktopNav.querySelector('[data-extra-nav="partners"]')) desktopNav.append(makeLink('partners'));
-      if (!desktopNav.querySelector('[data-extra-nav="news"]')) desktopNav.append(makeLink('news'));
+      ['services', 'partners', 'news', 'blog'].forEach(kind => {
+        if (!desktopNav.querySelector(`[data-extra-nav="${kind}"]`)) desktopNav.append(makeLink(kind));
+      });
     }
 
     const mobileNav = document.querySelector('#menuDialog nav');
     if (mobileNav) {
-      if (!mobileNav.querySelector('[data-extra-nav="partners"]')) mobileNav.append(makeLink('partners', true));
-      if (!mobileNav.querySelector('[data-extra-nav="news"]')) mobileNav.append(makeLink('news', true));
+      ['services', 'partners', 'news', 'blog'].forEach(kind => {
+        if (!mobileNav.querySelector(`[data-extra-nav="${kind}"]`)) mobileNav.append(makeLink(kind, true));
+      });
     }
   }
 
