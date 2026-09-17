@@ -79,7 +79,7 @@
 
   function loadRoboChelSafely(){
     try{
-      const version='20260917-physics-v1';
+      const version='20260917-safe-ai-2';
       addLocalStyle(`./ai-assistant.css?v=${version}`,'robochel-chat-style');
       addLocalScript(`./ai-assistant.js?v=${version}`,'robochel-chat-script');
       setTimeout(()=>{
