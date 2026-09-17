@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mrchelius.github.io/robotics-pro/sitemap.xml
