@@ -1,0 +1,23 @@
+[
+  {
+    "slug": "choosing-a-robotics-platform",
+    "title": "How to choose a robotics platform for research, education or business",
+    "date": "2026-09-17",
+    "summary": "A practical framework for comparing humanoid, quadruped and companion robots before requesting a quote.",
+    "body": "Start with the job the robot must perform, then compare mobility, payload, perception, development access, runtime, support requirements and total deployment cost. Research teams should pay special attention to SDK access and configuration differences, while commercial buyers should define environment, operator skills and service expectations before choosing hardware."
+  },
+  {
+    "slug": "cross-border-tech-buying",
+    "title": "Cross-border technology sourcing: what buyers should prepare",
+    "date": "2026-09-17",
+    "summary": "The information that makes robotics and drone sourcing faster and more accurate.",
+    "body": "Prepare the exact model, intended use, destination country, quantity, preferred delivery window and any required accessories or developer configuration. For regulated products, import, aviation, radio and local operating rules should be checked for the destination before shipment."
+  },
+  {
+    "slug": "storefront-integrations",
+    "title": "Building a modern robotics storefront without slowing it down",
+    "date": "2026-09-17",
+    "summary": "Why static-first pages can still support analytics, booking, chat, CMS content and payment integrations.",
+    "body": "A static-first storefront keeps the product experience fast and resilient. Dynamic services such as CRM, hosted payments, live-agent chat and AI can be attached through narrowly scoped adapters while public content, catalog data and SEO pages remain simple and cache-friendly."
+  }
+]
