@@ -63,6 +63,26 @@
     });
   }
 
+  function loadCheckout() {
+    if (document.querySelector('script[data-ccc-checkout]')) return;
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = './checkout.css?v=20260917b';
+    style.dataset.cccCheckout = 'style';
+    document.head.append(style);
+
+    const config = document.createElement('script');
+    config.src = './payment-config.js?v=20260917b';
+    config.dataset.cccCheckout = 'config';
+    config.onload = () => {
+      const checkout = document.createElement('script');
+      checkout.src = './checkout.js?v=20260917b';
+      checkout.dataset.cccCheckout = 'app';
+      document.head.append(checkout);
+    };
+    document.head.append(config);
+  }
+
   function syncLinks() {
     const lang = currentLanguage();
     document.querySelectorAll('[data-extra-nav]').forEach(a => {
@@ -91,6 +111,7 @@
     improveNavigationAccessibility();
   }
 
+  loadCheckout();
   syncLinks();
   new MutationObserver(() => requestAnimationFrame(syncLinks)).observe(document.documentElement, { subtree: true, childList: true });
   window.addEventListener('popstate', syncLinks);
