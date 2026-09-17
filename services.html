@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Services & Integrations — CCCTrade</title>
+  <meta name="description" content="CCCTrade services and integrations: sourcing, robotics deployment, payments, CMS, CRM, analytics, booking, live chat and product consulting." />
+  <meta name="theme-color" content="#f5f5f7" />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://mrchelius.github.io/robotics-pro/services.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="CCCTrade" />
+  <meta property="og:title" content="Services & Integrations — CCCTrade" />
+  <meta property="og:description" content="Technology sourcing, integrations and digital services for robotics and drones." />
+  <meta property="og:url" content="https://mrchelius.github.io/robotics-pro/services.html" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./style.css?v=20260917services" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-8C86YPMMTM"></script>
+  <script>
+    window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}
+    gtag('js',new Date());gtag('config','G-8C86YPMMTM');
+  </script>
+  <script src="./catalog.js?v=20260915c" defer></script>
+  <script src="./services.js?v=20260917a" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="./index.html" aria-label="CCCTrade home"><span class="brand-mark">CCC<span>•</span></span><span>CCCTrade<small>YIWU · CHINA</small></span></a>
+    <nav class="desktop-nav" aria-label="Primary">
+      <a href="./index.html">Catalog</a>
+      <a href="./services.html" aria-current="page">Services</a>
+      <a href="./partners.html">Partners</a>
+      <a href="./news.html">News</a>
+      <a href="./blog.html">Blog</a>
+    </nav>
+    <div class="header-tools"><a class="button small" href="#booking">Book a consultation →</a></div>
+  </header>
+
+  <main id="main">
+    <section class="section">
+      <div class="section-heading"><div><span class="eyebrow"><i></i>Services & integrations</span><h1>Technology, commerce and automation in one stack.</h1></div><p>Built for robotics, drones and cross-border technology sales from China. Integrations are enabled only after credentials and provider accounts are supplied.</p></div>
+      <div class="catalog-grid" id="serviceGrid" aria-live="polite"></div>
+    </section>
+
+    <section class="section comparison-section" id="payments">
+      <div class="section-heading"><div><span class="eyebrow"><i></i>Payments</span><h2>Multiple ways to pay</h2></div><p>No wallet addresses or secret keys are stored in the public repository.</p></div>
+      <div class="catalog-grid" id="paymentGrid"></div>
+    </section>
+
+    <section class="section" id="integrations">
+      <div class="section-heading"><div><span class="eyebrow"><i></i>Integration layer</span><h2>CMS, CRM, analytics and chat</h2></div><p>Provider adapters are intentionally configuration-driven so services can be changed without rewriting the storefront.</p></div>
+      <div class="catalog-grid" id="integrationGrid"></div>
+    </section>
+
+    <section class="section comparison-section" id="booking">
+      <div class="section-heading"><div><span class="eyebrow"><i></i>Booking</span><h2>Request a consultation</h2></div><p>Your request is prepared locally. Nothing is sent automatically.</p></div>
+      <form id="bookingForm" class="product-card" autocomplete="on">
+        <div class="card-copy">
+          <label for="bookName">Name</label><input id="bookName" name="name" autocomplete="name" required />
+          <label for="bookContact">Email or phone</label><input id="bookContact" name="contact" autocomplete="email" required />
+          <label for="bookTopic">Topic</label><select id="bookTopic" name="topic"><option>Product sourcing</option><option>Robotics integration</option><option>DJI / drone project</option><option>Payments & ecommerce</option><option>Other</option></select>
+          <label for="bookMessage">Project brief</label><textarea id="bookMessage" name="message" rows="5"></textarea>
+          <div class="actions"><button class="button" type="submit">Prepare request →</button><button class="text-button" type="button" id="copyBooking">Copy request</button></div>
+          <p id="bookingStatus" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+    </section>
+
+    <section class="section" id="ai-consultant">
+      <div class="section-heading"><div><span class="eyebrow"><i></i>AI consultant</span><h2>Find the right product faster</h2></div><p>A privacy-friendly on-site product recommender uses the public catalog and does not send your message to a third party.</p></div>
+      <div class="product-card"><div class="card-copy">
+        <label for="aiQuestion">What do you need?</label>
+        <textarea id="aiQuestion" rows="4" placeholder="Example: I need a quadruped robot for research and outdoor inspection."></textarea>
+        <div class="actions"><button id="askAi" class="button" type="button">Ask consultant →</button></div>
+        <div id="aiAnswer" role="status" aria-live="polite"></div>
+      </div></div>
+    </section>
+
+    <section class="section comparison-section" id="live-chat">
+      <div class="section-heading"><div><span class="eyebrow"><i></i>Live chat</span><h2>Fast sales assistance</h2></div><p>The chat widget can be upgraded to a provider such as Crisp, Intercom or a custom backend once credentials are available.</p></div>
+      <div class="product-card"><div class="card-copy">
+        <div id="chatLog" role="log" aria-live="polite"><p>CCCTrade: Hello. Tell us which robot, drone or service you are interested in.</p></div>
+        <label class="sr-only" for="chatInput">Chat message</label><input id="chatInput" placeholder="Type a message" />
+        <div class="actions"><button id="chatSend" class="button" type="button">Send →</button><button id="chatCopy" class="text-button" type="button">Copy transcript</button></div>
+      </div></div>
+    </section>
+  </main>
+
+  <footer class="section"><p>CCCTrade · Office: Yiwu, China · helloitisnick@gmail.com · +7 952 082-45-39</p><p><a href="./index.html">Catalog</a> · <a href="./blog.html">Blog</a> · <a href="./news.html">Tech news</a></p></footer>
+
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"CCCTrade","url":"https://mrchelius.github.io/robotics-pro/services.html","areaServed":"Worldwide","address":{"@type":"PostalAddress","addressLocality":"Yiwu","addressCountry":"CN"},"email":"helloitisnick@gmail.com","serviceType":["Robotics sourcing","Drone sourcing","Technology integration","Ecommerce integration"]}</script>
+</body>
+</html>
