@@ -22,9 +22,11 @@
   ];
 
   const payments = [
-    ['Bank cards', 'Visa / Mastercard via a future PSP adapter. No card data is collected by this site.'],
-    ['UnionPay', 'Ready for a supported PSP or merchant account.'],
-    ['Alipay', 'Ready for merchant integration once account credentials are available.'],
+    ['Alipay China', 'Ready for mainland China merchant integration. Requires a valid Alipay merchant account and server-side payment credentials before live checkout can be enabled.'],
+    ['UnionPay', 'Ready for UnionPay merchant or PSP integration. Card data must be handled by the payment provider, not by this static site.'],
+    ['Visa', 'Ready for Visa payments through a PCI-compliant payment service provider. No card details are collected or stored by this site.'],
+    ['Mastercard', 'Ready for Mastercard payments through a PCI-compliant payment service provider. No card details are collected or stored by this site.'],
+    ['MIR', 'Ready for MIR payments through a compatible acquiring bank or payment provider where legally and technically supported.'],
     ['WeChat Pay', 'Ready for merchant integration once account credentials are available.'],
     ['Crypto', 'USDT, BTC and ETH can be enabled through a regulated payment processor or confirmed wallet workflow. No wallet address is hard-coded.'],
     ['Invoice / bank transfer', 'Manager-confirmed invoice and bank-transfer workflow for B2B orders.'],
