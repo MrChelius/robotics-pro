@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://mrchelius.github.io/robotics-pro/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://mrchelius.github.io/robotics-pro/services.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mrchelius.github.io/robotics-pro/technologies/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mrchelius.github.io/robotics-pro/technologies/robots/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mrchelius.github.io/robotics-pro/technologies/robots/product.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mrchelius.github.io/robotics-pro/technologies/drones/</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://mrchelius.github.io/robotics-pro/technologies/drones/product.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://mrchelius.github.io/robotics-pro/services.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://mrchelius.github.io/robotics-pro/news.html</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://mrchelius.github.io/robotics-pro/blog.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://mrchelius.github.io/robotics-pro/partners.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
