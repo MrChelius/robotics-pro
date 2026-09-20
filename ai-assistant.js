@@ -85,7 +85,7 @@
   })();
 
   let lang = initialLang;
-  const memory = { topic:'', turns:[], lastProducts:[] };
+  const memory = { topic:'', intent:'', turns:[], lastProducts:[], lastAnswer:'', profile:{budget:null,country:'',useCase:''} };
   const products = () => window.RP?.products || [];
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const robotSVG = () => `<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="13" y="14" width="38" height="27" rx="13" fill="#f7faf8" stroke="#9aa79f"/><rect x="18" y="19" width="28" height="18" rx="9" fill="#101713"/><path d="M23 28c2-4 6-4 8 0m2 0c2-4 6-4 8 0" fill="none" stroke="#79f2a8" stroke-width="3" stroke-linecap="round"/><path d="M25 32c4 4 10 4 14 0" fill="none" stroke="#79f2a8" stroke-width="2.5" stroke-linecap="round"/><path d="M24 42v9m16-9v9M17 30h-4m38 0h-4" stroke="#6b756f" stroke-width="3" stroke-linecap="round"/><rect x="22" y="41" width="20" height="14" rx="7" fill="#f7faf8" stroke="#9aa79f"/><path d="M32 7v7" stroke="#78847c" stroke-width="2.5"/><circle cx="32" cy="6" r="3" fill="#79f2a8"/></svg>`;
@@ -151,46 +151,309 @@
     return `<div class="robochel-product-grid">${list.slice(0,4).map(p=>`<div class="robochel-product"><b>${esc(p.name||p.id||'Product')}</b><span>${esc(p.group||'Robot')}</span><a href="technologies/robots/product.html?product=${encodeURIComponent(p.id||'')}&lang=${lang}">${TEXT[lang].details}</a></div>`).join('')}</div>`;
   }
 
+
+  const hash = str => {
+    let h=2166136261;
+    for(let i=0;i<String(str).length;i++){ h^=String(str).charCodeAt(i); h=Math.imul(h,16777619); }
+    return h>>>0;
+  };
+  const pick = (arr,key='') => arr[hash(key+'|'+memory.turns.length)%arr.length];
+  const norm = s => String(s||'').toLowerCase()
+    .replace(/ё/g,'е').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+  const tokens = s => norm(s).split(/\s+/).filter(x=>x.length>1);
+  const loc = v => {
+    if(v==null) return '';
+    if(typeof v==='object' && !Array.isArray(v)) return v[lang]||v.en||v.ru||v.zh||'';
+    return String(v);
+  };
+  const rub = n => typeof n==='number' ? new Intl.NumberFormat(lang==='ru'?'ru-RU':lang==='zh'?'zh-CN':'en-US').format(n)+' ₽' : '';
+  const specNames = {
+    ru:{weight:'масса',height:'высота',dof:'степени свободы',runtime:'время работы',vision:'система восприятия',connection:'связь',size:'размеры',speed:'скорость',slope:'подъём',battery:'батарея',dev:'разработка',display:'экран',camera:'камера'},
+    en:{weight:'weight',height:'height',dof:'degrees of freedom',runtime:'runtime',vision:'perception',connection:'connectivity',size:'dimensions',speed:'speed',slope:'climbing angle',battery:'battery',dev:'development',display:'display',camera:'camera'},
+    zh:{weight:'重量',height:'高度',dof:'自由度',runtime:'续航',vision:'感知系统',connection:'连接',size:'尺寸',speed:'速度',slope:'爬坡角度',battery:'电池',dev:'二次开发',display:'屏幕',camera:'摄像头'}
+  };
+  const specsOf = p => Object.fromEntries((p.specs||[]).map(([k,v])=>[k,loc(v)]));
+  const aliases = p => {
+    const a=[p.id,p.name].filter(Boolean).map(norm);
+    const id=norm(p.id||'');
+    if(id.includes('go2')) a.push('go2');
+    if(id.includes('g1')) a.push('g1');
+    if(id.includes('r1')) a.push('r1');
+    return [...new Set(a)];
+  };
+  const smartProductMatches = q => {
+    const nq=norm(q), qt=tokens(q);
+    const ranked=products().map(p=>{
+      let score=0;
+      const na=norm(p.name), id=norm(p.id);
+      aliases(p).forEach(a=>{ if(a && nq.includes(a)) score+=a.length>3?20:12; });
+      qt.forEach(w=>{
+        if(w.length<2) return;
+        if(na.split(' ').includes(w)) score+=6;
+        if(id.split(' ').includes(w)) score+=8;
+        if(productText(p).includes(w)) score+=1;
+      });
+      return {p,score};
+    }).filter(x=>x.score>=8).sort((a,b)=>b.score-a.score);
+    return ranked.map(x=>x.p).slice(0,4);
+  };
+  const extractBudget = q => {
+    const s=norm(q).replace(/\s+/g,'');
+    let m=s.match(/(?:до|under|budget|бюджет|预算)(\d+(?:[.,]\d+)?)(млн|million|m|тыс|k|万)?/i);
+    if(!m) m=s.match(/(\d+(?:[.,]\d+)?)(млн|million|m|тыс|k|万)(?:руб|₽|rub)?/i);
+    if(!m) return null;
+    let n=parseFloat(m[1].replace(',','.')); const u=m[2]||'';
+    if(/млн|million|^m$/i.test(u)) n*=1e6;
+    if(/тыс|^k$/i.test(u)) n*=1e3;
+    if(u==='万') n*=1e4;
+    return n>1000?n:null;
+  };
+  const rememberContext = q => {
+    const b=extractBudget(q); if(b) memory.profile.budget=b;
+    const n=norm(q);
+    const countries=[
+      ['росси','Russia','俄罗斯'],['кита','China','中国'],['казах','Kazakhstan','哈萨克斯坦'],
+      ['сша','United States','美国'],['герман','Germany','德国'],['франц','France','法国']
+    ];
+    const c=countries.find(x=>n.includes(x[0])||n.includes(norm(x[1]))||n.includes(x[2]));
+    if(c) memory.profile.country=c[lang==='ru'?0:lang==='zh'?2:1];
+    if(/лаборатор|research|研发|科研|sdk|разработ/.test(n)) memory.profile.useCase=lang==='ru'?'исследования и разработка':lang==='zh'?'科研与开发':'research and development';
+    else if(/демонстр|event|выстав|展示|活动/.test(n)) memory.profile.useCase=lang==='ru'?'демонстрации и мероприятия':lang==='zh'?'展示与活动':'demonstrations and events';
+    else if(/инспек|охрана|巡检|security/.test(n)) memory.profile.useCase=lang==='ru'?'инспекции и мониторинг':lang==='zh'?'巡检与监控':'inspection and monitoring';
+  };
+  const witty = key => {
+    const lines={
+      ru:[
+        'Немного инженерной магии — но без дыма, пожалуйста 🤖',
+        'Роботы пока не требуют кофе, и это уже серьёзное конкурентное преимущество.',
+        'Железо любит точные цифры. Я тоже — почти родственники.',
+        'Если коротко: датчики смотрят, алгоритмы думают, моторы стараются не паниковать.'
+      ],
+      en:[
+        'A little engineering magic — preferably without the smoke. 🤖',
+        'Robots still do not ask for coffee, which is a surprisingly strong advantage.',
+        'Hardware likes precise numbers. So do I — practically family.',
+        'Short version: sensors watch, algorithms think, motors try not to panic.'
+      ],
+      zh:[
+        '一点工程魔法——最好不要冒烟。🤖',
+        '机器人暂时还不喝咖啡，这已经是很大的优势了。',
+        '硬件喜欢准确数字。我也喜欢，算是半个同行。',
+        '简单说：传感器负责看，算法负责想，电机负责别慌。'
+      ]
+    };
+    return hash(key)%5===0 ? '\n\n'+pick(lines[lang],key) : '';
+  };
+  const openings = {
+    ru:['Если по делу:','Короткий ответ:','Разберём без маркетингового тумана:','С практической стороны:','Хороший вопрос.'],
+    en:['Straight answer:','Short version:','Without the marketing fog:','From a practical angle:','Good question.'],
+    zh:['直接说结论：','简单说：','不绕营销术语：','从实际使用来看：','这个问题问得好。']
+  };
+  const closings = {
+    ru:['Если скажете сценарий и бюджет, я сузю выбор точнее.','Могу сравнить это с другой моделью по пунктам.','Если нужно, разложу характеристики по таблице прямо здесь.'],
+    en:['Give me the use case and budget and I can narrow it down.','I can compare it against another model point by point.','If useful, I can break the specs down into a compact comparison.'],
+    zh:['告诉我用途和预算，我可以进一步缩小选择范围。','我也可以和另一款型号逐项比较。','如果需要，我可以把参数整理成简洁对比。']
+  };
+  const productSummary = (p,q='') => {
+    const desc=loc(p.description), fit=loc(p.fit), sp=specsOf(p), nq=norm(q);
+    const priceLine=p.price?rub(p.price):'';
+    const wantsPrice=/цен|стоим|price|cost|多少钱|价格/.test(nq);
+    const wantsSpecs=/характер|парамет|spec|weight|speed|runtime|参数|规格|重量|速度|续航/.test(nq);
+    const wantsUse=/для чего|подходит|use case|what is it for|适合|用途/.test(nq);
+    if(wantsPrice){
+      const body=lang==='ru'?`${p.name}: ${priceLine}. ${desc}`:lang==='zh'?`${p.name}：${priceLine}。${desc}`:`${p.name}: ${priceLine}. ${desc}`;
+      return pick(openings[lang],q)+' '+body+witty(q+p.id);
+    }
+    if(wantsSpecs){
+      const order=['speed','runtime','weight','height','dof','vision','battery','connection','dev','camera'];
+      const rows=order.filter(k=>sp[k]).slice(0,6).map(k=>`${specNames[lang][k]||k}: ${sp[k]}`);
+      const head=lang==='ru'?`${p.name} — ключевые характеристики:`:lang==='zh'?`${p.name} — 主要参数：`:`${p.name} — key specifications:`;
+      return `${head}\n• ${rows.join('\n• ')}${p.price?`\n• ${lang==='ru'?'цена':lang==='zh'?'价格':'price'}: ${priceLine}`:''}`+witty(q+p.id);
+    }
+    if(wantsUse){
+      return `${pick(openings[lang],q)} ${desc}\n\n${lang==='ru'?'Лучше всего подходит:':lang==='zh'?'比较适合：':'Best suited to:'} ${fit}`+witty(q+p.id);
+    }
+    return `${pick(openings[lang],q)} ${p.name} — ${desc}${priceLine?`\n\n${lang==='ru'?'Цена на сайте:':lang==='zh'?'网站价格：':'Site price:'} ${priceLine}`:''}\n${lang==='ru'?'Сценарий:':lang==='zh'?'适用场景：':'Use case:'} ${fit}`+witty(q+p.id);
+  };
+  const compareProducts = (list,q) => {
+    const unique=[...new Map(list.map(p=>[p.id,p])).values()].slice(0,3);
+    if(unique.length<2) return TEXT[lang].compare;
+    const lines=unique.map(p=>{
+      const sp=specsOf(p);
+      const bits=[];
+      if(sp.speed) bits.push(`${specNames[lang].speed}: ${sp.speed}`);
+      if(sp.runtime) bits.push(`${specNames[lang].runtime}: ${sp.runtime}`);
+      if(sp.weight) bits.push(`${specNames[lang].weight}: ${sp.weight}`);
+      if(sp.dof) bits.push(`${specNames[lang].dof}: ${sp.dof}`);
+      if(p.price) bits.push(`${lang==='ru'?'цена':lang==='zh'?'价格':'price'}: ${rub(p.price)}`);
+      return `• ${p.name} — ${bits.join(' · ')}\n  ${loc(p.fit)}`;
+    });
+    const cheapest=[...unique].filter(p=>p.price).sort((a,b)=>a.price-b.price)[0];
+    const ending=cheapest
+      ? (lang==='ru'?`По цене самый доступный из этой группы — ${cheapest.name}. Но «лучше» зависит от задачи: для исследований, демонстраций и готовых функций критерии разные.`
+        :lang==='zh'?`按价格看，这组里门槛最低的是 ${cheapest.name}。不过“更好”取决于用途：科研、展示和现成功能的判断标准不同。`
+        :`By price, ${cheapest.name} is the lowest-cost option here. But “better” depends on the job: research, demonstrations and ready-made features favor different things.`)
+      :'';
+    return `${pick(openings[lang],q)}\n${lines.join('\n\n')}\n\n${ending}`+witty(q+'compare');
+  };
+  const recommendProducts = q => {
+    const n=norm(q), budget=extractBudget(q)||memory.profile.budget;
+    const all=products();
+    const scored=all.map(p=>{
+      let score=0; const hay=productText(p);
+      if(/гуманоид|humanoid|人形/.test(n)&&p.group==='humanoid')score+=8;
+      if(/четвероног|robot dog|quadruped|робопес|四足/.test(n)&&p.group==='quadruped')score+=8;
+      if(/дрон|drone|无人机/.test(n)&&/drone|dji/.test(hay))score+=8;
+      if(/лаборатор|research|sdk|разработ|科研|研发/.test(n)&&/edu|research|sdk|разработ|科研/.test(hay))score+=6;
+      if(/демонстр|выстав|event|展示|活动/.test(n)&&/демонстр|demonstr|展示|event/.test(hay))score+=5;
+      if(/инспек|охрана|monitor|inspection|巡检|监控/.test(n)&&/inspect|инспек|巡检|monitor|security|охран/.test(hay))score+=5;
+      tokens(q).forEach(w=>{if(w.length>3&&hay.includes(w))score+=1});
+      if(budget && p.price){
+        if(p.price<=budget) score+=7;
+        else score-=Math.min(8,(p.price-budget)/Math.max(1,budget)*10);
+      }
+      return {p,score};
+    }).sort((a,b)=>b.score-a.score);
+    let list=scored.filter(x=>x.score>0).slice(0,4).map(x=>x.p);
+    if(!list.length) list=all.filter(p=>!budget||!p.price||p.price<=budget).slice(0,4);
+    memory.lastProducts=list;
+    const budgetTxt=budget?rub(budget):'';
+    const head=lang==='ru'
+      ? `${pick(openings.ru,q)} ${budgetTxt?`При бюджете около ${budgetTxt} `:''}я бы начал с этих вариантов:`
+      :lang==='zh'
+      ? `${pick(openings.zh,q)} ${budgetTxt?`预算约 ${budgetTxt} 时，`:''}我会先看这些型号：`
+      : `${pick(openings.en,q)} ${budgetTxt?`With a budget around ${budgetTxt}, `:''}I would start with these options:`;
+    const rows=list.map(p=>`• ${p.name}${p.price?` — ${rub(p.price)}`:''}: ${loc(p.fit)}`).join('\n');
+    return {text:`${head}\n${rows}\n\n${pick(closings[lang],q)}`+witty(q+'recommend'),extra:productCards(list)};
+  };
+  const KNOWLEDGE = [
+    {re:/\bslam\b|локализац|картограф|定位|建图/,txt:{
+      ru:'SLAM — это одновременная локализация и построение карты. Робот оценивает собственное положение и параллельно собирает карту по LiDAR, камерам и IMU. Самая интересная часть начинается, когда датчики слегка не согласны друг с другом.',
+      en:'SLAM means simultaneous localization and mapping. A robot estimates its own pose while building a map from LiDAR, cameras and IMU data. The interesting part starts when the sensors disagree a little.',
+      zh:'SLAM 是“同步定位与建图”。机器人一边估计自己的位置，一边利用 LiDAR、摄像头和 IMU 构建地图。真正有意思的地方，是不同传感器意见不完全一致的时候。'}},
+    {re:/\bros\b|robot operating system|робот.*операц|机器人操作系统/,txt:{
+      ru:'ROS — не операционная система в обычном смысле, а набор инструментов и соглашений для связи модулей робота. Драйверы, навигация, камеры и планирование могут работать отдельными узлами и обмениваться сообщениями.',
+      en:'ROS is not an operating system in the usual sense. It is a framework and set of conventions that lets robot modules communicate: drivers, navigation, cameras and planning can run as separate nodes.',
+      zh:'ROS 并不是传统意义上的操作系统，而是一套机器人软件框架和通信约定。驱动、导航、摄像头和规划模块可以作为独立节点交换消息。'}},
+    {re:/\bimu\b|инерциал|惯性测量/,txt:{
+      ru:'IMU измеряет ускорения и угловые скорости, обычно с помощью акселерометра и гироскопа. Для робота это внутреннее чувство равновесия: без него динамичная ходьба быстро превращается в очень дорогой способ познакомиться с полом.',
+      en:'An IMU measures acceleration and angular velocity, usually with accelerometers and gyroscopes. It acts like the robot’s inner sense of balance; without it, dynamic walking becomes an expensive way to meet the floor.',
+      zh:'IMU 通过加速度计和陀螺仪测量加速度与角速度，相当于机器人的“平衡感”。没有它，动态行走很容易变成昂贵的“亲地板实验”。'}},
+    {re:/лидар|\blidar\b|激光雷达/,txt:{ru:TEXT.ru.lidar,en:TEXT.en.lidar,zh:TEXT.zh.lidar}},
+    {re:/computer vision|компьютерн.*зрен|машинн.*зрен|视觉|图像识别/,txt:{ru:TEXT.ru.vision,en:TEXT.en.vision,zh:TEXT.zh.vision}},
+    {re:/гуманоид|humanoid|人形机器人/,txt:{ru:TEXT.ru.humanoid,en:TEXT.en.humanoid,zh:TEXT.zh.humanoid}},
+    {re:/четвероног|quadruped|робопес|robot dog|四足机器人/,txt:{ru:TEXT.ru.quadruped,en:TEXT.en.quadruped,zh:TEXT.zh.quadruped}},
+    {re:/дрон|drone|无人机/,txt:{ru:TEXT.ru.drone,en:TEXT.en.drone,zh:TEXT.zh.drone}},
+    {re:/батаре|аккумуля|runtime|battery|续航|电池/,txt:{ru:TEXT.ru.battery,en:TEXT.en.battery,zh:TEXT.zh.battery}},
+    {re:/нейросет|neural network|神经网络/,txt:{
+      ru:'Нейросеть — модель, которая учится находить закономерности в данных через множество связанных вычислительных слоёв. В робототехнике её могут использовать для зрения, речи, оценки сцены и выбора действий, но управление безопаснее строить вместе с обычной логикой и ограничителями.',
+      en:'A neural network learns patterns through layers of connected computations. In robotics it can support vision, speech, scene understanding and action selection, while safety-critical control is usually combined with conventional logic and constraints.',
+      zh:'神经网络通过多层计算从数据中学习规律。在机器人中可用于视觉、语音、场景理解和动作选择，但安全关键控制通常还会结合传统控制逻辑和约束。'}},
+    {re:/\bllm\b|языков.*модел|language model|大语言模型/,txt:{
+      ru:'LLM — большая языковая модель: она прогнозирует и генерирует текст по контексту. В роботе LLM удобно использовать как слой общения и планирования высокого уровня, но команды движения должны проходить через проверяемый контроллер, а не напрямую в моторы.',
+      en:'An LLM is a large language model that generates text from context. In a robot it is useful for dialogue and high-level planning, but motion commands should pass through a validated controller rather than going straight to the motors.',
+      zh:'LLM 是大语言模型，根据上下文生成语言。在机器人中适合负责对话和高层规划，但运动指令应经过可验证的控制器，而不是直接发送到电机。'}},
+    {re:/автоном|autonom|自主导航|自主/,txt:{
+      ru:'Автономность — это цепочка: восприятие → локализация → планирование → управление → контроль безопасности. Чем реальнее среда, тем важнее резервные сценарии: идеальных датчиков и идеальных полов пока не завезли.',
+      en:'Autonomy is a pipeline: perception → localization → planning → control → safety supervision. The messier the real world, the more important fallback behavior becomes; perfect sensors and perfect floors are still out of stock.',
+      zh:'自主系统通常是：感知 → 定位 → 规划 → 控制 → 安全监督。真实环境越复杂，备用策略越重要——完美传感器和完美地面目前都还没上市。'}},
+    {re:/искусствен.*интеллект|\bai\b|\bии\b|artificial intelligence|人工智能/,txt:{ru:TEXT.ru.ai,en:TEXT.en.ai,zh:TEXT.zh.ai}}
+  ];
+  const knowledgeAnswer = (q,n) => {
+    const k=KNOWLEDGE.find(x=>x.re.test(n));
+    if(!k) return null;
+    memory.topic='knowledge';
+    return `${pick(openings[lang],q)} ${k.txt[lang]}`+witty(q+'knowledge');
+  };
+  const contextualFallback = (q,n) => {
+    if(memory.lastProducts.length){
+      const p=memory.lastProducts[0];
+      if(/а цена|цена\??$|price\??$|多少钱|价格/.test(n)) return productSummary(p,'цена');
+      if(/а характеристики|характеристики\??$|specs?\??$|参数/.test(n)) return productSummary(p,'характеристики');
+      if(/а для чего|для чего\??$|use case|用途/.test(n)) return productSummary(p,'для чего');
+    }
+    const lead=pick(openings[lang],q);
+    const safe={
+      ru:[
+        `${lead} я могу рассуждать по контексту, но не хочу уверенно выдумывать факт, которого нет в моей встроенной базе. Сформулируйте вопрос чуть конкретнее — модель, задача, бюджет или технология — и я отвечу по существу.`,
+        `${lead} вопрос шире моей встроенной базы. Если речь о технике, роботах, ИИ, дронах или каталоге CCCTrade — дайте один ориентир, и я разберу тему нормально, а не отвечу заготовкой.`,
+        `${lead} контекста пока мало. Напишите, что именно хотите узнать: как это работает, сколько стоит, с чем сравнить или подходит ли для конкретной задачи.`
+      ],
+      en:[
+        `${lead} I can reason from the conversation, but I would rather not invent a fact that is not in my built-in knowledge. Give me one anchor — a model, use case, budget or technology — and I’ll answer directly.`,
+        `${lead} that is broader than my built-in knowledge. If it is about robotics, AI, drones or the CCCTrade catalog, give me one concrete detail and I’ll dig in rather than repeat a canned reply.`,
+        `${lead} I need one more piece of context. Tell me whether you want how it works, pricing, a comparison, or suitability for a specific task.`
+      ],
+      zh:[
+        `${lead} 我可以结合上下文分析，但不会把内置知识库里没有的事实说得像真的一样。给我一个具体方向——型号、用途、预算或技术——我就能直接回答。`,
+        `${lead} 这个问题比我的内置知识范围更宽。如果与机器人、AI、无人机或 CCCTrade 产品有关，给我一个具体线索，我会继续深入，而不是重复模板回答。`,
+        `${lead} 还差一点上下文。告诉我是想了解原理、价格、对比，还是某个具体使用场景是否合适。`
+      ]
+    };
+    return pick(safe[lang],q)+witty(q+'fallback');
+  };
+
   function answer(raw){
     const q=raw.trim();
     lang=detectLang(q); renderLang();
-    const t=TEXT[lang];
-    const s=q.toLowerCase();
-    memory.turns.push(q); if(memory.turns.length>8) memory.turns.shift();
+    const t=TEXT[lang], n=norm(q);
+    memory.turns.push({q,lang,at:Date.now()}); if(memory.turns.length>24) memory.turns.shift();
+    rememberContext(q);
 
-    const exact=findProducts(s);
-    if(exact.length){
-      memory.topic='product';
-      const names=exact.map(p=>p.name||p.id).join(', ');
-      const intro=lang==='ru'?`Да, знаю ${names}. Могу рассказать о назначении, характеристиках, цене и помочь сравнить с другими моделями.`:lang==='zh'?`当然，我了解 ${names}。我可以介绍用途、参数、价格，也可以和其他型号比较。`:`Yes, I know ${names}. I can explain its purpose, specifications and pricing context, or compare it with other models.`;
-      return {text:intro,extra:productCards(exact)};
+    let hits=smartProductMatches(q);
+    const explicitCompare=/compare|сравн|比较|разниц|difference|vs\b|versus|против/.test(n);
+
+    if(/^(hi|hello|hey|привет|здрав|你好|您好|哈喽)/i.test(q)){
+      return {text:pick([
+        t.greet,
+        lang==='ru'?'Привет 👋 Я на связи. Можно про роботов, дроны, ИИ или просто устроить маленький техно-разбор.':
+        lang==='zh'?'你好 👋 我在线。机器人、无人机、AI，或者来个小型科技讨论都可以。':
+        'Hi 👋 I’m online. Robots, drones, AI, or a quick tech deep-dive — your choice.',
+        lang==='ru'?'Привет! RoboChel проснулся, датчики протёр, готов думать 🤖 Что разбираем?':
+        lang==='zh'?'你好！RoboChel 已上线，传感器也“擦亮”了 🤖 想聊什么？':
+        'Hey! RoboChel is awake, sensors polished, ready to think. 🤖 What are we unpacking?'
+      ],q)};
+    }
+    if(/спасибо|благодар|thanks|thank you|谢谢|多谢/.test(n)) return {text:pick([
+      t.thanks,
+      lang==='ru'?'Всегда пожалуйста. Если появится второй вопрос — я не убегу, у меня даже ног не на всех версиях хватает. 🤖':
+      lang==='zh'?'不客气。还有问题继续问，我跑不了——有些版本连腿都没有。🤖':
+      'Any time. Ask the next one — I’m not going anywhere; some of my versions do not even have legs. 🤖',
+      lang==='ru'?'Пожалуйста! Продолжаем — можно углубиться в детали.':lang==='zh'?'不客气！继续吧，我们可以深入一点。':'You’re welcome! We can go deeper if you want.'
+    ],q)};
+    if(/как дела|how are you|你好吗|最近怎么样/.test(n)) return {text:pick([t.mood,lang==='ru'?'Отлично: температура нормальная, чувство юмора тоже в допуске. 🤖 А у вас что на повестке?':lang==='zh'?'很好：温度正常，幽默模块也在工作。🤖 今天想聊什么？':'Doing well: temperature nominal, humor module within tolerance. 🤖 What’s on the agenda?'],q)};
+    if(/кто ты|who are you|你是谁/.test(n)) return {text:t.identity};
+    if(/what can you do|что ты умеешь|你会做什么|твои возможност/.test(n)) return {text:`${t.cap}\n\n${lang==='ru'?'Я также помню контекст текущего диалога: можно спросить «а цена?», «а чем он отличается?» или продолжить сравнение без повторения названия модели.':lang==='zh'?'我还会记住当前对话上下文，所以可以直接追问“价格呢？”“有什么区别？”而不用重复型号。':'I also keep the current conversation context, so you can follow up with “what about the price?” or “how is it different?” without repeating the model name.'}`};
+
+    if(/оплат|payment|pay|visa|mastercard|unionpay|alipay|mir|微信|支付/.test(n)){memory.topic='payment';return{text:t.payment+witty(q)};}
+    if(/достав|shipping|delivery|ship|发货|配送/.test(n)){
+      memory.topic='delivery';
+      const tail=memory.profile.country ? (lang==='ru'?`\n\nВы указали направление: ${memory.profile.country}. Для точного расчёта ещё нужна модель и способ перевозки.`:lang==='zh'?`\n\n目前方向：${memory.profile.country}。要精确估算，还需要具体型号和运输方式。`:`\n\nYou mentioned ${memory.profile.country}. For a precise quote I still need the model and transport method.`) : '';
+      return{text:t.delivery+tail+witty(q)};
     }
 
-    if(/^(hi|hello|hey|привет|здрав|你好|您好)/i.test(s)) return {text:t.greet};
-    if(/спасибо|thanks|thank you|谢谢/.test(s)) return {text:t.thanks};
-    if(/как дела|how are you|你好吗|最近怎么样/.test(s)) return {text:t.mood};
-    if(/кто ты|who are you|你是谁/.test(s)) return {text:t.identity};
-    if(/what can you do|что ты умеешь|你会做什么/.test(s)) return {text:t.cap};
-    if(/оплат|payment|pay|visa|mastercard|unionpay|alipay|mir|微信|支付/.test(s)){memory.topic='payment';return{text:t.payment};}
-    if(/достав|shipping|delivery|ship|发货|配送/.test(s)){memory.topic='delivery';return{text:t.delivery};}
-    if(/compare|сравн|比较/.test(s)){memory.topic='compare';return{text:t.compare};}
-    if(/подоб|выбр|choose|recommend|select|选机器人|推荐/.test(s)){memory.topic='choose';return{text:t.choose,extra:productCards(products().slice(0,4))};}
-    if(/lidar|лидар|激光雷达/.test(s)){memory.topic='lidar';return{text:t.lidar};}
-    if(/computer vision|компьютерн.*зрен|视觉/.test(s)){memory.topic='vision';return{text:t.vision};}
-    if(/humanoid|гуманоид|人形/.test(s)){memory.topic='humanoid';return{text:t.humanoid};}
-    if(/quadruped|четвероног|四足/.test(s)){memory.topic='quadruped';return{text:t.quadruped};}
-    if(/drone|дрон|无人机/.test(s)){memory.topic='drone';return{text:t.drone};}
-    if(/battery|runtime|автоном|батаре|续航|电池/.test(s)){memory.topic='battery';return{text:t.battery};}
-    if(/\bai\b|ии|artificial intelligence|人工智能/.test(s)){memory.topic='ai';return{text:t.ai};}
+    if(explicitCompare){
+      if(hits.length<2 && memory.lastProducts.length>=2) hits=memory.lastProducts;
+      if(hits.length>=2){ memory.topic='compare'; memory.lastProducts=hits.slice(0,3); return {text:compareProducts(hits,q),extra:productCards(hits)}; }
+      return {text:t.compare};
+    }
 
-    if(memory.topic==='payment') return {text:t.payment};
-    if(memory.topic==='delivery') return {text:t.delivery};
-    if(memory.topic==='lidar') return {text:t.lidar};
-    if(memory.topic==='vision') return {text:t.vision};
-    if(memory.topic==='humanoid') return {text:t.humanoid};
-    if(memory.topic==='quadruped') return {text:t.quadruped};
-    if(memory.topic==='drone') return {text:t.drone};
-    return {text:t.fallback};
+    if(/подоб|выбр|choose|recommend|select|посовет|какой лучше|что лучше|选机器人|推荐|怎么选/.test(n)){
+      memory.topic='choose'; return recommendProducts(q);
+    }
+
+    if(hits.length){
+      memory.topic='product'; memory.lastProducts=hits;
+      if(hits.length>1 && /или|or|还是/.test(n)) return {text:compareProducts(hits,q),extra:productCards(hits)};
+      return {text:productSummary(hits[0],q),extra:productCards([hits[0]])};
+    }
+
+    const k=knowledgeAnswer(q,n);
+    if(k) return {text:k};
+
+    if(memory.topic==='payment' && /а как|как именно|подробнее|how|怎么|详细/.test(n)) return {text:t.payment};
+    if(memory.topic==='delivery' && /сколько|срок|стоим|how long|cost|多久|多少钱/.test(n)) return {text:t.delivery};
+    return {text:contextualFallback(q,n)};
   }
 
   function submit(v){
