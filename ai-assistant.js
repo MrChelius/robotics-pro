@@ -393,7 +393,82 @@
     return pick(safe[lang],q)+witty(q+'fallback');
   };
 
-  function answer(raw){
+  let freeSession=null;
+  const randomPick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const timeout = (p,ms=7000) => Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+
+  async function freeFormAnswer(q,n){
+    const persona = lang==='ru'
+      ? 'Ты RoboChel AI — умный, спокойный и иногда остроумный помощник CCCTrade. Отвечай естественно и содержательно. На простой вопрос отвечай кратко, на сложный — подробно, обычно 2–5 абзацев. Помни контекст разговора. Не выдумывай точные факты и не притворяйся уверенным, если данных нет. Лёгкий юмор допустим иногда, но не в каждом ответе.'
+      : lang==='zh'
+      ? '你是 RoboChel AI，CCCTrade 的智能助手。回答自然、有逻辑、有内容。简单问题简洁回答，复杂问题通常用 2–5 段解释。记住上下文，不要编造精确事实。不确定时明确说明。可以偶尔幽默，但不要每次开玩笑。'
+      : 'You are RoboChel AI, the intelligent CCCTrade assistant. Answer naturally and substantively. Keep simple answers concise and explain harder questions in 2–5 paragraphs. Remember conversational context. Do not invent precise facts or fake certainty. Light humor is welcome occasionally, not in every reply.';
+    const history = memory.turns.slice(-10).map(x=>typeof x==='string'?x:x.q).filter(Boolean).join('\n');
+
+    try{
+      if(globalThis.LanguageModel && typeof globalThis.LanguageModel.create==='function'){
+        if(!freeSession){
+          const availability = typeof globalThis.LanguageModel.availability==='function' ? await timeout(globalThis.LanguageModel.availability(),1800) : 'available';
+          if(availability!=='unavailable') freeSession = await timeout(globalThis.LanguageModel.create({initialPrompts:[{role:'system',content:persona}]}),6000);
+        }
+        if(freeSession){
+          const out = await timeout(freeSession.prompt('Recent conversation:\n'+history+'\n\nUser question:\n'+q),9000);
+          if(out && String(out).trim().length>20) return String(out).trim();
+        }
+      }
+      if(globalThis.ai && globalThis.ai.languageModel && typeof globalThis.ai.languageModel.create==='function'){
+        if(!freeSession) freeSession = await timeout(globalThis.ai.languageModel.create({systemPrompt:persona}),6000);
+        const out = await timeout(freeSession.prompt('Recent conversation:\n'+history+'\n\nUser question:\n'+q),9000);
+        if(out && String(out).trim().length>20) return String(out).trim();
+      }
+    }catch(err){ console.debug('RoboChel on-device AI unavailable',err); freeSession=null; }
+
+    try{
+      if(navigator.onLine){
+        const host = lang==='ru' ? 'ru.wikipedia.org' : lang==='zh' ? 'zh.wikipedia.org' : 'en.wikipedia.org';
+        const subject = String(q).replace(/^(расскажи( мне)? про|расскажи( мне)? о|что такое|кто такой|кто такая|объясни|tell me about|what is|who is|explain|什么是|谁是|介绍一下)\s*/i,'').replace(/[?!？。]+$/,'').trim().slice(0,160);
+        if(subject.length>1){
+          const su='https://'+host+'/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(subject)+'&utf8=1&format=json&origin=*&srlimit=2';
+          const sr=await timeout(fetch(su,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki '+r.status))),5000);
+          const hit=sr && sr.query && sr.query.search && sr.query.search[0];
+          if(hit){
+            const eu='https://'+host+'/w/api.php?action=query&prop=extracts&explaintext=1&exintro=1&pageids='+hit.pageid+'&format=json&origin=*';
+            const er=await timeout(fetch(eu,{mode:'cors'}).then(r=>r.ok?r.json():Promise.reject(new Error('wiki '+r.status))),5000);
+            const page=er && er.query && er.query.pages && er.query.pages[hit.pageid];
+            if(page && page.extract && page.extract.length>80){
+              const text=String(page.extract).replace(/\s+/g,' ').slice(0,2200);
+              const intro=lang==='ru' ? 'Разберём подробнее. По справочной информации о «'+page.title+'»:' : lang==='zh' ? '详细说一下。关于“'+page.title+'”的参考信息：' : 'Here is a fuller explanation. Reference information on “'+page.title+'”: ';
+              const tail=lang==='ru' ? '\n\nЕсли хотите, я могу продолжить: объяснить проще, глубже, сравнить с чем-то или разобрать конкретную часть.' : lang==='zh' ? '\n\n如果你愿意，我可以继续：用更简单的方式解释、深入分析、做对比或只讲某一个部分。' : '\n\nI can keep going: simplify it, go deeper, compare it with something else, or focus on one specific part.';
+              return intro+'\n\n'+text+tail+(Math.random()<0.22?witty(q+'wiki'):'');
+            }
+          }
+        }
+      }
+    }catch(err){ console.debug('RoboChel knowledge lookup unavailable',err); }
+
+    const starts = lang==='ru'
+      ? ['Давайте разберём это спокойно и по смыслу.','Попробую ответить как на нормальный вопрос, а не шаблоном.','Здесь полезно сначала отделить факты от предположений.','Разложу мысль по частям.']
+      : lang==='zh'
+      ? ['我们按逻辑来拆开这个问题。','我尽量像正常对话一样回答，而不是套模板。','这里先把事实和假设分开比较有用。','我把这个问题分成几个部分来说。']
+      : ['Let’s unpack this properly.','I’ll answer it like a real question rather than a canned prompt.','It helps to separate facts from assumptions first.','Let me break the idea into parts.'];
+    const middles = lang==='ru'
+      ? ['Я могу рассуждать по контексту, но не хочу придумывать конкретные факты, которых нет в моей локальной базе.','Если вопрос требует точных свежих данных, лучше опираться на проверяемый источник; если это объяснение или выбор между вариантами, я могу разложить логику прямо здесь.','Самый полезный путь — уточнить цель, ограничения и то, какой результат для вас считается хорошим.']
+      : lang==='zh'
+      ? ['我可以结合上下文分析，但不会编造本地知识库里没有的具体事实。','如果问题需要非常新的精确数据，最好依赖可验证来源；如果是解释或方案比较，我可以直接把逻辑拆开。','最有用的做法通常是明确目标、限制条件，以及什么结果才算理想。']
+      : ['I can reason from context, but I do not want to invent specific facts that are outside my local knowledge.','If the question needs exact fresh data, a verifiable source matters; if it is an explanation or a choice between options, I can work through the logic here.','The most useful approach is usually to clarify the goal, constraints, and what a good outcome actually means.'];
+    const endings = lang==='ru'
+      ? ['Сформулируйте вопрос чуть конкретнее — и я продолжу без повторения всей темы.','Можно продолжить одним коротким уточнением, и я раскрою ответ глубже.','Если дадите один дополнительный факт или пример, я смогу сделать ответ заметно точнее.']
+      : lang==='zh'
+      ? ['再补充一个具体点，我就可以继续深入，不用你重复整个问题。','你只要再给一个简短细节，我就能把答案展开得更深。','如果再给一个事实或例子，我可以把答案做得更准确。']
+      : ['Give me one more concrete detail and I can continue without making you repeat the whole topic.','One short clarification is enough for me to go much deeper.','Add one fact or example and I can make the answer substantially more precise.'];
+    const humor = lang==='ru'
+      ? [' Роботы любят точность. Я тоже, хотя у меня хотя бы нет сервоприводов, которые начинают обижаться.',' И да, иногда лучший алгоритм — сначала понять, что именно мы пытаемся решить.',' Магии тут немного: в основном логика, данные и один очень терпеливый процессор.']
+      : lang==='zh'
+      ? [' 机器人喜欢准确，我也是——至少我没有会闹脾气的伺服电机。',' 有时候最好的算法，是先弄清楚我们到底要解决什么。',' 这里没多少魔法，主要是逻辑、数据和一个很有耐心的处理器。']
+      : [' Robots like precision. So do I, although I do not have servos that get offended.',' Sometimes the best algorithm is figuring out what problem we are actually solving first.',' Not much magic here: mostly logic, data, and one very patient processor.'];
+    return randomPick(starts)+'\n\n'+randomPick(middles)+'\n\n'+randomPick(endings)+(Math.random()<0.3?randomPick(humor):'');
+  }
+  async function answer(raw){
     const q=raw.trim();
     lang=detectLang(q); renderLang();
     const t=TEXT[lang], n=norm(q);
@@ -453,13 +528,17 @@
 
     if(memory.topic==='payment' && /а как|как именно|подробнее|how|怎么|详细/.test(n)) return {text:t.payment};
     if(memory.topic==='delivery' && /сколько|срок|стоим|how long|cost|多久|多少钱/.test(n)) return {text:t.delivery};
-    return {text:contextualFallback(q,n)};
+    const free=await freeFormAnswer(q,n);
+    return {text:free||contextualFallback(q,n)};
   }
 
-  function submit(v){
+  async function submit(v){
     const q=(v??input.value).trim(); if(!q) return;
-    add(q,'user'); input.value='';
-    setTimeout(()=>{const r=answer(q);add(r.text,'assistant',r.extra||'');},180);
+    add(q,'user'); input.value=''; send.disabled=true;
+    status.textContent=lang==='ru'?'думаю…':lang==='zh'?'思考中…':'thinking…';
+    try{const r=await answer(q);add(r.text,'assistant',r.extra||'');memory.lastAnswer=r.text||'';}
+    catch(err){console.error(err);add(lang==='ru'?'На секунду запутался в собственных проводах. Повторите вопрос — попробую ещё раз. 🤖':lang==='zh'?'我刚刚在自己的“电线”里绕了一下。请再问一次，我会重试。🤖':'I briefly tangled myself in my own wiring. Ask again and I’ll retry. 🤖','assistant');}
+    finally{send.disabled=false;status.textContent=TEXT[lang].status;input.focus();}
   }
 
   launcher.addEventListener('click',()=>panel.classList.toggle('open'));
