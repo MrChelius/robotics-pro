@@ -393,11 +393,142 @@
     return pick(safe[lang],q)+witty(q+'fallback');
   };
 
+  let djiCatalogPromise=null;
+  const djiProducts = () => window.DJI_CATALOG?.products || [];
+  const localized = v => {
+    if(v==null) return '';
+    if(typeof v==='object' && !Array.isArray(v)) return v[lang]||v.en||v.ru||v.zh||Object.values(v)[0]||'';
+    return String(v);
+  };
+  async function ensureDjiCatalog(){
+    if(djiProducts().length) return djiProducts();
+    if(djiCatalogPromise) return djiCatalogPromise;
+    djiCatalogPromise=new Promise(resolve=>{
+      const existing=document.querySelector('script[data-robochel-dji-catalog]');
+      if(existing){
+        if(window.DJI_CATALOG) return resolve(djiProducts());
+        existing.addEventListener('load',()=>resolve(djiProducts()),{once:true});
+        existing.addEventListener('error',()=>resolve([]),{once:true});
+        setTimeout(()=>resolve(djiProducts()),2500);
+        return;
+      }
+      const sc=document.createElement('script');
+      sc.src=new URL('./dji-products.js',document.baseURI).href;
+      sc.async=true;
+      sc.dataset.robochelDjiCatalog='1';
+      sc.onload=()=>resolve(djiProducts());
+      sc.onerror=()=>resolve([]);
+      document.head.append(sc);
+      setTimeout(()=>resolve(djiProducts()),3000);
+    }).finally(()=>{djiCatalogPromise=null;});
+    return djiCatalogPromise;
+  }
+
+  const siteIntent = (q,n,hits=[]) => {
+    if(hits.length) return true;
+    if(memory.topic && ['product','compare','choose','payment','delivery','site','catalog','dji'].includes(memory.topic)) return true;
+    return /ccctrade|ccc trade|этот сайт|наш сайт|ваш сайт|на сайте|каталог|ассортимент|что прода|что у вас|товар|купить|заказ|заказать|цена|стоим|оплат|достав|менеджер|контакт|телеграм|telegram|email|почт|офис|yiwu|иву|иу|unitree|go2|g1|r1|loona|dji|дрон|робот|humanoid|quadruped|robot|drone|无人机|机器人|目录|价格|购买|配送|支付|义乌/.test(n);
+  };
+
+  const compactRobotLine = p => {
+    const price=p.price?rub(p.price):'';
+    const fit=localized(p.fit);
+    return `• ${p.name}${price?` — ${price}`:''}${fit?`\n  ${fit}`:''}`;
+  };
+  const compactDroneLine = p => {
+    const price=p.price?rub(p.price):'';
+    const use=localized(p.use);
+    const sp=p.specs||{};
+    const specs=[sp.camera,sp.flight,sp.weight].filter(Boolean).join(' · ');
+    return `• ${p.name}${price?` — ${price}`:''}${specs?`\n  ${specs}`:''}${use?`\n  ${use}`:''}`;
+  };
+
+  async function siteFirstAnswer(q,n,hits=[]){
+    if(!siteIntent(q,n,hits)) return null;
+    const conceptual=/что такое робот|что такое дрон|what is a robot|what is a drone|机器人是什么|无人机是什么/.test(n);
+    if(conceptual) return null;
+
+    if(/контакт|связат|менеджер|телеграм|telegram|email|почт|телефон|phone|contact|联系|邮箱|电话/.test(n)){
+      memory.topic='site';
+      const text=lang==='ru'
+        ? 'Контакты CCCTrade:\n• Telegram: @CheliUsNick\n• Email: helloitisnick@gmail.com\n• Телефон: +7 952 082-45-39\n• Офис: Yiwu, China.\n\nЕсли скажете, какая модель вас интересует и в какую страну нужна доставка, я помогу подготовить вопросы менеджеру.'
+        :lang==='zh'
+        ? 'CCCTrade 联系方式：\n• Telegram: @CheliUsNick\n• Email: helloitisnick@gmail.com\n• 电话: +7 952 082-45-39\n• 办公地点: 中国义乌。\n\n告诉我你感兴趣的型号和目的国家，我可以帮你整理给经理的问题。'
+        : 'CCCTrade contacts:\n• Telegram: @CheliUsNick\n• Email: helloitisnick@gmail.com\n• Phone: +7 952 082-45-39\n• Office: Yiwu, China.\n\nTell me the model and destination country and I can help prepare the questions for the manager.';
+      return {text:text+witty(q+'contact')};
+    }
+
+    if(/где вы|где офис|где находит|location|where are you|where.*office|地址|在哪里|办公/.test(n)){
+      memory.topic='site';
+      return {text:lang==='ru'?'CCCTrade работает из Иу (Yiwu), Китай. Отсюда мы подбираем робототехнику и дроны и помогаем организовать поставку в другие страны.':lang==='zh'?'CCCTrade 位于中国义乌。我们从这里协助选择机器人和无人机，并安排面向其他国家的供货。':'CCCTrade operates from Yiwu, China. From there we help select robotics and drones and arrange supply to other countries.'};
+    }
+
+    if(/как заказать|как купить|хочу купить|оформить заказ|order|how.*buy|how.*order|购买|下单|怎么购买/.test(n)){
+      memory.topic='site';
+      const text=lang==='ru'
+        ? 'Заказ через CCCTrade устроен просто:\n1. Вы выбираете модель и нужную комплектацию.\n2. Мы уточняем наличие, конфигурацию и конечную цену.\n3. Согласовываем страну назначения и вариант доставки.\n4. После подтверждения менеджер согласовывает доступный способ оплаты и оформление поставки.\n\nНапишите модель, страну и примерный бюджет — я сразу помогу сузить варианты.'
+        :lang==='zh'
+        ? '通过 CCCTrade 下单可以按这几个步骤：\n1. 选择型号和配置。\n2. 确认库存、配置和最终价格。\n3. 确认目的国家和运输方式。\n4. 确认后由经理沟通可用支付方式和交付安排。\n\n告诉我型号、国家和大概预算，我可以先帮你筛选。'
+        : 'Ordering through CCCTrade is straightforward:\n1. Choose the model and configuration.\n2. Confirm availability, configuration and final price.\n3. Agree on destination country and shipping method.\n4. The manager confirms the available payment method and delivery arrangement.\n\nTell me the model, country and approximate budget and I can narrow the options first.';
+      return {text:text+witty(q+'order')};
+    }
+
+    const wantsDji=/dji|дрон|drone|无人机/.test(n);
+    const wantsInventory=/каталог|ассортимент|что прода|что у вас|какие модели|какие роботы|какие дроны|что есть|available|catalog|what.*sell|what.*have|models|目录|有哪些|卖什么/.test(n);
+    const wantsPrices=/цены|прайс|сколько стоят|стоимость моделей|prices|price list|how much.*models|价格|多少钱/.test(n);
+
+    if(wantsDji || (wantsInventory && /дрон|drone|dji|无人机/.test(n))){
+      memory.topic='dji';
+      const drones=await ensureDjiCatalog();
+      if(drones.length){
+        const named=drones.filter(p=>n.includes(norm(p.name))||n.includes(norm(p.id)));
+        const list=(named.length?named:drones).slice(0,named.length?4:8);
+        const head=lang==='ru'?'На сайте есть отдельный каталог DJI. Вот варианты из каталога CCCTrade:':lang==='zh'?'网站有独立的 DJI 无人机目录。CCCTrade 目录中的部分型号：':'The site has a dedicated DJI catalog. Here are options from the CCCTrade catalog:';
+        const tail=lang==='ru'?'\n\nМогу подобрать дрон под путешествия, FPV, профессиональную съёмку, инспекции или конкретный бюджет — и буду опираться именно на каталог сайта.':lang==='zh'?'\n\n我可以按旅行、FPV、专业拍摄、巡检或预算来筛选，并优先使用网站目录数据。':'\n\nI can narrow these by travel, FPV, professional video, inspection or budget, using the site catalog first.';
+        return {text:head+'\n\n'+list.map(compactDroneLine).join('\n\n')+tail+witty(q+'dji')};
+      }
+      return {text:lang==='ru'?'На сайте есть раздел DJI с дронами для компактной съёмки, путешествий, FPV и профессионального применения. Каталог дронов сейчас не успел загрузиться в помощник, поэтому я не буду придумывать модели или цены. Можно открыть раздел «Дроны» или спросить меня чуть позже.':lang==='zh'?'网站有 DJI 无人机板块，覆盖轻便拍摄、旅行、FPV 和专业用途。无人机目录暂时没有加载到助手中，所以我不会编造型号或价格。可以打开“无人机”板块，或稍后再问。':'The site has a DJI drone section covering compact shooting, travel, FPV and professional use. The drone catalog did not load into the assistant just now, so I will not invent models or prices. Open the Drones section or ask again shortly.'};
+    }
+
+    if(wantsInventory){
+      memory.topic='catalog';
+      const robots=products();
+      const drones=await ensureDjiCatalog();
+      const robotHead=lang==='ru'?'Роботы в каталоге CCCTrade:':lang==='zh'?'CCCTrade 机器人目录：':'Robots in the CCCTrade catalog:';
+      const droneHead=lang==='ru'?'Дроны DJI:':lang==='zh'?'DJI 无人机：':'DJI drones:';
+      const robotText=robots.length?robots.slice(0,10).map(compactRobotLine).join('\n\n'):(lang==='ru'?'Каталог роботов не загрузился.':lang==='zh'?'机器人目录暂未加载。':'Robot catalog is not loaded.');
+      const droneText=drones.length?drones.slice(0,8).map(p=>`• ${p.name}${p.price?` — ${rub(p.price)}`:''}`).join('\n'):(lang==='ru'?'Каталог DJI загружается отдельно.':lang==='zh'?'DJI 目录单独加载。':'DJI catalog loads separately.');
+      const tail=lang==='ru'?'\n\nСкажите, для чего нужен робот или дрон и какой бюджет — я сравню именно товары с сайта, а не случайные модели из интернета.':lang==='zh'?'\n\n告诉我用途和预算，我会优先比较网站里的商品，而不是随机引用互联网上的型号。':'\n\nTell me the use case and budget and I will compare the products on this site, not random models from the internet.';
+      return {text:robotHead+'\n\n'+robotText+'\n\n'+droneHead+'\n'+droneText+tail+witty(q+'catalog')};
+    }
+
+    if(wantsPrices && !hits.length){
+      memory.topic='catalog';
+      const robots=products();
+      const lines=robots.filter(p=>p.price).map(p=>`• ${p.name} — ${rub(p.price)}`);
+      const text=lang==='ru'?'Цены, которые сейчас указаны в каталоге сайта:\n'+lines.join('\n')+'\n\nЭто цены из каталога CCCTrade; конкретная комплектация и финальная стоимость поставки могут потребовать уточнения.':lang==='zh'?'网站目录当前显示的价格：\n'+lines.join('\n')+'\n\n这些是 CCCTrade 目录价格；具体配置和最终交付价格可能需要进一步确认。':'Prices currently shown in the site catalog:\n'+lines.join('\n')+'\n\nThese are CCCTrade catalog prices; configuration and final delivered price may still need confirmation.';
+      return {text:text+witty(q+'prices')};
+    }
+
+    if(/сайт|ccctrade|ccc trade|о компании|company|about.*site|about.*company|网站|公司/.test(n)){
+      memory.topic='site';
+      const text=lang==='ru'?'CCCTrade — сайт по робототехнике и дронам с офисом в Иу, Китай. Здесь собраны роботы Unitree и другие модели, отдельный каталог DJI, характеристики, ориентировочные цены, сравнение, подбор, информация об оплате и доставке. Моя основная задача здесь — помогать именно по этому каталогу и по покупке, а уже потом отвечать на общие вопросы.':lang==='zh'?'CCCTrade 是一个机器人与无人机网站，办公地点在中国义乌。网站包含 Unitree 等机器人、独立 DJI 目录、参数、参考价格、对比、选型、支付和配送信息。我的首要任务是回答与本网站目录和购买相关的问题，其次才是一般知识问题。':'CCCTrade is a robotics and drone site based in Yiwu, China. It includes Unitree and other robots, a dedicated DJI catalog, specifications, indicative prices, comparisons, product selection, payments and shipping information. My first job here is to answer from this site catalog and help with purchasing; general questions come second.';
+      return {text:text+witty(q+'site')};
+    }
+
+    if(hits.length){
+      memory.topic='product';
+      memory.lastProducts=hits;
+      return {text:productSummary(hits[0],q),extra:productCards([hits[0]])};
+    }
+
+    return null;
+  }
   let freeSession=null;
   const randomPick = arr => arr[Math.floor(Math.random()*arr.length)];
   const timeout = (p,ms=7000) => Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 
-  async function freeFormAnswer(q,n){
+  async function freeFormAnswer(q,n,allowInternet=true){
     const persona = lang==='ru'
       ? 'Ты RoboChel AI — умный, спокойный и иногда остроумный помощник CCCTrade. Отвечай естественно и содержательно. На простой вопрос отвечай кратко, на сложный — подробно, обычно 2–5 абзацев. Помни контекст разговора. Не выдумывай точные факты и не притворяйся уверенным, если данных нет. Лёгкий юмор допустим иногда, но не в каждом ответе.'
       : lang==='zh'
@@ -424,7 +555,7 @@
     }catch(err){ console.debug('RoboChel on-device AI unavailable',err); freeSession=null; }
 
     try{
-      if(navigator.onLine){
+      if(allowInternet && navigator.onLine){
         const host = lang==='ru' ? 'ru.wikipedia.org' : lang==='zh' ? 'zh.wikipedia.org' : 'en.wikipedia.org';
         const subject = String(q).replace(/^(расскажи( мне)? про|расскажи( мне)? о|что такое|кто такой|кто такая|объясни|tell me about|what is|who is|explain|什么是|谁是|介绍一下)\s*/i,'').replace(/[?!？。]+$/,'').trim().slice(0,160);
         if(subject.length>1){
@@ -523,12 +654,16 @@
       return {text:productSummary(hits[0],q),extra:productCards([hits[0]])};
     }
 
+    const site=await siteFirstAnswer(q,n,hits);
+    if(site) return site;
+
     const k=knowledgeAnswer(q,n);
     if(k) return {text:k};
 
     if(memory.topic==='payment' && /а как|как именно|подробнее|how|怎么|详细/.test(n)) return {text:t.payment};
     if(memory.topic==='delivery' && /сколько|срок|стоим|how long|cost|多久|多少钱/.test(n)) return {text:t.delivery};
-    const free=await freeFormAnswer(q,n);
+    const siteFocused=siteIntent(q,n,hits);
+    const free=await freeFormAnswer(q,n,!siteFocused);
     return {text:free||contextualFallback(q,n)};
   }
 
