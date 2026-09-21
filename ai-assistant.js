@@ -457,6 +457,21 @@
       if(/^(а |and |а еще |ещё |еще )?(характер|парамет|spec|参数)/.test(n)) return {text:productSummary(last,'характеристики'),extra:productCards([last])};
       if(/^(а |and |а еще |ещё |еще )?(для чего|подходит|use|用途)/.test(n)) return {text:productSummary(last,'для чего'),extra:productCards([last])};
     }
+    const pageDroneFollowup=pageId&&/^(а |and |а еще |ещё |еще )?(цена|сколько стоит|стоимость|характер|парамет|для чего|подходит|price|cost|spec|use|价格|多少钱|参数|用途)/.test(n);
+    if(pageDroneFollowup){
+      const drones=await ensureDjiCatalog();
+      const p=drones.find(x=>x.id===pageId);
+      if(p){
+        const sp=p.specs||{};
+        const details=[sp.camera,sp.video,sp.flight,sp.range,sp.weight].filter(Boolean).join(' · ');
+        const text=lang==='ru'?
+          p.name+' — '+localized(p.description)+'\n\nКлючевые параметры: '+details+'\nПодходит для: '+localized(p.use)+'\nЦена на сайте: '+rub(p.price):
+          lang==='zh'?
+          p.name+' — '+localized(p.description)+'\n\n主要参数：'+details+'\n适合：'+localized(p.use)+'\n网站价格：'+rub(p.price):
+          p.name+' — '+localized(p.description)+'\n\nKey specs: '+details+'\nBest for: '+localized(p.use)+'\nSite price: '+rub(p.price);
+        return {text};
+      }
+    }
 
     if(/контакт|связат|менеджер|телеграм|telegram|email|почт|телефон|phone|contact|联系|邮箱|电话/.test(n)){
       memory.topic='site';
