@@ -12,8 +12,8 @@
       greet:'Привет! Рад вас видеть 👋 О чём поговорим?', thanks:'Пожалуйста! Можем продолжить.',
       mood:'У меня всё отлично 🤖 Я на связи и готов обсуждать роботов, дроны, ИИ или помочь с каталогом CCCTrade.',
       identity:'Я RoboChel AI — виртуальный помощник CCCTrade. Я работаю прямо на сайте, знаю каталог и могу поддерживать разговор на русском, английском и китайском.',
-      cap:'Я умею вести обычный диалог, отвечать про роботов, ИИ, LiDAR, компьютерное зрение, автономную навигацию, гуманоидных и четвероногих роботов, дроны, помогать выбирать товары, объяснять оплату и доставку.',
-      payment:'На сайте предусмотрены Alipay China, UnionPay, Visa, Mastercard, MIR, WeChat Pay, крипто и банковский перевод. Фактическая доступность зависит от подключённого платёжного провайдера.',
+      cap:'Я веду диалог с контекстом, знаю каталог CCCTrade, сравниваю роботов и DJI-дроны, помогаю подобрать модель под задачу и бюджет, объясняю характеристики, доставку и порядок заказа. На общие вопросы тоже отвечаю, но вопросы о товарах сайта всегда разбираю сначала по данным каталога.',
+      payment:'Онлайн-оплата на публичном сайте сейчас не подключена. Корзина используется как список интересующих товаров: менеджер CCCTrade подтверждает итоговую цену, комплектацию, доступный способ оплаты и условия поставки перед оформлением заказа.',
       delivery:'CCCTrade работает из Иу, Китай. Срок и стоимость зависят от модели, страны, веса и способа перевозки. Назовите страну и модель — я подскажу, какие данные нужны для расчёта.',
       compare:'Назовите 2–3 модели — сравню назначение, характеристики, цену и типичные сценарии использования.',
       choose:'Расскажите, где будет использоваться устройство, что оно должно уметь и какой примерно бюджет. Я сузю выбор.',
@@ -35,8 +35,8 @@
       greet:'Hi! Great to see you 👋 What would you like to talk about?', thanks:'You’re welcome! We can keep going.',
       mood:'I’m doing great 🤖 I’m here and ready to talk robots, drones, AI, or help with the CCCTrade catalog.',
       identity:'I’m RoboChel AI, the virtual CCCTrade assistant. I run directly on the website, know the catalog, and can chat in English, Russian and Chinese.',
-      cap:'I can hold a normal conversation, answer questions about robots, AI, LiDAR, computer vision, autonomous navigation, humanoid and quadruped robots, drones, help choose products, and explain payments and shipping.',
-      payment:'The site is prepared for Alipay China, UnionPay, Visa, Mastercard, MIR, WeChat Pay, crypto and bank transfer. Actual availability depends on the connected payment provider.',
+      cap:'I keep conversational context, know the CCCTrade catalog, compare robots and DJI drones, recommend models for a use case and budget, and explain specifications, shipping and ordering. I can also answer general questions, but site-product questions are always grounded in the catalog first.',
+      payment:'Online payment is not connected on the public site right now. The cart works as an inquiry list: a CCCTrade manager confirms the final price, configuration, available payment method and delivery terms before the order is placed.',
       delivery:'CCCTrade operates from Yiwu, China. Shipping time and cost depend on the model, country, weight and transport method. Tell me the country and model and I’ll explain what is needed for a quote.',
       compare:'Name 2–3 models and I’ll compare purpose, specifications, price and common use cases.',
       choose:'Tell me where the device will be used, what it needs to do, and your approximate budget. I’ll narrow the options.',
@@ -58,8 +58,8 @@
       greet:'你好！很高兴见到你 👋 想聊什么？', thanks:'不客气！我们可以继续聊。',
       mood:'我很好 🤖 随时可以聊机器人、无人机、人工智能，或者帮助你了解 CCCTrade 的产品。',
       identity:'我是 RoboChel AI，CCCTrade 的虚拟助手。我直接运行在网站上，了解产品目录，并且可以使用中文、英文和俄文交流。',
-      cap:'我可以进行日常对话，回答机器人、人工智能、LiDAR、计算机视觉、自动导航、人形机器人、四足机器人和无人机相关问题，也可以帮助选购、支付和配送。',
-      payment:'网站已为 Alipay China、UnionPay、Visa、Mastercard、MIR、WeChat Pay、加密货币和银行转账做好准备。实际可用方式取决于接入的支付服务商。',
+      cap:'我会记住当前对话，了解 CCCTrade 商品目录，可以比较机器人和 DJI 无人机、按用途与预算选型，并解释参数、配送和下单流程。一般问题也可以回答，但只要涉及本站商品，我会优先依据本站目录。',
+      payment:'目前公开网站没有启用在线支付。购物车作为询价清单使用；下单前由 CCCTrade 经理确认最终价格、配置、可用支付方式和配送条款。',
       delivery:'CCCTrade 位于中国义乌。配送时间和费用取决于型号、国家、重量和运输方式。告诉我国家和型号，我会说明报价需要哪些信息。',
       compare:'告诉我 2–3 个型号，我可以比较用途、参数、价格和常见使用场景。',
       choose:'请告诉我设备在哪里使用、需要完成什么任务，以及大概预算。我会缩小选择范围。',
@@ -426,7 +426,6 @@
 
   const siteIntent = (q,n,hits=[]) => {
     if(hits.length) return true;
-    if(memory.topic && ['product','compare','choose','payment','delivery','site','catalog','dji'].includes(memory.topic)) return true;
     return /ccctrade|ccc trade|этот сайт|наш сайт|ваш сайт|на сайте|каталог|ассортимент|что прода|что у вас|товар|купить|заказ|заказать|цена|стоим|оплат|достав|менеджер|контакт|телеграм|telegram|email|почт|офис|yiwu|иву|иу|unitree|go2|g1|r1|loona|dji|дрон|робот|humanoid|quadruped|robot|drone|无人机|机器人|目录|价格|购买|配送|支付|义乌/.test(n);
   };
 
@@ -638,6 +637,11 @@
       return{text:t.delivery+tail+witty(q)};
     }
 
+    const djiContext=/dji|дрон|drone|无人机/.test(n);
+    if(djiContext){
+      const djiSite=await siteFirstAnswer(q,n,hits);
+      if(djiSite) return djiSite;
+    }
     if(explicitCompare){
       if(hits.length<2 && memory.lastProducts.length>=2) hits=memory.lastProducts;
       if(hits.length>=2){ memory.topic='compare'; memory.lastProducts=hits.slice(0,3); return {text:compareProducts(hits,q),extra:productCards(hits)}; }
