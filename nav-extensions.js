@@ -89,6 +89,14 @@
     }catch(error){console.warn('RoboChel AI failed to load safely:',error);}
   }
 
+  function hasNavTarget(nav,kind){
+    const target=paths[kind];
+    return [...nav.querySelectorAll('a[href]')].some(a=>{
+      try{return new URL(a.href,document.baseURI).pathname.endsWith('/'+target);}
+      catch{return false;}
+    });
+  }
+
   function syncLinks(){
     const lang=currentLanguage();
     document.querySelectorAll('[data-extra-nav]').forEach(a=>{
@@ -96,13 +104,12 @@
       const mobile=!!a.closest('#menuDialog');a.href=href(paths[kind],lang);a.textContent=labels[lang][kind]+(mobile?' ↗':'');
     });
     const desktopNav=document.querySelector('.desktop-nav');
-    if(desktopNav)['services','partners','news','blog'].forEach(kind=>{if(!desktopNav.querySelector(`[data-extra-nav="${kind}"]`))desktopNav.append(makeLink(kind));});
+    if(desktopNav)['services','partners','news','blog'].forEach(kind=>{if(!hasNavTarget(desktopNav,kind))desktopNav.append(makeLink(kind));});
     const mobileNav=document.querySelector('#menuDialog nav');
-    if(mobileNav)['services','partners','news','blog'].forEach(kind=>{if(!mobileNav.querySelector(`[data-extra-nav="${kind}"]`))mobileNav.append(makeLink(kind,true));});
+    if(mobileNav)['services','partners','news','blog'].forEach(kind=>{if(!hasNavTarget(mobileNav,kind))mobileNav.append(makeLink(kind,true));});
     optimizeImages();improveNavigationAccessibility();
   }
 
-  loadCheckout();
   syncLinks();
   new MutationObserver(()=>requestAnimationFrame(syncLinks)).observe(document.documentElement,{subtree:true,childList:true});
   window.addEventListener('popstate',syncLinks);
