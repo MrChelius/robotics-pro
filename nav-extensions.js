@@ -79,7 +79,7 @@
 
   function loadRoboChelSafely(){
     try{
-      const version='20260921-sitefix-v8';
+      const version='20260921-sitefix-v9';
       addLocalStyle(`./ai-assistant.css?v=${version}`,'robochel-chat-style');
       addLocalScript(`./ai-assistant.js?v=${version}`,'robochel-chat-script');
       setTimeout(()=>{
