@@ -124,7 +124,8 @@
       ranked.forEach(([p]) => {
         const link = document.createElement('a');
         link.className = 'text-button';
-        link.href = `./product.html?product=${encodeURIComponent(p.id)}&lang=en`;
+        const currentLang = new URLSearchParams(location.search).get('lang') || 'en';
+        link.href = `./technologies/robots/product.html?product=${encodeURIComponent(p.id)}&lang=${encodeURIComponent(currentLang)}`;
         link.textContent = `${p.name} →`;
         answer.append(link);
       });
