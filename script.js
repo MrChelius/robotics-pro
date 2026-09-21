@@ -541,7 +541,6 @@
   function renderCompare() {
     const el = $("#comparison");
     if (!el) return;
-    if (!el) return;
     const ps = selected.map((id) => products.find((p) => p.id === id));
     el.innerHTML = ps.length
       ? `<div class="table-scroll" tabindex="0" role="region" aria-label="${words.compare}"><table class="compare-table"><caption class="sr-only">${words.compare}</caption><thead><tr><th scope="col">${words.parameter}</th>${ps.map((p) => html`<th scope="col"><a href="${href(p)}">${p.name} ↗</a><button data-compare="${p.id}" aria-label="${words.remove} ${p.name}">×</button></th>`).join("")}</tr></thead><tbody><tr><th scope="row">${words.type}</th>${ps.map((p) => html`<td>${words[p.group]}</td>`).join("")}</tr>${[
@@ -696,7 +695,7 @@
       : categoryId ? words[categoryId + "Text"] : isTechnology ? words.categoryText : words.heroText;
     $("#app").innerHTML =
       header() +
-      `<main id="main">${isProduct ? breadcrumbs() + productPage() : isTechnology || (categoryId && categoryId !== "robots") ? categoryPage() : homePage()}</main><footer><a class="brand" href="${home()}"><span>CCCTrade</span></a><p>${words.footer}</p><div><button class="footer-contact" data-contact>${words.contact}</button><a class="footer-contact" href="https://robotics-pro-commerce.netlify.app/delivery.html">Delivery</a><a class="footer-contact" href="https://robotics-pro-commerce.netlify.app/returns.html">Returns</a><a class="footer-contact" href="https://robotics-pro-commerce.netlify.app/privacy.html">Privacy</a><a class="footer-contact" href="https://robotics-pro-commerce.netlify.app/terms.html">Terms</a><span class="footer-office">${words.office}: Yiwu, China</span><span>© ${new Date().getFullYear()} CCCTrade</span></div></footer>${dialogs()}`;
+      `<main id="main">${isProduct ? breadcrumbs() + productPage() : isTechnology || (categoryId && categoryId !== "robots") ? categoryPage() : homePage()}</main><footer><a class="brand" href="${home()}"><span>CCCTrade</span></a><p>${words.footer}</p><div><button class="footer-contact" data-contact>${words.contact}</button><a class="footer-contact" href="./services.html?lang=${lang}">Services</a><a class="footer-contact" href="./news.html?lang=${lang}">News</a><a class="footer-contact" href="./blog.html?lang=${lang}">Blog</a><span class="footer-office">${words.office}: Yiwu, China</span><span>© ${new Date().getFullYear()} CCCTrade</span></div></footer>${dialogs()}`;
     if ($("#catalogGrid")) {
       renderCatalog();
       renderCompare();
@@ -863,8 +862,11 @@
     }
     if (b.hasAttribute("data-menu")) open("#menuDialog");
     if (b.hasAttribute("data-checkout")) {
-      const payload = encodeURIComponent(JSON.stringify(cart));
-      location.href = "https://robotics-pro-commerce.netlify.app/checkout.html?items=" + payload;
+      if (!cart.length) return;
+      $("#orderSummary").textContent = orderText();
+      $("#orderSummary").hidden = false;
+      $("#copySummary").hidden = false;
+      open("#contactDialog");
       return;
     }
     if (b.hasAttribute("data-copy")) {
