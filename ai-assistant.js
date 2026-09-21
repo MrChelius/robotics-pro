@@ -446,6 +446,17 @@
     if(!siteIntent(q,n,hits)) return null;
     const conceptual=/что такое робот|что такое дрон|what is a robot|what is a drone|机器人是什么|无人机是什么/.test(n);
     if(conceptual) return null;
+    const pageId=new URLSearchParams(location.search).get('product')||'';
+    if(!memory.lastProducts.length&&pageId){
+      const pageRobot=products().find(p=>p.id===pageId);
+      if(pageRobot) memory.lastProducts=[pageRobot];
+    }
+    if(memory.lastProducts.length){
+      const last=memory.lastProducts[0];
+      if(/^(а |and |а еще |ещё |еще )?(цена|сколько стоит|стоимость|price|cost|价格|多少钱)/.test(n)) return {text:productSummary(last,'цена'),extra:productCards([last])};
+      if(/^(а |and |а еще |ещё |еще )?(характер|парамет|spec|参数)/.test(n)) return {text:productSummary(last,'характеристики'),extra:productCards([last])};
+      if(/^(а |and |а еще |ещё |еще )?(для чего|подходит|use|用途)/.test(n)) return {text:productSummary(last,'для чего'),extra:productCards([last])};
+    }
 
     if(/контакт|связат|менеджер|телеграм|telegram|email|почт|телефон|phone|contact|联系|邮箱|电话/.test(n)){
       memory.topic='site';
@@ -481,6 +492,31 @@
       const drones=await ensureDjiCatalog();
       if(drones.length){
         const named=drones.filter(p=>n.includes(norm(p.name))||n.includes(norm(p.id)));
+        const djiCompare=/compare|сравн|比较|разниц|difference|vs\b|versus|против/.test(n);
+        const djiChoose=/подоб|выбр|choose|recommend|select|посовет|какой лучше|что лучше|推荐|怎么选/.test(n);
+        if(djiCompare&&named.length>=2){
+          const rows=named.slice(0,3).map(compactDroneLine).join('\n\n');
+          const intro=lang==='ru'?'Сравнение DJI по каталогу CCCTrade:':lang==='zh'?'根据 CCCTrade 目录对比 DJI：':'DJI comparison from the CCCTrade catalog:';
+          const tail=lang==='ru'?'\n\nДля выбора смотрите прежде всего на камеру, время полёта, массу и сценарий использования.':lang==='zh'?'\n\n选择时重点看相机、续航、重量和使用场景。':'\n\nFor the decision, focus on camera, flight time, weight and use case.';
+          return {text:intro+'\n\n'+rows+tail+witty(q+'dji-compare')};
+        }
+        if(named.length===1){
+          const p=named[0], sp=p.specs||{};
+          const details=[sp.camera,sp.video,sp.flight,sp.range,sp.weight].filter(Boolean).join(' · ');
+          const text=lang==='ru'?
+            p.name+' — '+localized(p.description)+'\n\nКлючевые параметры: '+details+'\nПодходит для: '+localized(p.use)+'\nЦена на сайте: '+rub(p.price):
+            lang==='zh'?
+            p.name+' — '+localized(p.description)+'\n\n主要参数：'+details+'\n适合：'+localized(p.use)+'\n网站价格：'+rub(p.price):
+            p.name+' — '+localized(p.description)+'\n\nKey specs: '+details+'\nBest for: '+localized(p.use)+'\nSite price: '+rub(p.price);
+          return {text:text+witty(q+'dji-one')};
+        }
+        if(djiChoose){
+          const budget=extractBudget(q)||memory.profile.budget;
+          const pool=(budget?drones.filter(p=>!p.price||p.price<=budget):drones);
+          const list=(pool.length?pool:drones).slice(0,5);
+          const intro=lang==='ru'?(budget?'В бюджете до '+rub(budget)+' я бы начал с этих DJI-моделей сайта:':'Для начала я бы рассмотрел эти DJI-модели сайта:'):lang==='zh'?(budget?'预算不超过 '+rub(budget)+'，可以先看这些 DJI 机型：':'可以先看这些 DJI 机型：'):(budget?'With a budget up to '+rub(budget)+', start with these DJI models from the site:':'I would start with these DJI models from the site:');
+          return {text:intro+'\n\n'+list.map(compactDroneLine).join('\n\n')};
+        }
         const list=(named.length?named:drones).slice(0,named.length?4:8);
         const head=lang==='ru'?'На сайте есть отдельный каталог DJI. Вот варианты из каталога CCCTrade:':lang==='zh'?'网站有独立的 DJI 无人机目录。CCCTrade 目录中的部分型号：':'The site has a dedicated DJI catalog. Here are options from the CCCTrade catalog:';
         const tail=lang==='ru'?'\n\nМогу подобрать дрон под путешествия, FPV, профессиональную съёмку, инспекции или конкретный бюджет — и буду опираться именно на каталог сайта.':lang==='zh'?'\n\n我可以按旅行、FPV、专业拍摄、巡检或预算来筛选，并优先使用网站目录数据。':'\n\nI can narrow these by travel, FPV, professional video, inspection or budget, using the site catalog first.';
