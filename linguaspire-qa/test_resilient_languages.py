@@ -1,3 +1,4 @@
+# STT model verification rerun after switching production ASR model to faster-whisper-base
 #!/usr/bin/env python3
 import json,time,urllib.request,urllib.error,ssl,subprocess,wave,os
 TRANS="https://translation-production-3882.up.railway.app"
