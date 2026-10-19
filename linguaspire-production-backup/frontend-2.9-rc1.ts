@@ -548,22 +548,56 @@ function detectSource(text:string){
   let best='en',score=0; for(const [lang,words] of Object.entries(scores)){const s=(words as string[]).reduce((n,w)=>n+(t.includes(w)?1:0),0);if(s>score){best=lang;score=s}} return best;
 }
 
+async function translateOnce(base:string,text:string,source:string,target:string){
+  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),7000);
+  try{
+    const r=await fetch(base+'/translate',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,body:JSON.stringify({q:text,source,target,format:'text'})});
+    if(!r.ok)return null;
+    const d:any=await r.json();
+    const out=typeof d?.translatedText==='string'?d.translatedText.trim():'';
+    return out||null;
+  }catch{return null}finally{clearTimeout(timer)}
+}
 async function runTranslation(text:string,requestedSource:string,target:string){
   const supported=new Set(['en','ru','zh','ja','ko','de','fr','it']);
   if(!supported.has(target))return {translatedText:'',source:requestedSource,error:'UNSUPPORTED_TARGET'};
-  const source=supported.has(requestedSource)?requestedSource:'auto';
-  if(source===target)return {translatedText:text,source,latencyMs:0};
+  let source=supported.has(requestedSource)?requestedSource:'auto';
+  if(source==='auto')source=detectSource(text);
+  if(source===target)return {translatedText:text,source,latencyMs:0,path:'identity'};
   const started=Date.now();
-  const candidates=source==='auto'?['auto',detectSource(text)]:[source];
-  for(const base of ['http://translation.railway.internal:5000',TRANSLATE_PUBLIC]){
-    for(const candidate of candidates){
-      const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),5500);
-      try{
-        const r=await fetch(base+'/translate',{method:'POST',headers:{'content-type':'application/json'},signal:controller.signal,body:JSON.stringify({q:text,source:candidate,target,format:'text'})});
-        if(r.ok){const d:any=await r.json();if(typeof d?.translatedText==='string'&&d.translatedText.trim())return {translatedText:d.translatedText,source:candidate,latencyMs:Date.now()-started}}
-      }catch{}finally{clearTimeout(timer)}
+  const bases=['http://translation.railway.internal:5000',TRANSLATE_PUBLIC];
+
+  // Direct translation first, with one retry per endpoint for cold-model/transient failures.
+  for(const base of bases){
+    for(let attempt=0;attempt<2;attempt++){
+      const out=await translateOnce(base,text,source,target);
+      if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'direct',attempt:attempt+1};
+      if(attempt===0)await new Promise(r=>setTimeout(r,180));
     }
   }
+
+  // LibreTranslate installations do not always have every direct language pair/model.
+  // Pivot through English when both legs are available.
+  if(source!=='en'&&target!=='en'){
+    let english:string|null=null;
+    for(const base of bases){
+      for(let attempt=0;attempt<2&&!english;attempt++){
+        english=await translateOnce(base,text,source,'en');
+        if(!english&&attempt===0)await new Promise(r=>setTimeout(r,180));
+      }
+      if(english)break;
+    }
+    if(english){
+      for(const base of bases){
+        for(let attempt=0;attempt<2;attempt++){
+          const out=await translateOnce(base,english,'en',target);
+          if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'pivot-en'};
+          if(attempt===0)await new Promise(r=>setTimeout(r,180));
+        }
+      }
+    }
+  }
+
   return {translatedText:'',source,error:'TRANSLATION_UNAVAILABLE',latencyMs:Date.now()-started};
 }
 app.post('/api/translate', async c => {
