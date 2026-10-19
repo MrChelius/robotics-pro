@@ -588,14 +588,46 @@ function detectSource(text:string){
   let best='en',score=0; for(const [lang,words] of Object.entries(scores)){const s=(words as string[]).reduce((n,w)=>n+(t.includes(w)?1:0),0);if(s>score){best=lang;score=s}} return best;
 }
 
-async function translateOnce(base:string,text:string,source:string,target:string){
-  const cacheKey=source+'|'+target+'|'+text;const cached=translationCacheGet(cacheKey);if(cached)return cached;
-  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),2800);
+async function googleTranslateChunk(text:string,source:string,target:string){
+  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),2400);
   try{
-    const r=await fetch(base+'/translate',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,body:JSON.stringify({q:text,source,target,format:'text'})});
+    const url=new URL('https://translate.googleapis.com/translate_a/single');
+    url.searchParams.set('client','gtx');url.searchParams.set('sl',source);url.searchParams.set('tl',target);url.searchParams.set('dt','t');url.searchParams.set('q',text);
+    const r=await fetch(url,{signal:ctrl.signal,headers:{'user-agent':'LinguaSpire/2.9'}});
     if(!r.ok)return null;
     const d:any=await r.json();
-    const out=typeof d?.translatedText==='string'?d.translatedText.trim():'';
+    const out=Array.isArray(d?.[0])?d[0].map((x:any)=>Array.isArray(x)?String(x[0]||''):'').join('').trim():'';
+    return out||null;
+  }catch{return null}finally{clearTimeout(timer)}
+}
+function splitTranslationText(text:string,max=900){
+  if(text.length<=max)return [text];
+  const out:string[]=[];let rest=text.trim();
+  while(rest){
+    if(rest.length<=max){out.push(rest);break}
+    let cut=rest.lastIndexOf(' ',max);
+    const p=Math.max(rest.lastIndexOf('. ',max),rest.lastIndexOf('? ',max),rest.lastIndexOf('! ',max),rest.lastIndexOf('。',max),rest.lastIndexOf('！',max),rest.lastIndexOf('？',max));
+    if(p>Math.floor(max*.45))cut=p+1;
+    if(cut<Math.floor(max*.35))cut=max;
+    out.push(rest.slice(0,cut).trim());rest=rest.slice(cut).trim();
+  }
+  return out.filter(Boolean).slice(0,8);
+}
+async function translateGoogle(text:string,source:string,target:string){
+  const cacheKey='g|'+source+'|'+target+'|'+text;const cached=translationCacheGet(cacheKey);if(cached)return cached;
+  const chunks=splitTranslationText(text);
+  const translated=await Promise.all(chunks.map(x=>googleTranslateChunk(x,source,target)));
+  if(translated.some(x=>!x))return null;
+  const out=(translated as string[]).join(' ').trim();
+  if(out)translationCacheSet(cacheKey,out);return out||null;
+}
+async function translateLibre(text:string,source:string,target:string){
+  const cacheKey='l|'+source+'|'+target+'|'+text;const cached=translationCacheGet(cacheKey);if(cached)return cached;
+  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),2600);
+  try{
+    const r=await fetch('http://translation.railway.internal:5000/translate',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,body:JSON.stringify({q:text,source,target,format:'text'})});
+    if(!r.ok)return null;
+    const d:any=await r.json();const out=typeof d?.translatedText==='string'?d.translatedText.trim():'';
     if(out)translationCacheSet(cacheKey,out);return out||null;
   }catch{return null}finally{clearTimeout(timer)}
 }
@@ -606,22 +638,21 @@ async function runTranslation(text:string,requestedSource:string,target:string){
   if(source==='auto')source=detectSource(text);
   if(source===target)return {translatedText:text,source,latencyMs:0,path:'identity'};
   const started=Date.now();
-  const internal='http://translation.railway.internal:5000';
 
-  // Fast direct path first.
-  let out=await translateOnce(internal,text,source,target);
-  if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'direct'};
+  // Primary path: stateless network translation. No language models are loaded into Railway RAM.
+  let out=await translateGoogle(text,source,target);
+  if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'google-direct'};
 
-  // One public retry only; same service, but it can survive a transient private-network failure.
-  out=await translateOnce(TRANSLATE_PUBLIC,text,source,target);
-  if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'direct-public'};
+  // Local LibreTranslate remains a private fallback for the pair(s) currently loaded there.
+  out=await translateLibre(text,source,target);
+  if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'libre-direct'};
 
-  // Non-English pairs can pivot through English. One attempt per leg to bound live-call latency.
+  // Last local fallback through English, bounded to avoid 15-28s caption stalls.
   if(source!=='en'&&target!=='en'){
-    const english=(await translateOnce(internal,text,source,'en')) || (await translateOnce(TRANSLATE_PUBLIC,text,source,'en'));
+    const english=await translateLibre(text,source,'en');
     if(english){
-      out=(await translateOnce(internal,english,'en',target)) || (await translateOnce(TRANSLATE_PUBLIC,english,'en',target));
-      if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'pivot-en'};
+      out=await translateLibre(english,'en',target);
+      if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'libre-pivot-en'};
     }
   }
   return {translatedText:'',source,error:'TRANSLATION_UNAVAILABLE',latencyMs:Date.now()-started};
