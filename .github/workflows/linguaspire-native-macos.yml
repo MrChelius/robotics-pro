@@ -48,7 +48,7 @@ jobs:
           rm -rf build/LinguaSpire.app
           mkdir -p build/LinguaSpire.app/Contents/MacOS
           mkdir -p build/LinguaSpire.app/Contents/Resources
-          xcrun swiftc             -O             -parse-as-library             -framework Cocoa             -framework WebKit             -framework AVFoundation             App/main.swift             -o build/LinguaSpire.app/Contents/MacOS/LinguaSpire
+          xcrun swiftc -O -framework Cocoa -framework WebKit -framework AVFoundation App/main.swift -o build/LinguaSpire.app/Contents/MacOS/LinguaSpire
           cp Info.plist build/LinguaSpire.app/Contents/Info.plist
           cp build/LinguaSpire.icns build/LinguaSpire.app/Contents/Resources/LinguaSpire.icns
           chmod 755 build/LinguaSpire.app/Contents/MacOS/LinguaSpire
