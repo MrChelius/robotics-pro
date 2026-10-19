@@ -240,7 +240,7 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':
 function fmtLang(code){return (langList.find(x=>x[0]===code)||[code,code])[1]}
 function meetingIdFromInput(v){try{if(v.includes('://')){const u=new URL(v);return (u.searchParams.get('room')||'').trim().toUpperCase()}}catch{}return v.trim().toUpperCase()}
 async function api(path,opts={}){const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),12000);try{const r=await fetch(ROOM_API+path,{...opts,signal:opts.signal||ctrl.signal,headers:{'Content-Type':'application/json',...(opts.headers||{})}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||('HTTP '+r.status));return d}catch(e){if(e?.name==='AbortError')throw new Error('NETWORK_TIMEOUT');throw e}finally{clearTimeout(timer)}}
-async function translate(text,target,source='auto'){if(!text)return text;const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),8000);try{const r=await fetch('/api/translate',{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({q:text,target,source})});const d=await r.json();return d.translatedText||text}catch{return text}finally{clearTimeout(timer)}}
+async function translate(text,target,source='auto'){if(!text)return text;const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),8000);try{const r=await fetch('/api/translate',{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({q:text,target,source})});const d=await r.json();return d.translatedText||('[Translation unavailable] '+text)}catch{return '[Translation unavailable] '+text}finally{clearTimeout(timer)}}
 
 function nav(page){state.page=page;document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));['meetings','recordings','settings','network','about'].forEach(p=>$(p+'Page').classList.toggle('hidden',p!==page));$('meetingPage').classList.add('hidden');if(page==='settings')renderSettings();if(page==='network')renderNetwork()}
 document.querySelectorAll('.navbtn[data-page]').forEach(b=>b.onclick=()=>nav(b.dataset.page));
@@ -550,32 +550,41 @@ function detectSource(text:string){
 
 async function runTranslation(text:string,requestedSource:string,target:string){
   const supported=new Set(['en','ru','zh','ja','ko','de','fr','it']);
-  let source=supported.has(requestedSource)?requestedSource:'auto';
-  if(source===target)return {translatedText:text,source};
-  for(const base of [TRANSLATE_PUBLIC,'http://translation.railway.internal:5000']){
-    for(const candidate of [source,source==='auto'?detectSource(text):source]){
+  if(!supported.has(target))return {translatedText:'',source:requestedSource,error:'UNSUPPORTED_TARGET'};
+  const source=supported.has(requestedSource)?requestedSource:'auto';
+  if(source===target)return {translatedText:text,source,latencyMs:0};
+  const started=Date.now();
+  const candidates=source==='auto'?['auto',detectSource(text)]:[source];
+  for(const base of ['http://translation.railway.internal:5000',TRANSLATE_PUBLIC]){
+    for(const candidate of candidates){
+      const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),5500);
       try{
-        const r=await fetch(base+'/translate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q:text,source:candidate,target,format:'text'})});
-        if(r.ok){const d:any=await r.json();if(d?.translatedText)return {translatedText:d.translatedText,source:candidate}}
-      }catch{}
-      if(candidate!==source)break;
+        const r=await fetch(base+'/translate',{method:'POST',headers:{'content-type':'application/json'},signal:controller.signal,body:JSON.stringify({q:text,source:candidate,target,format:'text'})});
+        if(r.ok){const d:any=await r.json();if(typeof d?.translatedText==='string'&&d.translatedText.trim())return {translatedText:d.translatedText,source:candidate,latencyMs:Date.now()-started}}
+      }catch{}finally{clearTimeout(timer)}
     }
   }
-  return {translatedText:text,source,warning:'translation_unavailable'};
+  return {translatedText:'',source,error:'TRANSLATION_UNAVAILABLE',latencyMs:Date.now()-started};
 }
 app.post('/api/translate', async c => {
   try{
-    const b=await c.req.json();const text=String(b.q||'');const target=String(b.target||'en');const source=String(b.source||'auto');
+    const b=await c.req.json();const text=String(b.q||'').slice(0,4000);const target=String(b.target||'en');const source=String(b.source||'auto');
     if(!text)return c.json({translatedText:''});
-    return c.json(await runTranslation(text,source,target));
+    const result=await runTranslation(text,source,target);
+    return c.json(result,result.error?503:200);
   }catch{return c.json({error:'TRANSLATION_FAILED'},502)}
 });
 app.get('/api/diagnostics/translation',async c=>{
-  const samples=[['en','Hello, how are you today?'],['ru','Привет, как у тебя дела сегодня?'],['zh','你好，你今天怎么样？'],['ja','こんにちは、今日はどうですか？'],['ko','안녕하세요, 오늘 어떻게 지내세요?'],['de','Hallo, wie geht es dir heute?'],['fr','Bonjour, comment allez-vous aujourd’hui ?'],['it','Ciao, come stai oggi?']];
-  const results=await Promise.all(samples.map(async([source,text])=>{const target=source==='en'?'ru':'en';const started=Date.now();const out:any=await runTranslation(text,source,target);return {source,target,ok:!!out.translatedText&&out.translatedText!==text,translatedText:out.translatedText,latencyMs:Date.now()-started}}));
-  return c.json({ok:results.every(x=>x.ok),results});
+  const samples:any={en:'Hello, how are you?',ru:'Привет, как дела?',zh:'你好，你怎么样？',ja:'こんにちは、お元気ですか？',ko:'안녕하세요, 어떻게 지내세요?',de:'Hallo, wie geht es dir?',fr:'Bonjour, comment allez-vous ?',it:'Ciao, come stai?'};
+  const languages=Object.keys(samples);
+  const results=[];
+  for(const source of languages)for(const target of languages)if(source!==target){
+    const started=Date.now();const result:any=await runTranslation(samples[source],source,target);
+    results.push({source,target,ok:!result.error&&!!result.translatedText&&result.translatedText!==samples[source],latencyMs:Date.now()-started,error:result.error||null});
+  }
+  const sorted=results.map(x=>x.latencyMs).sort((a,b)=>a-b);
+  return c.json({ok:results.every(x=>x.ok),languages,checked:results.length,passed:results.filter(x=>x.ok).length,p50Ms:sorted[Math.floor(sorted.length*.5)],p95Ms:sorted[Math.floor(sorted.length*.95)],results});
 });
-
 app.post('/api/asr', async c => {
   try{
     const input=await c.req.raw.formData(); const f=input.get('audio_file'); if(!(f instanceof File))return c.json({error:'NO_AUDIO'},400);
