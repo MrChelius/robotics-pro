@@ -3,7 +3,7 @@ import WebKit
 import AVFoundation
 
 private let appName = "LinguaSpire"
-private let appVersion = "2.8.0"
+private let appVersion = "2.9.0-rc1"
 private let productionURL = URL(string: "https://frontend-production-802b.up.railway.app/")!
 private let allowedHost = "frontend-production-802b.up.railway.app"
 
@@ -42,7 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsMagnification = true
-        webView.customUserAgent = "LinguaSpire/2.8.0 macOS WKWebView"
+        webView.customUserAgent = "LinguaSpire/2.9.0-rc1 macOS WKWebView"
 
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1440, height: 900),
@@ -168,7 +168,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationName: appName,
             .applicationVersion: appVersion,
-            .version: "2.8.0"
+            .version: "2.9.0-rc1"
         ])
     }
 
@@ -220,7 +220,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         loadedProductionOnce = isAllowed(webView.url)
-        let js = #"document.documentElement.setAttribute("data-native-shell","macos"); window.dispatchEvent(new CustomEvent("linguaspire-native-ready",{detail:{platform:"macOS",version:"2.8.0"}}));"#
+        let js = #"document.documentElement.setAttribute("data-native-shell","macos"); window.dispatchEvent(new CustomEvent("linguaspire-native-ready",{detail:{platform:"macOS",version:"2.9.0-rc1"}}));"#
         webView.evaluateJavaScript(js, completionHandler: nil)
     }
 
