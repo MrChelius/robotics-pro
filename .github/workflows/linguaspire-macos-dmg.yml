@@ -21,9 +21,6 @@ permissions:
 jobs:
   build-macos-arm64:
     runs-on: macos-15
-    defaults:
-      run:
-        working-directory: linguaspire-desktop
 
     steps:
       - name: Checkout source
@@ -33,12 +30,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: linguaspire-desktop/package-lock.json
 
-      - name: Generate app artwork
+      - name: Generate native app icon
+        working-directory: linguaspire-desktop
         run: |
           python3 scripts/make_icon.py
+          rm -rf assets/icon.iconset
           mkdir -p assets/icon.iconset
           sips -z 16 16 assets/icon-1024.png --out assets/icon.iconset/icon_16x16.png
           sips -z 32 32 assets/icon-1024.png --out assets/icon.iconset/icon_16x16@2x.png
@@ -51,42 +48,61 @@ jobs:
           sips -z 512 512 assets/icon-1024.png --out assets/icon.iconset/icon_512x512.png
           cp assets/icon-1024.png assets/icon.iconset/icon_512x512@2x.png
           iconutil -c icns assets/icon.iconset -o assets/icon.icns
+          file assets/icon.icns
 
-      - name: Install dependencies
+      - name: Install desktop dependencies
+        working-directory: linguaspire-desktop
         run: npm install
 
-      - name: Build real macOS app and DMG
+      - name: Build standalone Electron app
+        working-directory: linguaspire-desktop
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: npm run dist:mac:arm64
 
-      - name: Ad-hoc sign app for local testing
+      - name: Verify application bundle
+        working-directory: linguaspire-desktop
         run: |
           APP="dist/mac-arm64/LinguaSpire.app"
-          if [ -d "$APP" ]; then
-            codesign --force --deep --sign - "$APP"
-            codesign --verify --deep --strict "$APP"
-          fi
+          test -d "$APP"
+          test -x "$APP/Contents/MacOS/LinguaSpire"
+          /usr/bin/file "$APP/Contents/MacOS/LinguaSpire"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :NSCameraUsageDescription" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :NSMicrophoneUsageDescription" "$APP/Contents/Info.plist"
 
-      - name: Rebuild DMG after signing
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - name: Ad-hoc sign application
+        working-directory: linguaspire-desktop
         run: |
-          rm -f dist/*.dmg
-          npx electron-builder --mac dmg --arm64 --publish never
+          APP="dist/mac-arm64/LinguaSpire.app"
+          codesign --force --deep --sign - "$APP"
+          codesign --verify --deep --strict "$APP"
 
-      - name: Show produced files
+      - name: Create real DMG with Applications shortcut
+        working-directory: linguaspire-desktop
         run: |
-          ls -lah dist
-          file dist/*.dmg || true
-          shasum -a 256 dist/*.dmg dist/*.zip || true
+          rm -rf dmg-root
+          mkdir -p dmg-root
+          ditto "dist/mac-arm64/LinguaSpire.app" "dmg-root/LinguaSpire.app"
+          ln -s /Applications "dmg-root/Applications"
+          hdiutil create             -volname "LinguaSpire 2.8"             -srcfolder "dmg-root"             -ov             -format UDZO             "dist/LinguaSpire-2.8-macOS-arm64.dmg"
+          ditto -c -k --sequesterRsrc --keepParent             "dist/mac-arm64/LinguaSpire.app"             "dist/LinguaSpire-2.8-macOS-arm64.app.zip"
 
-      - name: Upload DMG and ZIP
+      - name: Verify installer artifacts
+        working-directory: linguaspire-desktop
+        run: |
+          test -s dist/LinguaSpire-2.8-macOS-arm64.dmg
+          test -s dist/LinguaSpire-2.8-macOS-arm64.app.zip
+          hdiutil imageinfo dist/LinguaSpire-2.8-macOS-arm64.dmg >/dev/null
+          ls -lh dist/LinguaSpire-2.8-macOS-arm64.dmg dist/LinguaSpire-2.8-macOS-arm64.app.zip
+          shasum -a 256 dist/LinguaSpire-2.8-macOS-arm64.dmg dist/LinguaSpire-2.8-macOS-arm64.app.zip
+
+      - name: Upload DMG and app ZIP
         uses: actions/upload-artifact@v4
         with:
           name: LinguaSpire-2.8-macOS-arm64
           path: |
-            linguaspire-desktop/dist/*.dmg
-            linguaspire-desktop/dist/*.zip
+            linguaspire-desktop/dist/LinguaSpire-2.8-macOS-arm64.dmg
+            linguaspire-desktop/dist/LinguaSpire-2.8-macOS-arm64.app.zip
           if-no-files-found: error
           retention-days: 30
