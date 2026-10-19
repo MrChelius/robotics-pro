@@ -30,7 +30,7 @@
     "asar": true,
     "mac": {
       "category": "public.app-category.social-networking",
-      "icon": "assets/icon-1024.png",
+      "icon": "assets/icon.icns",
       "identity": null,
       "hardenedRuntime": false,
       "extendInfo": {
