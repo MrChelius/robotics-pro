@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "dist:mac:arm64": "electron-builder --mac dmg zip --arm64 --publish never"
+    "dist:mac:arm64": "electron-builder --mac dir --arm64 --publish never"
   },
   "devDependencies": {
     "electron": "44.9.0",
