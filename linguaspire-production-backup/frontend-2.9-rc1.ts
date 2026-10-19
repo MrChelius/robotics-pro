@@ -5,7 +5,7 @@ app.use('*', async (c,next)=>{await next();c.header('X-Content-Type-Options','no
 const ROOM_API = 'https://room-api-production-881c.up.railway.app';
 const STT_PUBLIC = 'https://stt-production-4262.up.railway.app';
 const TRANSLATE_PUBLIC = 'https://translation-production-3882.up.railway.app';
-const APP_VERSION = '2.9.0-rc1';
+const APP_VERSION = '2.9.0';
 
 const html = String.raw`<!doctype html>
 <html lang="en">
@@ -528,7 +528,7 @@ const initialParams=new URL(location.href).searchParams;const initialRoom=initia
 </html>`;
 
 const legalPage=(title:string,body:string)=>`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · LinguaSpire</title><style>body{margin:0;background:#071325;color:#eef5ff;font:16px/1.65 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}.w{max-width:850px;margin:auto;padding:50px 24px}.c{background:#0d1b32;border:1px solid #294064;border-radius:18px;padding:26px}a{color:#70b8ff}h1{font-size:38px}.muted{color:#9fb0c8}</style></head><body><main class="w"><a href="/">← LinguaSpire</a><h1>${title}</h1><div class="c">${body}</div><p class="muted">LinguaSpire ${APP_VERSION}</p></main></body></html>`;
-app.get('/api/version',c=>c.json({product:'LinguaSpire',version:APP_VERSION,minimumDesktopVersion:'2.9.0-rc1',channel:'production'}));
+app.get('/api/version',c=>c.json({product:'LinguaSpire',version:APP_VERSION,minimumDesktopVersion:'2.9.0',channel:'production'}));
 app.get('/privacy',c=>c.html(legalPage('Privacy Policy','<p>LinguaSpire processes audio when live captions or transcription are enabled so speech can be converted to text and translated.</p><p>Room state is short-lived. Phone-camera pairing codes expire after 10 minutes and are single-use.</p><p>Recording must be visibly indicated to participants and used only with consent required by law.</p>')));
 app.get('/terms',c=>c.html(legalPage('Terms of Use','<p>Machine transcription and translation can contain errors. Do not rely on LinguaSpire as the sole source for legal, medical, emergency, financial or other high-stakes decisions.</p><p>Do not use LinguaSpire to violate law or invade privacy.</p>')));
 app.get('/support',c=>c.html(legalPage('Support','<p>Use Network Test inside LinguaSpire to check Room API, speech-to-text, translation and media connectivity.</p><p>A dedicated commercial support mailbox will be published with the custom production domain.</p>')));
@@ -538,6 +538,9 @@ app.get('/', c => c.html(html));
 app.get('/room/:id', c => c.redirect('/?room='+encodeURIComponent(c.req.param('id'))));
 app.get('/phone/:id', c => c.redirect('/?phone=1&room='+encodeURIComponent(c.req.param('id'))));
 
+const translationCache=new Map<string,{value:string,expires:number}>();
+function translationCacheGet(key:string){const x=translationCache.get(key);if(!x)return null;if(x.expires<Date.now()){translationCache.delete(key);return null}return x.value}
+function translationCacheSet(key:string,value:string){if(translationCache.size>500)translationCache.delete(translationCache.keys().next().value);translationCache.set(key,{value,expires:Date.now()+300000})}
 function detectSource(text:string){
   const t=' '+text.toLowerCase()+' ';
   if(/[а-яё]/i.test(text)) return 'ru';
@@ -549,13 +552,14 @@ function detectSource(text:string){
 }
 
 async function translateOnce(base:string,text:string,source:string,target:string){
-  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),7000);
+  const cacheKey=source+'|'+target+'|'+text;const cached=translationCacheGet(cacheKey);if(cached)return cached;
+  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),2800);
   try{
     const r=await fetch(base+'/translate',{method:'POST',headers:{'content-type':'application/json'},signal:ctrl.signal,body:JSON.stringify({q:text,source,target,format:'text'})});
     if(!r.ok)return null;
     const d:any=await r.json();
     const out=typeof d?.translatedText==='string'?d.translatedText.trim():'';
-    return out||null;
+    if(out)translationCacheSet(cacheKey,out);return out||null;
   }catch{return null}finally{clearTimeout(timer)}
 }
 async function runTranslation(text:string,requestedSource:string,target:string){
@@ -565,39 +569,24 @@ async function runTranslation(text:string,requestedSource:string,target:string){
   if(source==='auto')source=detectSource(text);
   if(source===target)return {translatedText:text,source,latencyMs:0,path:'identity'};
   const started=Date.now();
-  const bases=['http://translation.railway.internal:5000',TRANSLATE_PUBLIC];
+  const internal='http://translation.railway.internal:5000';
 
-  // Direct translation first, with one retry per endpoint for cold-model/transient failures.
-  for(const base of bases){
-    for(let attempt=0;attempt<2;attempt++){
-      const out=await translateOnce(base,text,source,target);
-      if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'direct',attempt:attempt+1};
-      if(attempt===0)await new Promise(r=>setTimeout(r,180));
-    }
-  }
+  // Fast direct path first.
+  let out=await translateOnce(internal,text,source,target);
+  if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'direct'};
 
-  // LibreTranslate installations do not always have every direct language pair/model.
-  // Pivot through English when both legs are available.
+  // One public retry only; same service, but it can survive a transient private-network failure.
+  out=await translateOnce(TRANSLATE_PUBLIC,text,source,target);
+  if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'direct-public'};
+
+  // Non-English pairs can pivot through English. One attempt per leg to bound live-call latency.
   if(source!=='en'&&target!=='en'){
-    let english:string|null=null;
-    for(const base of bases){
-      for(let attempt=0;attempt<2&&!english;attempt++){
-        english=await translateOnce(base,text,source,'en');
-        if(!english&&attempt===0)await new Promise(r=>setTimeout(r,180));
-      }
-      if(english)break;
-    }
+    const english=(await translateOnce(internal,text,source,'en')) || (await translateOnce(TRANSLATE_PUBLIC,text,source,'en'));
     if(english){
-      for(const base of bases){
-        for(let attempt=0;attempt<2;attempt++){
-          const out=await translateOnce(base,english,'en',target);
-          if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'pivot-en'};
-          if(attempt===0)await new Promise(r=>setTimeout(r,180));
-        }
-      }
+      out=(await translateOnce(internal,english,'en',target)) || (await translateOnce(TRANSLATE_PUBLIC,english,'en',target));
+      if(out)return {translatedText:out,source,latencyMs:Date.now()-started,path:'pivot-en'};
     }
   }
-
   return {translatedText:'',source,error:'TRANSLATION_UNAVAILABLE',latencyMs:Date.now()-started};
 }
 app.post('/api/translate', async c => {
@@ -623,12 +612,12 @@ app.post('/api/asr', async c => {
   try{
     const input=await c.req.raw.formData(); const f=input.get('audio_file'); if(!(f instanceof File))return c.json({error:'NO_AUDIO'},400);
     let language=String(input.get('language')||'auto'); const vocab=String(input.get('vocab')||'').slice(0,1200);const profile=String(input.get('profile')||'general'); const supported=new Set(['en','ru','zh','ja','ko','de','fr','it']);
-    const out=new FormData(); out.append('file',f,f.name||'speech.webm'); out.append('model','Systran/faster-whisper-base'); out.append('response_format','verbose_json'); out.append('temperature','0'); out.append('vad_filter','true');
+    const out=new FormData(); out.append('file',f,f.name||'speech.webm'); out.append('model','Systran/faster-whisper-tiny'); out.append('response_format','verbose_json'); out.append('temperature','0'); out.append('vad_filter','true');
     if(language!=='auto'&&supported.has(language)) out.append('language',language);
     const hotwords=['LinguaSpire',vocab].filter(Boolean).join(', '); if(hotwords)out.append('hotwords',hotwords);
     const profileHint=profile==='business'?'Business meeting with names, companies and professional terms.':profile==='education'?'Educational conversation with clear academic vocabulary.':profile==='technical'?'Technical conversation with product and software terminology.':'Natural everyday conversation.';out.append('prompt',profileHint+' Supported languages: English, Russian, Chinese, Japanese, Korean, German, French, Italian. Transcribe only clearly spoken human speech. Ignore music, fan noise, keyboard clicks, traffic, breathing and background sounds. Never invent words for noise.');
     for(const url of ['http://stt.railway.internal:8000/v1/audio/transcriptions',STT_PUBLIC+'/v1/audio/transcriptions']){
-      try{const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),22000); const r=await fetch(url,{method:'POST',body:out,signal:ctrl.signal}); clearTimeout(to); if(!r.ok)continue; const d:any=await r.json(); let lang=String(d.language||language||'').toLowerCase(); if(lang==='yue')lang='zh'; if(!supported.has(lang))return c.json({text:'',language:lang,rejected:'unsupported_language'}); const segs=Array.isArray(d.segments)?d.segments:[]; const accepted=segs.filter((s:any)=>{const noSpeech=Number(s.no_speech_prob??0),logp=Number(s.avg_logprob??0),comp=Number(s.compression_ratio??0),dur=Math.max(0,Number(s.end??0)-Number(s.start??0)),txt=String(s.text||'').trim();return !!txt&&noSpeech<=.38&&logp>=-.82&&comp<=2.35&&dur>=.22}); if(!accepted.length)return c.json({text:'',language:lang,rejected:'no_clear_speech'}); const text=accepted.map((s:any)=>String(s.text||'').trim()).join(' ').replace(/\s+/g,' ').trim(); const chars=(text.match(/[\p{L}\p{N}]/gu)||[]).length; if(chars<2)return c.json({text:'',language:lang,rejected:'low_content'}); return c.json({text,language:lang});}catch{}
+      try{const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),8000); const r=await fetch(url,{method:'POST',body:out,signal:ctrl.signal}); clearTimeout(to); if(!r.ok)continue; const d:any=await r.json(); let lang=String(d.language||language||'').toLowerCase(); if(lang==='yue')lang='zh'; if(!supported.has(lang))return c.json({text:'',language:lang,rejected:'unsupported_language'}); const segs=Array.isArray(d.segments)?d.segments:[]; const accepted=segs.filter((s:any)=>{const noSpeech=Number(s.no_speech_prob??0),logp=Number(s.avg_logprob??0),comp=Number(s.compression_ratio??0),dur=Math.max(0,Number(s.end??0)-Number(s.start??0)),txt=String(s.text||'').trim();return !!txt&&noSpeech<=.38&&logp>=-.82&&comp<=2.35&&dur>=.22}); if(!accepted.length)return c.json({text:'',language:lang,rejected:'no_clear_speech'}); const text=accepted.map((s:any)=>String(s.text||'').trim()).join(' ').replace(/\s+/g,' ').trim(); const chars=(text.match(/[\p{L}\p{N}]/gu)||[]).length; if(chars<2)return c.json({text:'',language:lang,rejected:'low_content'}); return c.json({text,language:lang});}catch{}
     }
     return c.json({error:'STT_UNAVAILABLE'},502);
   }catch{return c.json({error:'STT_FAILED'},502)}
