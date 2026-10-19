@@ -168,8 +168,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate, 
         NSApp.orderFrontStandardAboutPanel(options: [
             .applicationName: appName,
             .applicationVersion: appVersion,
-            .version: "2.8.0",
-            .copyright: "© 2026 LinguaSpire. All rights reserved."
+            .version: "2.8.0"
         ])
     }
 
