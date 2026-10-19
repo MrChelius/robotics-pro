@@ -1,0 +1,86 @@
+name: Build LinguaSpire macOS DMG
+
+on:
+  push:
+    branches:
+      - linguaspire-dmg-build
+    paths:
+      - "linguaspire-desktop/**"
+      - ".github/workflows/linguaspire-macos-dmg.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos-arm64:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: linguaspire-desktop
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: linguaspire-desktop/package-lock.json
+
+      - name: Generate app artwork
+        run: |
+          python3 scripts/make_icon.py
+          mkdir -p assets/icon.iconset
+          sips -z 16 16 assets/icon-1024.png --out assets/icon.iconset/icon_16x16.png
+          sips -z 32 32 assets/icon-1024.png --out assets/icon.iconset/icon_16x16@2x.png
+          sips -z 32 32 assets/icon-1024.png --out assets/icon.iconset/icon_32x32.png
+          sips -z 64 64 assets/icon-1024.png --out assets/icon.iconset/icon_32x32@2x.png
+          sips -z 128 128 assets/icon-1024.png --out assets/icon.iconset/icon_128x128.png
+          sips -z 256 256 assets/icon-1024.png --out assets/icon.iconset/icon_128x128@2x.png
+          sips -z 256 256 assets/icon-1024.png --out assets/icon.iconset/icon_256x256.png
+          sips -z 512 512 assets/icon-1024.png --out assets/icon.iconset/icon_256x256@2x.png
+          sips -z 512 512 assets/icon-1024.png --out assets/icon.iconset/icon_512x512.png
+          cp assets/icon-1024.png assets/icon.iconset/icon_512x512@2x.png
+          iconutil -c icns assets/icon.iconset -o assets/icon.icns
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build real macOS app and DMG
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run dist:mac:arm64
+
+      - name: Ad-hoc sign app for local testing
+        run: |
+          APP="dist/mac-arm64/LinguaSpire.app"
+          if [ -d "$APP" ]; then
+            codesign --force --deep --sign - "$APP"
+            codesign --verify --deep --strict "$APP"
+          fi
+
+      - name: Rebuild DMG after signing
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          rm -f dist/*.dmg
+          npx electron-builder --mac dmg --arm64 --publish never
+
+      - name: Show produced files
+        run: |
+          ls -lah dist
+          file dist/*.dmg || true
+          shasum -a 256 dist/*.dmg dist/*.zip || true
+
+      - name: Upload DMG and ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinguaSpire-2.8-macOS-arm64
+          path: |
+            linguaspire-desktop/dist/*.dmg
+            linguaspire-desktop/dist/*.zip
+          if-no-files-found: error
+          retention-days: 30
