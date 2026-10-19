@@ -1,0 +1,29 @@
+name: LinguaSpire Resilient Language QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "linguaspire-qa/test_resilient_languages.py"
+      - ".github/workflows/linguaspire-language-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  language-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test all 56 directions with retry/pivot and frontend STT silence
+        run: python3 linguaspire-qa/test_resilient_languages.py
+      - name: Upload detailed matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinguaSpire-resilient-language-QA
+          path: linguaspire-qa/results/resilient-translation.json
+          if-no-files-found: error
+          retention-days: 30
