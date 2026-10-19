@@ -1,5 +1,6 @@
 import Cocoa
 import WebKit
+import AVFoundation
 
 private let appName = "LinguaSpire"
 private let appVersion = "2.8.0"
