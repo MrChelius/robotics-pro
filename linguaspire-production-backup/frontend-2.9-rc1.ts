@@ -623,7 +623,7 @@ app.post('/api/asr', async c => {
   try{
     const input=await c.req.raw.formData(); const f=input.get('audio_file'); if(!(f instanceof File))return c.json({error:'NO_AUDIO'},400);
     let language=String(input.get('language')||'auto'); const vocab=String(input.get('vocab')||'').slice(0,1200);const profile=String(input.get('profile')||'general'); const supported=new Set(['en','ru','zh','ja','ko','de','fr','it']);
-    const out=new FormData(); out.append('file',f,f.name||'speech.webm'); out.append('model','Systran/faster-whisper-small'); out.append('response_format','verbose_json'); out.append('temperature','0'); out.append('vad_filter','true');
+    const out=new FormData(); out.append('file',f,f.name||'speech.webm'); out.append('model','Systran/faster-whisper-base'); out.append('response_format','verbose_json'); out.append('temperature','0'); out.append('vad_filter','true');
     if(language!=='auto'&&supported.has(language)) out.append('language',language);
     const hotwords=['LinguaSpire',vocab].filter(Boolean).join(', '); if(hotwords)out.append('hotwords',hotwords);
     const profileHint=profile==='business'?'Business meeting with names, companies and professional terms.':profile==='education'?'Educational conversation with clear academic vocabulary.':profile==='technical'?'Technical conversation with product and software terminology.':'Natural everyday conversation.';out.append('prompt',profileHint+' Supported languages: English, Russian, Chinese, Japanese, Korean, German, French, Italian. Transcribe only clearly spoken human speech. Ignore music, fan noise, keyboard clicks, traffic, breathing and background sounds. Never invent words for noise.');
