@@ -7,6 +7,12 @@ on:
     paths:
       - "linguaspire-desktop/**"
       - ".github/workflows/linguaspire-macos-dmg.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "linguaspire-desktop/**"
+      - ".github/workflows/linguaspire-macos-dmg.yml"
   workflow_dispatch:
 
 permissions:
