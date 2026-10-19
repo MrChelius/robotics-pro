@@ -21,6 +21,13 @@ permissions:
 jobs:
   build-native-macos:
     runs-on: macos-15
+    env:
+      APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
     steps:
       - name: Checkout
@@ -48,7 +55,12 @@ jobs:
           rm -rf build/LinguaSpire.app
           mkdir -p build/LinguaSpire.app/Contents/MacOS
           mkdir -p build/LinguaSpire.app/Contents/Resources
-          xcrun swiftc -O -framework Cocoa -framework WebKit -framework AVFoundation App/main.swift -o build/LinguaSpire.app/Contents/MacOS/LinguaSpire
+          mkdir -p build/bin
+          SDK="$(xcrun --sdk macosx --show-sdk-path)"
+          xcrun swiftc -O -target arm64-apple-macos13.0 -sdk "$SDK" -framework Cocoa -framework WebKit -framework AVFoundation App/main.swift -o build/bin/LinguaSpire-arm64
+          xcrun swiftc -O -target x86_64-apple-macos13.0 -sdk "$SDK" -framework Cocoa -framework WebKit -framework AVFoundation App/main.swift -o build/bin/LinguaSpire-x86_64
+          lipo -create build/bin/LinguaSpire-arm64 build/bin/LinguaSpire-x86_64 -output build/LinguaSpire.app/Contents/MacOS/LinguaSpire
+          lipo -info build/LinguaSpire.app/Contents/MacOS/LinguaSpire
           cp Info.plist build/LinguaSpire.app/Contents/Info.plist
           cp build/LinguaSpire.icns build/LinguaSpire.app/Contents/Resources/LinguaSpire.icns
           chmod 755 build/LinguaSpire.app/Contents/MacOS/LinguaSpire
@@ -66,10 +78,7 @@ jobs:
           /usr/libexec/PlistBuddy -c "Print :NSMicrophoneUsageDescription" "$APP/Contents/Info.plist"
 
       - name: Import Developer ID certificate
-        if: ${{ secrets.APPLE_CERTIFICATE_P12 != '' && secrets.APPLE_CERTIFICATE_PASSWORD != '' }}
-        env:
-          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        if: ${{ env.APPLE_CERTIFICATE_P12 != '' && env.APPLE_CERTIFICATE_PASSWORD != '' }}
         run: |
           KEYCHAIN="$RUNNER_TEMP/linguaspire-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(openssl rand -hex 24)"
@@ -82,17 +91,15 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
 
       - name: Sign application with Developer ID
-        if: ${{ secrets.APPLE_CERTIFICATE_P12 != '' && secrets.APPLE_CERTIFICATE_PASSWORD != '' && secrets.APPLE_SIGNING_IDENTITY != '' }}
+        if: ${{ env.APPLE_CERTIFICATE_P12 != '' && env.APPLE_CERTIFICATE_PASSWORD != '' && env.APPLE_SIGNING_IDENTITY != '' }}
         working-directory: linguaspire-native-macos
-        env:
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
         run: |
           codesign --force --deep --options runtime --timestamp             --entitlements LinguaSpire.entitlements             --sign "$APPLE_SIGNING_IDENTITY"             build/LinguaSpire.app
           codesign --verify --deep --strict --verbose=2 build/LinguaSpire.app
           spctl --assess --type execute --verbose=4 build/LinguaSpire.app || true
 
       - name: Ad-hoc sign application for unsigned test build
-        if: ${{ secrets.APPLE_CERTIFICATE_P12 == '' || secrets.APPLE_CERTIFICATE_PASSWORD == '' || secrets.APPLE_SIGNING_IDENTITY == '' }}
+        if: ${{ env.APPLE_CERTIFICATE_P12 == '' || env.APPLE_CERTIFICATE_PASSWORD == '' || env.APPLE_SIGNING_IDENTITY == '' }}
         working-directory: linguaspire-native-macos
         run: |
           codesign --force --deep --sign -             --entitlements LinguaSpire.entitlements             build/LinguaSpire.app
@@ -101,7 +108,7 @@ jobs:
       - name: Package app zip
         working-directory: linguaspire-native-macos
         run: |
-          ditto -c -k --sequesterRsrc --keepParent             build/LinguaSpire.app             build/LinguaSpire-2.8.0-native-macOS-arm64.app.zip
+          ditto -c -k --sequesterRsrc --keepParent             build/LinguaSpire.app             build/LinguaSpire-2.8.0-native-macOS-universal.app.zip
 
       - name: Create DMG
         working-directory: linguaspire-native-macos
@@ -110,46 +117,42 @@ jobs:
           mkdir -p build/dmg-root
           ditto build/LinguaSpire.app build/dmg-root/LinguaSpire.app
           ln -s /Applications build/dmg-root/Applications
-          hdiutil create             -volname "LinguaSpire 2.8"             -srcfolder build/dmg-root             -ov             -format UDZO             build/LinguaSpire-2.8.0-native-macOS-arm64.dmg
+          hdiutil create             -volname "LinguaSpire 2.8"             -srcfolder build/dmg-root             -ov             -format UDZO             build/LinguaSpire-2.8.0-native-macOS-universal.dmg
 
       - name: Notarize DMG with Apple
-        if: ${{ secrets.APPLE_ID != '' && secrets.APPLE_APP_SPECIFIC_PASSWORD != '' && secrets.APPLE_TEAM_ID != '' && secrets.APPLE_CERTIFICATE_P12 != '' }}
+        if: ${{ env.APPLE_ID != '' && env.APPLE_APP_SPECIFIC_PASSWORD != '' && env.APPLE_TEAM_ID != '' && env.APPLE_CERTIFICATE_P12 != '' }}
         working-directory: linguaspire-native-macos
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          xcrun notarytool submit build/LinguaSpire-2.8.0-native-macOS-arm64.dmg             --apple-id "$APPLE_ID"             --password "$APPLE_APP_SPECIFIC_PASSWORD"             --team-id "$APPLE_TEAM_ID"             --wait
-          xcrun stapler staple build/LinguaSpire-2.8.0-native-macOS-arm64.dmg
-          xcrun stapler validate build/LinguaSpire-2.8.0-native-macOS-arm64.dmg
-          spctl --assess --type open --context context:primary-signature --verbose=4 build/LinguaSpire-2.8.0-native-macOS-arm64.dmg || true
+          xcrun notarytool submit build/LinguaSpire-2.8.0-native-macOS-universal.dmg             --apple-id "$APPLE_ID"             --password "$APPLE_APP_SPECIFIC_PASSWORD"             --team-id "$APPLE_TEAM_ID"             --wait
+          xcrun stapler staple build/LinguaSpire-2.8.0-native-macOS-universal.dmg
+          xcrun stapler validate build/LinguaSpire-2.8.0-native-macOS-universal.dmg
+          spctl --assess --type open --context context:primary-signature --verbose=4 build/LinguaSpire-2.8.0-native-macOS-universal.dmg || true
 
       - name: Verify DMG and create release manifest
         working-directory: linguaspire-native-macos
         run: |
-          test -s build/LinguaSpire-2.8.0-native-macOS-arm64.dmg
-          hdiutil imageinfo build/LinguaSpire-2.8.0-native-macOS-arm64.dmg >/dev/null
-          shasum -a 256 build/LinguaSpire-2.8.0-native-macOS-arm64.dmg build/LinguaSpire-2.8.0-native-macOS-arm64.app.zip | tee build/SHA256SUMS.txt
+          test -s build/LinguaSpire-2.8.0-native-macOS-universal.dmg
+          hdiutil imageinfo build/LinguaSpire-2.8.0-native-macOS-universal.dmg >/dev/null
+          shasum -a 256 build/LinguaSpire-2.8.0-native-macOS-universal.dmg build/LinguaSpire-2.8.0-native-macOS-universal.app.zip | tee build/SHA256SUMS.txt
           cat > build/release-manifest.json <<'EOF'
           {
             "product": "LinguaSpire",
             "version": "2.8.0",
             "platform": "macOS",
-            "architecture": "arm64",
+            "architecture": "universal2",
             "minimumOS": "13.0",
             "bundleId": "com.linguaspire.desktop"
           }
           EOF
-          ls -lh build/LinguaSpire-2.8.0-native-macOS-arm64.dmg build/LinguaSpire-2.8.0-native-macOS-arm64.app.zip
+          ls -lh build/LinguaSpire-2.8.0-native-macOS-universal.dmg build/LinguaSpire-2.8.0-native-macOS-universal.app.zip
 
       - name: Upload native macOS artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: LinguaSpire-2.8.0-native-macOS-arm64
+          name: LinguaSpire-2.8.0-native-macOS-universal
           path: |
-            linguaspire-native-macos/build/LinguaSpire-2.8.0-native-macOS-arm64.dmg
-            linguaspire-native-macos/build/LinguaSpire-2.8.0-native-macOS-arm64.app.zip
+            linguaspire-native-macos/build/LinguaSpire-2.8.0-native-macOS-universal.dmg
+            linguaspire-native-macos/build/LinguaSpire-2.8.0-native-macOS-universal.app.zip
             linguaspire-native-macos/RELEASE_NOTES.md
             linguaspire-native-macos/build/SHA256SUMS.txt
             linguaspire-native-macos/build/release-manifest.json
