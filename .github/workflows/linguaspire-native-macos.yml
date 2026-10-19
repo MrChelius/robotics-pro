@@ -1,0 +1,105 @@
+name: Build LinguaSpire Native macOS DMG
+
+on:
+  push:
+    branches:
+      - linguaspire-dmg-build
+    paths:
+      - "linguaspire-native-macos/**"
+      - ".github/workflows/linguaspire-native-macos.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "linguaspire-native-macos/**"
+      - ".github/workflows/linguaspire-native-macos.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-native-macos:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build icon
+        working-directory: linguaspire-native-macos
+        run: |
+          python3 scripts/make_icon.py
+          sips -z 16 16 build/icon-1024.png --out build/icon.iconset/icon_16x16.png
+          sips -z 32 32 build/icon-1024.png --out build/icon.iconset/icon_16x16@2x.png
+          sips -z 32 32 build/icon-1024.png --out build/icon.iconset/icon_32x32.png
+          sips -z 64 64 build/icon-1024.png --out build/icon.iconset/icon_32x32@2x.png
+          sips -z 128 128 build/icon-1024.png --out build/icon.iconset/icon_128x128.png
+          sips -z 256 256 build/icon-1024.png --out build/icon.iconset/icon_128x128@2x.png
+          sips -z 256 256 build/icon-1024.png --out build/icon.iconset/icon_256x256.png
+          sips -z 512 512 build/icon-1024.png --out build/icon.iconset/icon_256x256@2x.png
+          sips -z 512 512 build/icon-1024.png --out build/icon.iconset/icon_512x512.png
+          cp build/icon-1024.png build/icon.iconset/icon_512x512@2x.png
+          iconutil -c icns build/icon.iconset -o build/LinguaSpire.icns
+
+      - name: Compile native Swift app
+        working-directory: linguaspire-native-macos
+        run: |
+          rm -rf build/LinguaSpire.app
+          mkdir -p build/LinguaSpire.app/Contents/MacOS
+          mkdir -p build/LinguaSpire.app/Contents/Resources
+          xcrun swiftc             -O             -parse-as-library             -framework Cocoa             -framework WebKit             -framework AVFoundation             App/main.swift             -o build/LinguaSpire.app/Contents/MacOS/LinguaSpire
+          cp Info.plist build/LinguaSpire.app/Contents/Info.plist
+          cp build/LinguaSpire.icns build/LinguaSpire.app/Contents/Resources/LinguaSpire.icns
+          chmod 755 build/LinguaSpire.app/Contents/MacOS/LinguaSpire
+
+      - name: Verify Info.plist and binary
+        working-directory: linguaspire-native-macos
+        run: |
+          APP="build/LinguaSpire.app"
+          test -x "$APP/Contents/MacOS/LinguaSpire"
+          file "$APP/Contents/MacOS/LinguaSpire"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleInfoDictionaryVersion" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :NSCameraUsageDescription" "$APP/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :NSMicrophoneUsageDescription" "$APP/Contents/Info.plist"
+
+      - name: Ad-hoc sign with entitlements
+        working-directory: linguaspire-native-macos
+        run: |
+          codesign --force --deep --sign -             --entitlements LinguaSpire.entitlements             build/LinguaSpire.app
+          codesign --verify --deep --strict build/LinguaSpire.app
+
+      - name: Package app zip
+        working-directory: linguaspire-native-macos
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent             build/LinguaSpire.app             build/LinguaSpire-2.8.0-native-macOS-arm64.app.zip
+
+      - name: Create DMG
+        working-directory: linguaspire-native-macos
+        run: |
+          rm -rf build/dmg-root
+          mkdir -p build/dmg-root
+          ditto build/LinguaSpire.app build/dmg-root/LinguaSpire.app
+          ln -s /Applications build/dmg-root/Applications
+          hdiutil create             -volname "LinguaSpire 2.8"             -srcfolder build/dmg-root             -ov             -format UDZO             build/LinguaSpire-2.8.0-native-macOS-arm64.dmg
+
+      - name: Verify DMG
+        working-directory: linguaspire-native-macos
+        run: |
+          test -s build/LinguaSpire-2.8.0-native-macOS-arm64.dmg
+          hdiutil imageinfo build/LinguaSpire-2.8.0-native-macOS-arm64.dmg >/dev/null
+          shasum -a 256 build/LinguaSpire-2.8.0-native-macOS-arm64.dmg build/LinguaSpire-2.8.0-native-macOS-arm64.app.zip
+          ls -lh build/LinguaSpire-2.8.0-native-macOS-arm64.dmg build/LinguaSpire-2.8.0-native-macOS-arm64.app.zip
+
+      - name: Upload native macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinguaSpire-2.8.0-native-macOS-arm64
+          path: |
+            linguaspire-native-macos/build/LinguaSpire-2.8.0-native-macOS-arm64.dmg
+            linguaspire-native-macos/build/LinguaSpire-2.8.0-native-macOS-arm64.app.zip
+            linguaspire-native-macos/RELEASE_NOTES.md
+          if-no-files-found: error
+          retention-days: 30
