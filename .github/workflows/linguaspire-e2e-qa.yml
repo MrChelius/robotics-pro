@@ -1,0 +1,43 @@
+name: LinguaSpire Production E2E QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "linguaspire-qa/**"
+      - ".github/workflows/linguaspire-e2e-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run production API, security, translation and STT tests
+        run: python3 linguaspire-qa/test_production.py
+      - name: Print report summary
+        if: always()
+        run: |
+          cat linguaspire-qa/results/summary.txt || true
+          python3 - <<'PY'
+          import json
+          p=json.load(open("linguaspire-qa/results/report.json"))
+          print("\nFAILED TESTS")
+          for t in p["tests"]:
+              if not t["ok"]: print("-",t["severity"],t["name"],":",t["detail"])
+          print("\nFAILED TRANSLATION DIRECTIONS")
+          for x in p["translationMatrix"]:
+              if not x["ok"]: print("-",x["source"],"->",x["target"],x["http"],x["output"])
+          PY
+      - name: Upload QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinguaSpire-production-QA-report
+          path: linguaspire-qa/results/
+          if-no-files-found: error
+          retention-days: 30
