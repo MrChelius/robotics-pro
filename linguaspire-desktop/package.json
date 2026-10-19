@@ -1,0 +1,72 @@
+{
+  "name": "linguaspire-desktop",
+  "version": "2.8.0",
+  "description": "LinguaSpire desktop client for multilingual video meetings",
+  "main": "main.cjs",
+  "author": "LinguaSpire",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:mac:arm64": "electron-builder --mac dmg zip --arm64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.9.0",
+    "electron-builder": "latest"
+  },
+  "build": {
+    "appId": "com.linguaspire.desktop",
+    "productName": "LinguaSpire",
+    "artifactName": "LinguaSpire-2.8-${arch}.${ext}",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "app-config.json",
+      "assets/**/*"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "icon": "assets/icon-1024.png",
+      "identity": null,
+      "hardenedRuntime": false,
+      "extendInfo": {
+        "CFBundleDisplayName": "LinguaSpire",
+        "CFBundleName": "LinguaSpire",
+        "CFBundleShortVersionString": "2.8.0",
+        "NSCameraUsageDescription": "LinguaSpire uses your camera for video meetings.",
+        "NSMicrophoneUsageDescription": "LinguaSpire uses your microphone for calls and live translation.",
+        "NSScreenCaptureUsageDescription": "LinguaSpire uses screen capture only when you choose Share Screen."
+      },
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "dmg": {
+      "title": "LinguaSpire 2.8",
+      "sign": false,
+      "backgroundColor": "#071325",
+      "window": {
+        "width": 560,
+        "height": 390
+      },
+      "contents": [
+        {
+          "x": 160,
+          "y": 190,
+          "type": "file"
+        },
+        {
+          "x": 400,
+          "y": 190,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  }
+}
