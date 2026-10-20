@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleDisplayName</key><string>LinguaSpire</string>
+  <key>CFBundleExecutable</key><string>LinguaSpire</string>
+  <key>CFBundleIconFile</key><string>LinguaSpire.icns</string>
+  <key>CFBundleIdentifier</key><string>com.linguaspire.desktop</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+  <key>CFBundleName</key><string>LinguaSpire</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>2.9.0</string>
+  <key>CFBundleVersion</key><string>20900</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.social-networking</string>
+  <key>LSMinimumSystemVersion</key><string>13.0</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSCameraUsageDescription</key><string>LinguaSpire uses your camera for video meetings and camera preview.</string>
+  <key>NSMicrophoneUsageDescription</key><string>LinguaSpire uses your microphone for calls, speech recognition and live translated captions.</string>
+  <key>NSScreenCaptureUsageDescription</key><string>LinguaSpire uses screen capture only when you choose to share your screen.</string>
+  <key>NSHumanReadableCopyright</key><string>© 2026 LinguaSpire. All rights reserved.</string>
+</dict>
+</plist>

@@ -1,0 +1,28 @@
+name: Package LinguaSpire Web 2.9
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "linguaspire-web-2.9/**"
+      - ".github/workflows/linguaspire-web-package.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create ZIP
+        run: |
+          cp -R linguaspire-web-2.9 LinguaSpire-Web-2.9.0
+          zip -r LinguaSpire-Web-2.9.0-Final.zip LinguaSpire-Web-2.9.0
+          sha256sum LinguaSpire-Web-2.9.0-Final.zip > SHA256SUMS.txt
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinguaSpire-Web-2.9.0-Final
+          path: |
+            LinguaSpire-Web-2.9.0-Final.zip
+            SHA256SUMS.txt
+          retention-days: 30
