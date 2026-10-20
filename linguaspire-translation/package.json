@@ -1,0 +1,6 @@
+{
+  "name": "linguaspire-translation",
+  "private": true,
+  "version": "3.0.0",
+  "scripts": {"start": "bun index.ts"}
+}
