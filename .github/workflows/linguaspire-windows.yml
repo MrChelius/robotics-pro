@@ -1,0 +1,59 @@
+name: Build LinguaSpire Windows
+
+on:
+  push:
+    branches:
+      - linguaspire-dmg-build
+    paths:
+      - "linguaspire-desktop/**"
+      - ".github/workflows/linguaspire-windows.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows-x64:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Generate app icon
+        working-directory: linguaspire-desktop
+        run: python scripts/make_icon.py
+
+      - name: Install desktop dependencies
+        working-directory: linguaspire-desktop
+        run: npm install
+
+      - name: Build Windows x64 installer
+        working-directory: linguaspire-desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run dist:win:x64
+
+      - name: Verify Windows installer
+        shell: pwsh
+        working-directory: linguaspire-desktop
+        run: |
+          $installer = "dist/LinguaSpire-2.9.0-x64.exe"
+          if (-not (Test-Path $installer)) { throw "Windows installer not found: $installer" }
+          $file = Get-Item $installer
+          if ($file.Length -lt 1000000) { throw "Windows installer is unexpectedly small" }
+          Get-FileHash $installer -Algorithm SHA256
+          Get-Item $installer | Format-List Name,Length,LastWriteTime
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: LinguaSpire-2.9.0-Windows-x64
+          path: linguaspire-desktop/dist/LinguaSpire-2.9.0-x64.exe
+          if-no-files-found: error
+          retention-days: 30

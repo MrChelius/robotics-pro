@@ -26,8 +26,8 @@ function readConfig() {
     } catch (_) {}
   }
   return {
-    appUrl: 'https://frontend-production-802b.up.railway.app/',
-    allowedHosts: ['frontend-production-802b.up.railway.app']
+    appUrl: 'https://frontend-v29-live-production.up.railway.app/',
+    allowedHosts: ['frontend-v29-live-production.up.railway.app']
   };
 }
 
@@ -117,7 +117,7 @@ function offlinePage(target) {
 }
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
+  const windowOptions = {
     width: 1440,
     height: 920,
     minWidth: 980,
@@ -125,9 +125,7 @@ function createWindow() {
     title: 'LinguaSpire',
     backgroundColor: '#071325',
     show: false,
-    autoHideMenuBar: true,
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 18, y: 18 },
+    autoHideMenuBar: process.platform !== 'darwin',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -137,8 +135,14 @@ function createWindow() {
       spellcheck: true,
       autoplayPolicy: 'no-user-gesture-required'
     }
-  });
+  };
 
+  if (process.platform === 'darwin') {
+    windowOptions.titleBarStyle = 'hiddenInset';
+    windowOptions.trafficLightPosition = { x: 18, y: 18 };
+  }
+
+  mainWindow = new BrowserWindow(windowOptions);
   mainWindow.once('ready-to-show', () => mainWindow?.show());
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {

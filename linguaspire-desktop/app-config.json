@@ -1,6 +1,6 @@
 {
-  "appUrl": "https://frontend-production-802b.up.railway.app/",
+  "appUrl": "https://frontend-v29-live-production.up.railway.app/",
   "allowedHosts": [
-    "frontend-production-802b.up.railway.app"
+    "frontend-v29-live-production.up.railway.app"
   ]
 }
