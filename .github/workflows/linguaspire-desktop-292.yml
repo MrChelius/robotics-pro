@@ -1,0 +1,48 @@
+name: LinguaSpire Desktop 2.9.2
+on:
+  push:
+    paths:
+      - 'linguaspire-desktop/**'
+      - 'linguaspire-web-live/app.cjs'
+      - '.github/workflows/linguaspire-desktop-292.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            target: mac
+          - os: windows-2025
+            target: win
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: linguaspire-desktop
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run prepack:client
+      - name: Build macOS
+        if: matrix.target == 'mac'
+        run: npm run dist:mac
+      - name: Build Windows
+        if: matrix.target == 'win'
+        run: npm run dist:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LinguaSpire-2.9.2-${{ matrix.target }}
+          path: linguaspire-desktop/dist/*
+          if-no-files-found: error
+          retention-days: 30
