@@ -1,0 +1,47 @@
+{
+  "name": "linguaspire-desktop",
+  "version": "2.9.2",
+  "description": "LinguaSpire video calls with translated captions",
+  "main": "main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:mac": "electron-builder --mac zip dmg --arm64",
+    "dist:win": "electron-builder --win nsis --x64",
+    "prepack:client": "node build-client.cjs"
+  },
+  "devDependencies": {
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.linguaspire.desktop",
+    "productName": "LinguaSpire",
+    "asar": true,
+    "files": [
+      "main.cjs",
+      "server.cjs",
+      "index.html",
+      "preload.cjs",
+      "package.json",
+      "build-client.cjs"
+    ],
+    "mac": {
+      "category": "public.app-category.video",
+      "target": [
+        "zip",
+        "dmg"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "artifactName": "LinguaSpire-2.9.2-${os}-${arch}.${ext}"
+  }
+}
