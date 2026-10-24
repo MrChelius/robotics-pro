@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),path=require('path');
+const source=fs.readFileSync(path.resolve(__dirname,'../linguaspire-web-live/app.cjs'),'utf8');
+const a=source.indexOf('const html = String.raw '),b=source.indexOf('\nconst legalPage =',a);
+if(a<0||b<0)throw Error('Could not locate LinguaSpire frontend template');
+const expr="const ROOM_API='https://room-api-production-881c.up.railway.app'; const APP_VERSION='2.9.2';"+source.slice(a,b)+'\nhtml';
+let html=vm.runInNewContext(expr);
+if(!html.includes('state.ccQueue')||!html.includes('<script type="module">'))throw Error('Missing caption processing client');
+html=html.replace("const ROOM_API='https://room-api-production-881c.up.railway.app';","const ROOM_API='';");
+html=html.replaceAll('https://linguaspire-app.netlify.app','https://frontend-v29-live-production.up.railway.app');
+fs.writeFileSync(path.join(__dirname,'index.html'),html);
+console.log('Built LinguaSpire 2.9.2 desktop client',html.length);
