@@ -6,7 +6,7 @@ app.use('*', async (c, next) => { await next(); c.header('X-Content-Type-Options
 const ROOM_API = 'https://room-api-production-881c.up.railway.app';
 const STT_PUBLIC = 'https://stt-production-4262.up.railway.app';
 const TRANSLATE_PUBLIC = 'https://translation-production-3882.up.railway.app';
-const APP_VERSION = '2.9.1';
+const APP_VERSION = '2.9.2';
 const html = String.raw `<!doctype html>
 <html lang="en">
 <head>
@@ -452,12 +452,109 @@ function addTranscript(who,original,translated){const item={time:new Date().toLo
 function renderTranscript(){const body=$('sideBody');body.innerHTML='';for(const x of state.transcript||[]){const d=document.createElement('div');d.className='transcriptLine';d.innerHTML='<b>'+escapeHtml(x.who)+'</b><small>'+x.time+'</small><div>'+escapeHtml(x.translated)+'</div>'+(state.settings.captionMode==='both'?'<small>'+escapeHtml(x.original)+'</small>':'');body.appendChild(d)}}
 function renderChat(){const body=$('sideBody');body.innerHTML='';if(!state.messages.length){body.innerHTML='<div class=\"empty\">Translated messages will appear here.</div>';return}for(const x of state.messages){const d=document.createElement('div');d.className='msg';d.innerHTML='<b>'+escapeHtml(x.who)+'</b><div>'+escapeHtml(x.text)+'</div>'+(x.original&&state.settings.captionMode==='both'?'<small>Original: '+escapeHtml(x.original)+'</small>':'');d.dataset.mine=x.mine?'1':'0';body.appendChild(d)}body.scrollTop=body.scrollHeight}
 function chatLine(who,text,isMine=false,original=''){state.messages.push({who,text,mine:isMine,original,time:Date.now()});if(state.activeTab==='chat')renderChat()}
-async function onData(payload,p){try{const d=JSON.parse(dec.decode(payload));if(d.type==='caption'){const translated=await translate(d.text,state.subtitle,d.source||'auto');if(d.sentAt){state.captionLatencies=state.captionLatencies||[];state.captionLatencies.push(Math.max(0,Date.now()-Number(d.sentAt)));if(state.captionLatencies.length>40)state.captionLatencies.shift()}setCaption(p?.identity||d.identity,translated);addTranscript(p?.name||d.name||'Guest',d.text,translated)}if(d.type==='chat'){const translated=await translate(d.text,state.chat,d.source||'auto');chatLine(p?.name||d.name||'Guest',translated,false,d.text)}}catch{}}
+async function onData(payload,p){try{const d=JSON.parse(dec.decode(payload));if(d.type==='caption'){if(p)getTile(p,false);const translated=await translate(d.text,state.subtitle,d.source||'auto');if(d.sentAt){state.captionLatencies=state.captionLatencies||[];state.captionLatencies.push(Math.max(0,Date.now()-Number(d.sentAt)));if(state.captionLatencies.length>40)state.captionLatencies.shift()}setCaption(p?.identity||d.identity,translated);addTranscript(p?.name||d.name||'Guest',d.text,translated)}if(d.type==='chat'){const translated=await translate(d.text,state.chat,d.source||'auto');chatLine(p?.name||d.name||'Guest',translated,false,d.text)}}catch{}}
 
-async function publishCaption(text,language='auto'){if(!text.trim()||!state.room)return;const localTranslated=await translate(text,state.subtitle,language);setCaption(state.room.localParticipant.identity,localTranslated);addTranscript(state.name,text,localTranslated);await state.room.localParticipant.publishData(enc.encode(JSON.stringify({type:'caption',text,source:language,name:state.name,identity:state.room.localParticipant.identity,sentAt:Date.now()})),{reliable:true})}
-async function startCC(){stopCC();$('captionBadge').textContent='Listening • '+fmtLang(state.subtitle);try{state.recStream=await navigator.mediaDevices.getUserMedia({audio:{deviceId:state.settings.micDevice?{exact:state.settings.micDevice}:undefined,echoCancellation:state.settings.echo!==false,noiseSuppression:state.settings.noise!==false,autoGainControl:state.settings.autoGain!==false,channelCount:1}});const AC=window.AudioContext||window.webkitAudioContext;const ctx=new AC();const source=ctx.createMediaStreamSource(state.recStream),an=ctx.createAnalyser();an.fftSize=1024;source.connect(an);const arr=new Float32Array(an.fftSize);let voiced=0,total=0;const meter=setInterval(()=>{an.getFloatTimeDomainData(arr);let sum=0;for(const x of arr)sum+=x*x;const rms=Math.sqrt(sum/arr.length);total++;if(rms>.022)voiced++},100);let chunks=[];const preferredMime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'');state.rec=preferredMime?new MediaRecorder(state.recStream,{mimeType:preferredMime}):new MediaRecorder(state.recStream);state.rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};state.rec.onstop=async()=>{const chunkType=state.rec?.mimeType||chunks[0]?.type||preferredMime||'audio/webm';const blob=new Blob(chunks,{type:chunkType});chunks=[];const ratio=total?voiced/total:0;voiced=0;total=0;if(blob.size>1800&&ratio>=.22){try{const fd=new FormData();fd.append('audio_file',blob,chunkType.includes('mp4')?'speech.m4a':'speech.webm');fd.append('language',state.speak);fd.append('vocab',state.settings.vocab||'');fd.append('profile',state.settings.industry||'general');const r=await fetch('/api/asr',{method:'POST',body:fd});if(r.ok){const d=await r.json();const t=(d.text||'').trim();if(t){$('captionBadge').textContent='Live Translation • '+fmtLang(state.subtitle);await publishCaption(t,d.language||state.speak)}}}catch{}}if(state.room?.state==='connected'&&state.room.localParticipant.isMicrophoneEnabled){try{state.rec.start();setTimeout(()=>state.rec.stop(),3000)}catch{}}};state.rec._cleanup=()=>{clearInterval(meter);try{ctx.close()}catch{}};state.rec.start();setTimeout(()=>state.rec.stop(),3000)}catch{$('captionBadge').textContent='Subtitles unavailable'}}
-function stopCC(){try{state.rec?._cleanup?.()}catch{}try{state.rec?.stop()}catch{}state.rec=null;state.recStream?.getTracks().forEach(t=>t.stop());state.recStream=null}
-
+async function publishCaption(text,language='auto'){if(!text.trim()||!state.room)return;const identity=state.room.localParticipant.identity;await state.room.localParticipant.publishData(enc.encode(JSON.stringify({type:'caption',text,source:language,name:state.name,identity,sentAt:Date.now()})),{reliable:true});const localTranslated=await translate(text,state.subtitle,language);setCaption(identity,localTranslated);addTranscript(state.name,text,localTranslated)}
+function captionStatus(message,problem=false){
+  const e=$('captionBadge');if(!e)return;
+  e.textContent=message;
+  e.title=problem?'Check microphone permission and Network Test for the failing service.':'LinguaSpire live speech recognition';
+  if(problem)console.warn('[LinguaSpire captions]',message);
+}
+async function sendCaptionAudio(part,session){
+  if(state.ccSession!==session || !state.room || !state.room.localParticipant.isMicrophoneEnabled)return;
+  const fd=new FormData();
+  fd.append('audio_file',part.blob,part.type.includes('mp4')?'speech.m4a':'speech.webm');
+  fd.append('language',state.speak||'auto');
+  fd.append('vocab',state.settings.vocab||'');
+  fd.append('profile',state.settings.industry||'general');
+  const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),18000);
+  try{
+    captionStatus('Recognizing speech…');
+    const r=await fetch('/api/asr',{method:'POST',body:fd,signal:ctrl.signal});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(String(d.error||'ASR HTTP '+r.status));
+    if(state.ccSession!==session)return;
+    const text=String(d.text||'').trim();
+    if(text){
+      captionStatus('Translating • '+fmtLang(state.subtitle));
+      await publishCaption(text,d.language||state.speak);
+      if(state.ccSession===session)captionStatus('Live captions • '+fmtLang(state.subtitle));
+    }else{
+      captionStatus('Listening • '+fmtLang(state.subtitle)+(d.rejected?' (speech unclear)':''));
+    }
+  }catch(err){
+    if(state.ccSession===session)captionStatus('Captions error: '+String(err?.message||'network unavailable').slice(0,100),true);
+  }finally{clearTimeout(timer)}
+}
+function consumeCaptionQueue(session){
+  if(state.ccBusy||state.ccSession!==session)return;
+  state.ccBusy=true;
+  (async()=>{while(state.ccSession===session&&state.ccQueue?.length){
+    const part=state.ccQueue.shift();await sendCaptionAudio(part,session);
+  }})().finally(()=>{state.ccBusy=false;if(state.ccSession===session&&state.ccQueue?.length)consumeCaptionQueue(session)});
+}
+async function startCC(){
+  stopCC();
+  if(!state.captionsOn||state.settings.captionsEnabled===false){captionStatus('Captions disabled');return}
+  const session=String(Date.now())+Math.random();state.ccSession=session;
+  captionStatus('Microphone starting…');
+  try{
+    if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==='undefined')throw new Error('Browser microphone recording unsupported');
+    const mic=state.settings.micDevice||'';
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{deviceId:mic?{ideal:mic}:undefined,echoCancellation:state.settings.echo!==false,noiseSuppression:state.settings.noise!==false,autoGainControl:state.settings.autoGain!==false,channelCount:1}});
+    if(state.ccSession!==session){stream.getTracks().forEach(t=>t.stop());return}
+    state.recStream=stream;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)throw new Error('AudioContext unavailable');
+    const ctx=new AC();const source=ctx.createMediaStreamSource(stream),an=ctx.createAnalyser();an.fftSize=1024;source.connect(an);
+    if(ctx.state==='suspended')await ctx.resume().catch(()=>{});
+    const levels=new Float32Array(an.fftSize);
+    let voiced=0,peak=0,samples=0;
+    const meter=setInterval(()=>{if(state.ccSession!==session)return;
+      an.getFloatTimeDomainData(levels);let energy=0;
+      for(const x of levels)energy+=x*x;
+      const rms=Math.sqrt(energy/levels.length);
+      peak=Math.max(peak,rms);samples++;
+      // Normal speech often has RMS below .022. Let server-side VAD decide whether audio is speech.
+      if(rms>.005)voiced++;
+    },100);
+    let chunks=[];
+    const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'');
+    const rec=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+    state.rec=rec;state.ccQueue=[];state.ccBusy=false;
+    const scheduleStop=()=>{clearTimeout(state.ccStopTimer);state.ccStopTimer=setTimeout(()=>{
+      if(state.ccSession===session&&rec.state==='recording')rec.stop();
+    },4200)};
+    rec.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data)};
+    rec.onerror=event=>{if(state.ccSession===session)captionStatus('Recorder error: '+String(event.error?.message||'unknown'),true)};
+    rec.onstop=()=>{
+      const part={blob:new Blob(chunks,{type:rec.mimeType||mime||'audio/webm'}),type:rec.mimeType||mime||'audio/webm',voiced,peak,samples};
+      chunks=[];voiced=0;peak=0;samples=0;
+      if(state.ccSession!==session||!state.room||!state.room.localParticipant.isMicrophoneEnabled)return;
+      // Restart capture BEFORE uploading and translating the previous chunk.
+      try{rec.start();scheduleStop()}catch(err){captionStatus('Recorder stopped: '+String(err.message||err),true);return}
+      // Keep quiet-room traffic under control without suppressing naturally soft speech.
+      if(part.blob.size<1400 || (part.voiced<2&&part.peak<.0035))return;
+      if(state.ccQueue.length>=3)state.ccQueue.shift();
+      state.ccQueue.push(part);consumeCaptionQueue(session);
+    };
+    stream.getAudioTracks().forEach(track=>track.addEventListener('ended',()=>{if(state.ccSession===session)captionStatus('Microphone disconnected',true)}));
+    rec._cleanup=()=>{clearInterval(meter);clearTimeout(state.ccStopTimer);try{ctx.close()}catch{}};
+    rec.start();scheduleStop();captionStatus('Listening • '+fmtLang(state.subtitle));
+  }catch(err){
+    if(state.ccSession===session){captionStatus('Subtitles unavailable: '+String(err?.message||err),true);stopCC(true)}
+  }
+}
+function stopCC(keepStatus=false){
+  state.ccSession=null;state.ccQueue=[];
+  clearTimeout(state.ccStopTimer);
+  const rec=state.rec;state.rec=null;
+  try{rec?._cleanup?.()}catch{}
+  try{if(rec){rec.onstop=null;if(rec.state==='recording')rec.stop()}}catch{}
+  state.recStream?.getTracks().forEach(t=>t.stop());state.recStream=null;
+  if(!keepStatus&&state.room)captionStatus('Captions stopped');
+}
 async function connectRoom(){await ensureLiveKit();const tok=await api('/v1/rooms/'+encodeURIComponent(state.roomId)+'/token',{method:'POST',body:JSON.stringify({requestId:state.requestId})});state.room=new Room({adaptiveStream:true,dynacast:true,videoCaptureDefaults:{resolution:VideoPresets.h720.resolution,deviceId:state.settings.cameraDevice||undefined},audioCaptureDefaults:{deviceId:state.settings.micDevice||undefined,echoCancellation:state.settings.echo!==false,noiseSuppression:state.settings.noise!==false,autoGainControl:state.settings.autoGain!==false}});state.room.on(RoomEvent.TrackSubscribed,(t,pub,p)=>attachTrack(t,p));state.room.on(RoomEvent.LocalTrackPublished,p=>{if(p.track)attachTrack(p.track,state.room.localParticipant)});state.room.on(RoomEvent.ParticipantConnected,()=>{if(state.activeTab==='participants')renderPeople()});state.room.on(RoomEvent.ParticipantDisconnected,p=>{$(tileId(p.identity))?.remove();if(state.activeTab==='participants')renderPeople()});state.room.on(RoomEvent.DataReceived,onData);
 state.room.on(RoomEvent.Reconnecting,()=>{const b=$('connectionBanner');if(b){b.textContent='Connection interrupted — reconnecting…';b.className='connectionBanner'}$('globalStatus').lastChild.textContent=' Reconnecting'});
 state.room.on(RoomEvent.Reconnected,()=>{const b=$('connectionBanner');if(b){b.textContent='Connection restored';b.className='connectionBanner ok';setTimeout(()=>b.classList.add('hidden'),1800)}$('globalStatus').lastChild.textContent=' System Ready';if(state.room.localParticipant.isMicrophoneEnabled&&!state.rec)startCC()});
@@ -471,7 +568,7 @@ function renderTab(){document.querySelectorAll('.tab').forEach(t=>t.classList.to
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{state.activeTab=t.dataset.tab;renderTab()});
 $('sendChat').onclick=async()=>{const text=$('chatInput').value.trim();if(!text||!state.room)return;$('chatInput').value='';chatLine(state.name,text,true);await state.room.localParticipant.publishData(enc.encode(JSON.stringify({type:'chat',text,source:state.speak,name:state.name})),{reliable:true})};$('chatInput').onkeydown=e=>{if(e.key==='Enter')$('sendChat').click()};
 $('meetingSubtitleLang').onchange=()=>{state.subtitle=$('meetingSubtitleLang').value;$('captionBadge').textContent='Listening • '+fmtLang(state.subtitle)};$('copyInvite').onclick=()=>navigator.clipboard.writeText(location.origin+location.pathname+'?room='+encodeURIComponent(state.roomId));
-$('micBtn').onclick=async()=>{const on=!state.room.localParticipant.isMicrophoneEnabled;await state.room.localParticipant.setMicrophoneEnabled(on);$('micBtn').classList.toggle('off',!on);$('micBtn').textContent=on?'Mic':'Mic off';if(on)startCC();else stopCC()};$('camBtn').onclick=async()=>{const on=!state.room.localParticipant.isCameraEnabled;await state.room.localParticipant.setCameraEnabled(on);$('camBtn').classList.toggle('off',!on);$('camBtn').textContent=on?'Camera':'Camera off'};$('screenBtn').onclick=async()=>{const on=!state.room.localParticipant.isScreenShareEnabled;await state.room.localParticipant.setScreenShareEnabled(on);$('screenBtn').textContent=on?'Stop share':'Share'};$('captionsBtn').onclick=()=>{state.captionsOn=!state.captionsOn;$('captionsBtn').classList.toggle('off',!state.captionsOn)};$('panelBtn').onclick=()=>{$('meetSide').classList.toggle('hidden')};$('leaveBtn').onclick=()=>{stopCC();clearInterval(state.hostTimer);state.room?.disconnect();state.room=null;location.href=location.pathname};
+$('micBtn').onclick=async()=>{const on=!state.room.localParticipant.isMicrophoneEnabled;await state.room.localParticipant.setMicrophoneEnabled(on);$('micBtn').classList.toggle('off',!on);$('micBtn').textContent=on?'Mic':'Mic off';if(on)startCC();else stopCC()};$('camBtn').onclick=async()=>{const on=!state.room.localParticipant.isCameraEnabled;await state.room.localParticipant.setCameraEnabled(on);$('camBtn').classList.toggle('off',!on);$('camBtn').textContent=on?'Camera':'Camera off'};$('screenBtn').onclick=async()=>{const on=!state.room.localParticipant.isScreenShareEnabled;await state.room.localParticipant.setScreenShareEnabled(on);$('screenBtn').textContent=on?'Stop share':'Share'};$('captionsBtn').onclick=()=>{state.captionsOn=!state.captionsOn;$('captionsBtn').classList.toggle('off',!state.captionsOn);if(state.captionsOn&&state.room?.localParticipant?.isMicrophoneEnabled)startCC();else stopCC()};$('panelBtn').onclick=()=>{$('meetSide').classList.toggle('hidden')};$('leaveBtn').onclick=()=>{stopCC();clearInterval(state.hostTimer);state.room?.disconnect();state.room=null;location.href=location.pathname};
 
 const settingSections=[['general','General'],['video','Video'],['audio','Audio'],['recording','Recording'],['appearance','Background & Appearance'],['captions','Captions & Translation'],['security','Security & Privacy'],['network','Network Test'],['shortcuts','Shortcuts'],['language','Language'],['about','About']];let activeSetting='general';
 function renderSettings(){const nav=$('settingsNav');nav.innerHTML='';settingSections.forEach(([id,name])=>{const b=document.createElement('button');b.className='setnav'+(id===activeSetting?' active':'');b.textContent=name;b.onclick=()=>{activeSetting=id;renderSettings()};nav.appendChild(b)});const p=$('settingsPane');p.innerHTML=settingsHTML(activeSetting);wireSettings(activeSetting)}
@@ -719,10 +816,10 @@ app.post('/api/asr', async (c) => {
                 if (!supported.has(lang))
                     return c.json({ text: '', language: lang, rejected: 'unsupported_language' });
                 const segs = Array.isArray(d.segments) ? d.segments : [];
-                const accepted = segs.filter((s) => { const noSpeech = Number(s.no_speech_prob ?? 0), logp = Number(s.avg_logprob ?? 0), comp = Number(s.compression_ratio ?? 0), dur = Math.max(0, Number(s.end ?? 0) - Number(s.start ?? 0)), txt = String(s.text || '').trim(); return !!txt && noSpeech <= .38 && logp >= -.82 && comp <= 2.35 && dur >= .22; });
-                if (!accepted.length)
+                const accepted = segs.filter((s) => { const noSpeech = Number(s.no_speech_prob ?? 0), logp = Number(s.avg_logprob ?? 0), comp = Number(s.compression_ratio ?? 0), dur = Math.max(0, Number(s.end ?? 0) - Number(s.start ?? 0)), txt = String(s.text || '').trim(); return !!txt && noSpeech <= .65 && logp >= -1.0 && comp <= 2.6 && dur >= .10; });
+                if (!accepted.length && segs.length)
                     return c.json({ text: '', language: lang, rejected: 'no_clear_speech' });
-                const text = accepted.map((s) => String(s.text || '').trim()).join(' ').replace(/\s+/g, ' ').trim();
+                const text = (accepted.length ? accepted.map((s) => String(s.text || '').trim()).join(' ') : String(d.text || '')).replace(/\s+/g, ' ').trim();
                 const chars = (text.match(/[\p{L}\p{N}]/gu) || []).length;
                 if (chars < 2)
                     return c.json({ text: '', language: lang, rejected: 'low_content' });
