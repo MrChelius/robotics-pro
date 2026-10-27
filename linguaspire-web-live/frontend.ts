@@ -522,7 +522,7 @@ async function startCC(){
     },100);
     let chunks=[];
     const mime=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':(MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':'');
-    const rec=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
+    const rec=mime?new MediaRecorder(stream,{mimeType:mime,audioBitsPerSecond:96000}):new MediaRecorder(stream);
     state.rec=rec;state.ccQueue=[];state.ccBusy=false;
     const scheduleStop=()=>{clearTimeout(state.ccStopTimer);state.ccStopTimer=setTimeout(()=>{
       if(state.ccSession===session&&rec.state==='recording')rec.stop();
@@ -536,8 +536,8 @@ async function startCC(){
       // Restart capture BEFORE uploading and translating the previous chunk.
       try{rec.start();scheduleStop()}catch(err){captionStatus('Recorder stopped: '+String(err.message||err),true);return}
       // Keep quiet-room traffic under control without suppressing naturally soft speech.
-      if(part.blob.size<1400 || (part.voiced<2&&part.peak<.0035))return;
-      if(state.ccQueue.length>=3)state.ccQueue.shift();
+      if(part.blob.size<1400 || (part.voiced<1&&part.peak<.0025))return;
+      if(state.ccQueue.length>=5)state.ccQueue.shift();
       state.ccQueue.push(part);consumeCaptionQueue(session);
     };
     stream.getAudioTracks().forEach(track=>track.addEventListener('ended',()=>{if(state.ccSession===session)captionStatus('Microphone disconnected',true)}));
