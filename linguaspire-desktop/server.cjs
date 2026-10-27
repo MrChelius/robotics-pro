@@ -46,6 +46,9 @@ async function handler(req,res){
  if((req.method==='GET'||req.method==='HEAD')&&(pathname==='/'||pathname==='/index.html')){respond(res,200,req.method==='HEAD'?'':page,mime);return}
  if(pathname==='/health'){respond(res,200,JSON.stringify({ok:true,service:'LinguaSpire Desktop',version:'2.9.2',backend:'remote'}));return}
  if(pathname==='/api/version'){respond(res,200,JSON.stringify({product:'LinguaSpire',version:'2.9.2',channel:'desktop'}));return}
+ // Desktop uses a loopback web server. Serve the LiveKit module through the current production frontend
+ // so the in-app video engine does not depend on public third-party JavaScript CDNs.
+ if(pathname==='/assets/livekit-client.mjs'&&(req.method==='GET'||req.method==='HEAD')){await proxy(req,res,FRONTEND_290+pathname);return}
  if(pathname==='/api/translate'&&req.method==='POST'){await fallbackTranslation(req,res);return}
  if(pathname.startsWith('/api/')&&(['asr','net/room','net/stt','net/translate','net/media'].includes(pathname.slice(5)))){await proxy(req,res,FRONTEND_290+pathname);return}
  if(pathname.startsWith('/v1/')){await proxy(req,res,ROOM_API+req.url);return}
