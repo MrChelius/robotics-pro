@@ -807,7 +807,9 @@ app.post('/api/asr', async (c) => {
         out.append('model', process.env.STT_MODEL || 'Systran/faster-whisper-base');
         out.append('response_format', 'verbose_json');
         out.append('temperature', '0');
-        out.append('vad_filter', 'true');
+        // Upstream faster-whisper crashes with ValueError max() of empty sequence when VAD removes all audio.
+        // Client energy gating and segment confidence checks remain enabled.
+        out.append('vad_filter', 'false');
         if (language !== 'auto' && supported.has(language))
             out.append('language', language);
         const hotwords = vocab.trim();
