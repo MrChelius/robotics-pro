@@ -2,6 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const hono_1 = require("hono");
 const app = new hono_1.Hono();
+const fs = require('node:fs');
+const path = require('node:path');
+const livekitModulePath = path.join(__dirname, 'node_modules', 'livekit-client', 'dist', 'livekit-client.esm.mjs');
+app.get('/assets/livekit-client.mjs', c => { try {const body=fs.readFileSync(livekitModulePath);return c.body(body,200,{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'public, max-age=3600','X-Content-Type-Options':'nosniff'});}catch(err){console.error('Bundled LiveKit SDK missing',err?.message);return c.text('LiveKit SDK not available',503);} });
 app.use('*', async (c, next) => { await next(); c.header('X-Content-Type-Options', 'nosniff'); c.header('Referrer-Policy', 'strict-origin-when-cross-origin'); c.header('X-Frame-Options', 'SAMEORIGIN'); });
 const ROOM_API = 'https://room-api-production-881c.up.railway.app';
 const STT_PUBLIC = 'https://stt-production-4262.up.railway.app';
