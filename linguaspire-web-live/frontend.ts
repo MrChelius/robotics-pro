@@ -452,7 +452,7 @@ function addTranscript(who,original,translated){const item={time:new Date().toLo
 function renderTranscript(){const body=$('sideBody');body.innerHTML='';for(const x of state.transcript||[]){const d=document.createElement('div');d.className='transcriptLine';d.innerHTML='<b>'+escapeHtml(x.who)+'</b><small>'+x.time+'</small><div>'+escapeHtml(x.translated)+'</div>'+(state.settings.captionMode==='both'?'<small>'+escapeHtml(x.original)+'</small>':'');body.appendChild(d)}}
 function renderChat(){const body=$('sideBody');body.innerHTML='';if(!state.messages.length){body.innerHTML='<div class=\"empty\">Translated messages will appear here.</div>';return}for(const x of state.messages){const d=document.createElement('div');d.className='msg';d.innerHTML='<b>'+escapeHtml(x.who)+'</b><div>'+escapeHtml(x.text)+'</div>'+(x.original&&state.settings.captionMode==='both'?'<small>Original: '+escapeHtml(x.original)+'</small>':'');d.dataset.mine=x.mine?'1':'0';body.appendChild(d)}body.scrollTop=body.scrollHeight}
 function chatLine(who,text,isMine=false,original=''){state.messages.push({who,text,mine:isMine,original,time:Date.now()});if(state.activeTab==='chat')renderChat()}
-async function onData(payload,p){try{const d=JSON.parse(dec.decode(payload));if(d.type==='caption'){if(p)getTile(p,false);const translated=await translate(d.text,state.subtitle,d.source||'auto');if(d.sentAt){state.captionLatencies=state.captionLatencies||[];state.captionLatencies.push(Math.max(0,Date.now()-Number(d.sentAt)));if(state.captionLatencies.length>40)state.captionLatencies.shift()}setCaption(p?.identity||d.identity,translated);addTranscript(p?.name||d.name||'Guest',d.text,translated)}if(d.type==='chat'){const translated=await translate(d.text,state.chat,d.source||'auto');chatLine(p?.name||d.name||'Guest',translated,false,d.text)}}catch{}}
+async function onData(payload,p){try{const d=JSON.parse(dec.decode(payload));if(d.type==='caption'){if(p)getTile(p,false);const translated=await translate(d.text,state.subtitle,d.source||'auto');if(d.sentAt){state.captionLatencies=state.captionLatencies||[];state.captionLatencies.push(Math.max(0,Date.now()-Number(d.sentAt)));if(state.captionLatencies.length>40)state.captionLatencies.shift()}setCaption(p?.identity||d.identity,translated);addTranscript(p?.name||d.name||'Guest',d.text,translated)}if(d.type==='chat'){const translated=await translate(d.text,state.chat,d.source||'auto');chatLine(p?.name||d.name||'Guest',translated,false,d.text)}}catch(err){console.warn('[LinguaSpire] Incoming translation/data error',err);captionStatus('Incoming subtitles error: '+String(err?.message||err).slice(0,90),true)}}
 
 async function publishCaption(text,language='auto'){if(!text.trim()||!state.room)return;const identity=state.room.localParticipant.identity;await state.room.localParticipant.publishData(enc.encode(JSON.stringify({type:'caption',text,source:language,name:state.name,identity,sentAt:Date.now()})),{reliable:true});const localTranslated=await translate(text,state.subtitle,language);setCaption(identity,localTranslated);addTranscript(state.name,text,localTranslated)}
 function captionStatus(message,problem=false){
@@ -730,6 +730,13 @@ app.post('/api/translate', async c => {
 app.get('/api/diagnostics/translation',async c=>{
   const samples:any={en:'Hello, how are you?',ru:'Привет, как дела?',zh:'你好，你怎么样？',ja:'こんにちは、お元気ですか？',ko:'안녕하세요, 어떻게 지내세요?',de:'Hallo, wie geht es dir?',fr:'Bonjour, comment allez-vous ?',it:'Ciao, come stai?'};
   const languages=Object.keys(samples);
+  const requestedSource=c.req.query('source'),requestedTarget=c.req.query('target');
+  if(requestedSource||requestedTarget){
+    if(!samples[requestedSource]||!samples[requestedTarget]||requestedSource===requestedTarget)return c.json({ok:false,error:'INVALID_LANGUAGE_PAIR'},400);
+    const result=await runTranslation(samples[requestedSource],requestedSource,requestedTarget);
+    const ok=!result.error&&!!result.translatedText&&result.translatedText!==samples[requestedSource];
+    return c.json({ok,source:requestedSource,target:requestedTarget,input:samples[requestedSource],...result},result.error?503:200);
+  }
   const results=[];
   for(const source of languages)for(const target of languages)if(source!==target){
     const started=Date.now();const result:any=await runTranslation(samples[source],source,target);
