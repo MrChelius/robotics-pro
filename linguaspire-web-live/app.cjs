@@ -461,7 +461,7 @@ let incomingDataSequence=Promise.resolve();
 function onData(payload,p){incomingDataSequence=incomingDataSequence.catch(()=>{}).then(()=>handleIncomingData(payload,p));}
 async function handleIncomingData(payload,p){try{const d=JSON.parse(dec.decode(payload));if(d.type==='caption'){if(p)getTile(p,false);const translated=await translate(d.text,state.subtitle,d.source||'auto');if(d.sentAt){state.captionLatencies=state.captionLatencies||[];state.captionLatencies.push(Math.max(0,Date.now()-Number(d.sentAt)));if(state.captionLatencies.length>40)state.captionLatencies.shift()}setCaption(p?.identity||d.identity,translated);addTranscript(p?.name||d.name||'Guest',d.text,translated)}if(d.type==='chat'){const translated=await translate(d.text,state.chat,d.source||'auto');chatLine(p?.name||d.name||'Guest',translated,false,d.text)}}catch(err){console.warn('[LinguaSpire] Incoming translation/data error',err);captionStatus('Incoming subtitles error: '+String(err?.message||err).slice(0,90),true)}}
 
-async function publishCaption(text,language='auto'){if(!text.trim()||!state.room)return;const identity=state.room.localParticipant.identity;await state.room.localParticipant.publishData(enc.encode(JSON.stringify({type:'caption',text,source:language,name:state.name,identity,sentAt:Date.now()})),{reliable:true});const localTranslated=await translate(text,state.subtitle,language);setCaption(identity,localTranslated);addTranscript(state.name,text,localTranslated)}
+async function publishCaption(text,language='auto'){if(!text.trim()||!state.room)return;const identity=state.room.localParticipant.identity;const publish=state.room.localParticipant.publishData(enc.encode(JSON.stringify({type:'caption',text,source:language,name:state.name,identity,sentAt:Date.now()})),{reliable:true});const localTranslated=await translate(text,state.subtitle,language);await publish;setCaption(identity,localTranslated);addTranscript(state.name,text,localTranslated)}
 function captionStatus(message,problem=false){
   const e=$('captionBadge');if(!e)return;
   e.textContent=message;
@@ -543,7 +543,7 @@ async function startCC(){
       try{rec.start();scheduleStop()}catch(err){captionStatus('Recorder stopped: '+String(err.message||err),true);return}
       // Keep quiet-room traffic under control without suppressing naturally soft speech.
       if(part.blob.size<1400 || (part.voiced<1&&part.peak<.0025))return;
-      if(state.ccQueue.length>=30){captionStatus('Caption processing is behind live audio — check Network Test',true);return;}
+      if(state.ccQueue.length>=30){captionStatus('Caption queue overloaded — speech is delayed; check network and STT service',true);return;}
       state.ccQueue.push(part);consumeCaptionQueue(session);
     };
     stream.getAudioTracks().forEach(track=>track.addEventListener('ended',()=>{if(state.ccSession===session)captionStatus('Microphone disconnected',true)}));
@@ -814,13 +814,15 @@ app.post('/api/asr', async (c) => {
         if (hotwords)
             out.append('hotwords', hotwords);
         const profileHint = profile === 'business' ? 'Business meeting with names, companies and professional terms.' : profile === 'education' ? 'Educational conversation with clear academic vocabulary.' : profile === 'technical' ? 'Technical conversation with product and software terminology.' : 'Natural everyday conversation.';
-        out.append('prompt', profileHint + ' Supported languages: English, Russian, Chinese, Japanese, Korean, German, French, Italian. Transcribe the speaker accurately in their original language.');
+        // Do not prime Whisper with instructions phrased as spoken words: these can leak into transcripts.
+        if (vocab.trim()) out.append('initial_prompt', vocab.trim());
         for (const url of ['http://stt.railway.internal:8000/v1/audio/transcriptions', STT_PUBLIC + '/v1/audio/transcriptions']) {
             try {
                 const ctrl = new AbortController();
-                const to = setTimeout(() => ctrl.abort(), 8000);
-                const r = await fetch(url, { method: 'POST', body: out, signal: ctrl.signal });
-                clearTimeout(to);
+                const to = setTimeout(() => ctrl.abort(), 15000);
+                let r;
+                try { r = await fetch(url, { method: 'POST', body: out, signal: ctrl.signal }); }
+                finally { clearTimeout(to); }
                 if (!r.ok)
                     continue;
                 const d = await r.json();
@@ -831,7 +833,7 @@ app.post('/api/asr', async (c) => {
                     return c.json({ text: '', language: lang, rejected: 'unsupported_language' });
                 // Do not present unreliable autodetection as verified speech.
                 const languageProbability = Number(d.language_probability ?? d.languageProbability ?? 1);
-                if (language === 'auto' && Number.isFinite(languageProbability) && languageProbability < 0.50)
+                if (language === 'auto' && Number.isFinite(languageProbability) && languageProbability < 0.35)
                     return c.json({ text: '', language: lang, rejected: 'uncertain_language', languageProbability });
                 const segs = Array.isArray(d.segments) ? d.segments : [];
                 const accepted = segs.filter((s) => { const noSpeech = Number(s.no_speech_prob ?? 0), logp = Number(s.avg_logprob ?? 0), comp = Number(s.compression_ratio ?? 0), dur = Math.max(0, Number(s.end ?? 0) - Number(s.start ?? 0)), txt = String(s.text || '').trim(); return !!txt && noSpeech <= .50 && logp >= -0.85 && comp <= 2.4 && dur >= .10; });
