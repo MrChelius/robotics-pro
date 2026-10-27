@@ -804,10 +804,10 @@ app.post('/api/asr', async (c) => {
         const supported = new Set(['en', 'ru', 'zh', 'ja', 'ko', 'de', 'fr', 'it']);
         const out = new FormData();
         out.append('file', f, f.name || 'speech.webm');
-        out.append('model', 'Systran/faster-whisper-tiny');
+        out.append('model', process.env.STT_MODEL || 'Systran/faster-whisper-tiny');
         out.append('response_format', 'verbose_json');
         out.append('temperature', '0');
-        out.append('vad_filter', 'false');
+        out.append('vad_filter', 'true');
         if (language !== 'auto' && supported.has(language))
             out.append('language', language);
         const hotwords = vocab.trim();
@@ -829,8 +829,12 @@ app.post('/api/asr', async (c) => {
                     lang = 'zh';
                 if (!supported.has(lang))
                     return c.json({ text: '', language: lang, rejected: 'unsupported_language' });
+                // Do not present unreliable autodetection as verified speech.
+                const languageProbability = Number(d.language_probability ?? d.languageProbability ?? 1);
+                if (language === 'auto' && Number.isFinite(languageProbability) && languageProbability < 0.50)
+                    return c.json({ text: '', language: lang, rejected: 'uncertain_language', languageProbability });
                 const segs = Array.isArray(d.segments) ? d.segments : [];
-                const accepted = segs.filter((s) => { const noSpeech = Number(s.no_speech_prob ?? 0), logp = Number(s.avg_logprob ?? 0), comp = Number(s.compression_ratio ?? 0), dur = Math.max(0, Number(s.end ?? 0) - Number(s.start ?? 0)), txt = String(s.text || '').trim(); return !!txt && noSpeech <= .65 && logp >= -1.0 && comp <= 2.6 && dur >= .10; });
+                const accepted = segs.filter((s) => { const noSpeech = Number(s.no_speech_prob ?? 0), logp = Number(s.avg_logprob ?? 0), comp = Number(s.compression_ratio ?? 0), dur = Math.max(0, Number(s.end ?? 0) - Number(s.start ?? 0)), txt = String(s.text || '').trim(); return !!txt && noSpeech <= .50 && logp >= -0.85 && comp <= 2.4 && dur >= .10; });
                 if (!accepted.length && segs.length)
                     return c.json({ text: '', language: lang, rejected: 'no_clear_speech' });
                 const text = (accepted.length ? accepted.map((s) => String(s.text || '').trim()).join(' ') : String(d.text || '')).replace(/\s+/g, ' ').trim();
