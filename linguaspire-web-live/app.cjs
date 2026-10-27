@@ -804,7 +804,7 @@ app.post('/api/asr', async (c) => {
         const supported = new Set(['en', 'ru', 'zh', 'ja', 'ko', 'de', 'fr', 'it']);
         const out = new FormData();
         out.append('file', f, f.name || 'speech.webm');
-        out.append('model', process.env.STT_MODEL || 'Systran/faster-whisper-tiny');
+        out.append('model', process.env.STT_MODEL || 'Systran/faster-whisper-base');
         out.append('response_format', 'verbose_json');
         out.append('temperature', '0');
         out.append('vad_filter', 'true');
@@ -823,8 +823,10 @@ app.post('/api/asr', async (c) => {
                 let r;
                 try { r = await fetch(url, { method: 'POST', body: out, signal: ctrl.signal }); }
                 finally { clearTimeout(to); }
-                if (!r.ok)
+                if (!r.ok) {
+                    console.warn('[LinguaSpire ASR] upstream returned HTTP ' + r.status);
                     continue;
+                }
                 const d = await r.json();
                 let lang = String(d.language || language || '').toLowerCase();
                 if (lang === 'yue')
