@@ -805,14 +805,14 @@ app.post('/api/asr', async (c) => {
         out.append('model', 'Systran/faster-whisper-tiny');
         out.append('response_format', 'verbose_json');
         out.append('temperature', '0');
-        out.append('vad_filter', 'true');
+        out.append('vad_filter', 'false');
         if (language !== 'auto' && supported.has(language))
             out.append('language', language);
-        const hotwords = ['LinguaSpire', vocab].filter(Boolean).join(', ');
+        const hotwords = vocab.trim();
         if (hotwords)
             out.append('hotwords', hotwords);
         const profileHint = profile === 'business' ? 'Business meeting with names, companies and professional terms.' : profile === 'education' ? 'Educational conversation with clear academic vocabulary.' : profile === 'technical' ? 'Technical conversation with product and software terminology.' : 'Natural everyday conversation.';
-        out.append('prompt', profileHint + ' Supported languages: English, Russian, Chinese, Japanese, Korean, German, French, Italian. Transcribe only clearly spoken human speech. Ignore music, fan noise, keyboard clicks, traffic, breathing and background sounds. Never invent words for noise.');
+        out.append('prompt', profileHint + ' Supported languages: English, Russian, Chinese, Japanese, Korean, German, French, Italian. Transcribe the speaker accurately in their original language.');
         for (const url of ['http://stt.railway.internal:8000/v1/audio/transcriptions', STT_PUBLIC + '/v1/audio/transcriptions']) {
             try {
                 const ctrl = new AbortController();
