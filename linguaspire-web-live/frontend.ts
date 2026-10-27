@@ -208,6 +208,7 @@ async function ensureLiveKit() {
   if (!livekitLoading) {
     livekitLoading = (async () => {
       const sources = [
+        '/assets/livekit-client.mjs',
         'https://esm.sh/livekit-client@2.15.4?bundle',
         'https://cdn.jsdelivr.net/npm/livekit-client@2.15.4/dist/livekit-client.esm.mjs'
       ];
