@@ -1,0 +1,24 @@
+name: LinguaSpire
+options:
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    IPHONEOS_DEPLOYMENT_TARGET: '16.0'
+targets:
+  LinguaSpire:
+    type: application
+    platform: iOS
+    deploymentTarget: '16.0'
+    sources:
+      - path: LinguaSpire
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.linguaspire.ios
+        PRODUCT_NAME: LinguaSpire
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: LinguaSpire/Info.plist
+        TARGETED_DEVICE_FAMILY: '1,2'
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ''
+        SUPPORTS_MACCATALYST: NO
