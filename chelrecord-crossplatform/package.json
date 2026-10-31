@@ -1,0 +1,58 @@
+{
+  "name": "chelrecord-crossplatform",
+  "version": "1.9.0-beta.1",
+  "private": true,
+  "description": "ChelRecord cross-platform screen and webcam recorder preview",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js",
+    "dist:mac": "electron-builder --mac dmg --arm64",
+    "dist:win": "electron-builder --win nsis --x64"
+  },
+  "dependencies": {
+    "ffmpeg-static": "5.3.0"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.chelrecord.desktop",
+    "productName": "ChelRecord",
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/ffmpeg-static/**"
+    ],
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "renderer.js",
+      "index.html",
+      "package.json",
+      "node_modules/**"
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.video",
+      "hardenedRuntime": false,
+      "extendInfo": {
+        "NSCameraUsageDescription": "Camera access is used only when you enable the camera overlay.",
+        "NSMicrophoneUsageDescription": "Microphone access is used only when you select microphone recording.",
+        "NSScreenCaptureUsageDescription": "ChelRecord records the selected screen, window or region with your permission."
+      }
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "artifactName": "ChelRecord-1.9.0-beta.1-${os}-${arch}.${ext}"
+  }
+}
