@@ -1,6 +1,6 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "1.9.0-beta.1",
+  "version": "1.9.0-beta.2",
   "private": true,
   "description": "ChelRecord cross-platform screen and webcam recorder preview",
   "main": "main.cjs",
@@ -37,12 +37,13 @@
         "dmg"
       ],
       "category": "public.app-category.video",
-      "hardenedRuntime": false,
+      "hardenedRuntime": true,
       "extendInfo": {
         "NSCameraUsageDescription": "Camera access is used only when you enable the camera overlay.",
         "NSMicrophoneUsageDescription": "Microphone access is used only when you select microphone recording.",
         "NSScreenCaptureUsageDescription": "ChelRecord records the selected screen, window or region with your permission."
-      }
+      },
+      "identity": "-"
     },
     "win": {
       "target": [
@@ -53,6 +54,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-1.9.0-beta.1-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-1.9.0-beta.2-${os}-${arch}.${ext}"
   }
 }
