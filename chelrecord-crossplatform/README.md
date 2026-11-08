@@ -1,42 +1,48 @@
-# ChelRecord 1.9.0-beta.1 cross-platform preview
+# ChelRecord 1.9.1 RC1
 
-This is a **new prototype**, NOT an edited or verified build of the uploaded ChelRecord-1.8.8-Source.zip. That attachment could not be read in this runtime. It has not been tested against real macOS/iPhone or Windows camera hardware.
+Cross-platform screen and webcam recorder for macOS Apple Silicon and Windows x64.
 
-## Features implemented in this prototype
-- Select a desktop/window source; preview via Electron capture.
-- Record entire source or select a proportional crop region in the preview.
-- Select available microphone and camera devices (camera composited as picture-in-picture).
-- Record to temporary WebM, then transcode to H.264/AAC MP4 using ffmpeg-static.
-- Native save dialog; show exported file.
-- No cloud uploads, external recording servers or hidden telemetry.
+**Important:** This is a new Electron implementation. The older ChelRecord 1.8.8 Source ZIP could not be opened in this environment, so this is not a verified repair of that original code.
 
-## Not implemented / known limitations
-- No direct native iPhone USB capture. Camera appears only if exposed to the operating system as a normal webcam. macOS Continuity Camera is platform dependent.
-- Desktop system audio capture is disabled. Only the chosen microphone is recorded.
-- Preview region selection crops and stretches to full output canvas resolution; this is not a native pixel crop.
-- No audio mixing of system sound with microphone.
-- UI and Electron capture were not exercised with physical devices. Installer signatures/notarization are absent.
-- FFmpeg package might need binary path adjustment in packaged apps; test on target hardware.
-- Recording to WebM then MP4 requires temporary disk space. Large long-duration recordings need more efficient streaming architecture.
-- Device permissions on macOS and Windows must be granted. If source picker does not capture, check Electron/OS compatibility.
+## Recording options
+- Whole display or individual window, chosen from DesktopCapturer thumbnails.
+- Custom screen region: draw a rectangle in the preview, then select Record. Region crop maintains its source aspect ratio with black bars if needed.
+- Camera-only recording independent of screen capture.
+- Camera picture-in-picture over the selected screen.
+- Independent camera preview and microphone volume-meter tests.
+- MP4 export using H.264 video and optional AAC microphone audio via bundled FFmpeg.
+
+## Automated verification
+- JavaScript syntax checks in GitHub Actions.
+- Bundled FFmpeg successfully encodes/decodes a synthetic H.264/AAC MP4 and encodes a silent H.264 MP4 on both macOS and Windows.
+- Installer creation on macOS arm64 (DMG) and Windows x64 (NSIS), with macOS ad-hoc signature validation.
+
+**Not verified by automated tests:** camera or microphone hardware on the user's computer; iPhone Continuity Camera; physical screen capture, end-to-end video recording or playback in a real desktop session. Treat this as a release candidate until these tests pass.
+
+## How to use
+1. On macOS, open System Settings > Privacy & Security and permit Screen & System Audio Recording, Camera and Microphone to ChelRecord. Fully quit (Cmd+Q) and reopen after changing screen permission.
+2. Choose the capture mode: Screen/Window, Region or Camera only.
+3. For screen recording choose a source from the thumbnails and press Start preview. Region mode requires drawing a rectangle before Record is enabled.
+4. To record a camera, choose the camera and Test camera; it also starts automatically during screen preview if selected.
+5. Select a microphone to include sound (Off by default) and optionally press Test microphone.
+6. Press Record, select an MP4 destination, then Stop & save MP4. Use Show saved recording to open its location.
+
+## Limitations
+- System/desktop audio is not supported; microphone only.
+- iPhone support uses Continuity Camera when macOS exposes the iPhone as a normal webcam. Direct native USB capture has not been implemented.
+- Windows phone webcams require compatible virtual-camera software.
+- Mac installer is ad-hoc signed, **not notarized** with an Apple Developer ID; Gatekeeper may still block or warn.
+- Windows installer is not digitally signed and may trigger SmartScreen.
+- Large recordings require temporary disk space for WebM-to-MP4 conversion.
 
 ## Build
-```sh
-cd chelrecord-crossplatform
-npm install
-npm run check
-npm start
-npm run dist:mac   # macOS runner
-npm run dist:win   # Windows runner
-```
-GitHub Actions workflow packages macOS/Windows installers from this branch.
 
-## Test checklist (required before release)
-1. Start, stop and discard screen recording.
-2. Record primary and secondary displays; record a single window.
-3. Drag region and verify captured content in final MP4.
-4. Record built-in microphone, USB microphone, and without microphone.
-5. Preview internal/external camera, try iPhone Continuity Camera on macOS.
-6. Check playback and audio/video synchronization in QuickTime, VLC and CapCut.
-7. Force permission rejection, unplug camera mid-recording, test long recording.
-8. Validate clean macOS install and Windows SmartScreen behavior.
+    cd chelrecord-crossplatform
+    npm install
+    npm run check
+    npm run test:media
+    npm start
+    npm run dist:mac    # on macOS arm64
+    npm run dist:win    # on Windows x64
+
+Source branch: feature/chelrecord-crossplatform-preview.
