@@ -126,7 +126,7 @@ function register(){
 app.whenReady().then(()=>{
  app.setAppUserModelId('com.chelrecord.desktop');
  const ses=session.defaultSession;
- const allowedMedia=new Set(['media','display-capture','mediaKeySystem']);
+ const allowedMedia=new Set(['media','display-capture']);
  ses.setPermissionRequestHandler((wc,permission,cb)=>{
   cb(Boolean(windowRef&&wc===windowRef.webContents&&allowedMedia.has(permission)));
  });
@@ -135,13 +135,13 @@ app.whenReady().then(()=>{
  });
  ses.setDisplayMediaRequestHandler(async(req,cb)=>{
   try{
-   if(!windowRef){cb({});return}
+   if(!windowRef || req.frame?.top !== req.frame){cb(null);return}
    // Electron may not provide videoRequested consistently; getDisplayMedia is called after a user click.
    const list=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:0,height:0}});
    const item=list.find(s=>s.id===selectedSourceId)||list.find(s=>s.id.startsWith('screen:'));
-   if(!item){cb({});return}
+   if(!item){cb(null);return}
    cb({video:item});
-  }catch(err){console.error('[display-media]',err);cb({})}
+  }catch(err){console.error('[display-media]',err);cb(null)}
  },{useSystemPicker:false});
  register();
  windowRef=new BrowserWindow({width:1350,height:920,minWidth:980,minHeight:720,
