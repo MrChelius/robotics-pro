@@ -25,7 +25,7 @@ function showMode(){
 }
 function syncButtons(){
  const isRecording=Boolean(recorder);
- const ready=mode()==='camera'?cameraIsReady():sourceIsReady();
+ const ready=preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())&&(mode()!=='region'||Boolean(region&&region.w>.025&&region.h>.025));
  $('recordBtn').disabled=isRecording||busy||!ready;
  $('stopBtn').disabled=!isRecording||busy;
  $('cancelBtn').disabled=!isRecording||busy;
@@ -124,7 +124,7 @@ async function testCamera(){
   info('Camera works. '+(mode()==='camera'?'Click Start preview to record camera only.':'You can use it as an overlay on screen recordings.'));
   await listMedia();syncButtons();
   camStream.getVideoTracks()[0].addEventListener('ended',()=>{camStream=null;$('cameraStatus').textContent='Camera disconnected';syncButtons()},{once:true});
- }catch(err){$('cameraStatus').textContent=explain(err,'camera');info(explain(err,'camera'),true);syncButtons()}
+ }catch(err){stopStream(camStream);camStream=null;cameraVideo.srcObject=null;overlay.srcObject=null;overlay.classList.add('hidden');$('cameraStatus').textContent=explain(err,'camera');info(explain(err,'camera'),true);syncButtons()}
 }
 function stopCamera(){
  if(recorder)return;
@@ -165,7 +165,7 @@ async function testMicrophone(){
 }
 async function closeScreen(){
  ++renderToken;stopStream(screenStream);screenStream=null;screenVideo.srcObject=null;
- preview=mode()==='camera'&&cameraIsReady();
+ preview=false;
  overlay.classList.add('hidden');resetRegion();showMode();syncButtons();
 }
 async function startPreview(){
@@ -196,8 +196,10 @@ async function startPreview(){
   height=Math.max(2,Math.round(height*scale/2)*2);
   canvas.width=width;canvas.height=height;$('stage').style.aspectRatio=width+' / '+height;
   preview=true;++renderToken;draw(renderToken);showMode();
+  if($('camera').value && !cameraIsReady())await testCamera();
   overlay.classList.toggle('hidden',!cameraIsReady());
-  info('Screen preview active. Drag to select a region or click Record.');
+  syncButtons();
+  info('Screen preview active. '+(mode()==='region'?'Drag to select a region, then click Record.':'Click Record to begin.')+(cameraIsReady()?' Camera is active.':''));
   track.addEventListener('ended',async()=>{
    if(screenStream!==stream)return;
    if(recorder)await stopRecord(false);
@@ -287,7 +289,7 @@ async function startRecord(){
    },250);
    $('state').textContent='● Recording';info('Recording started. Saving to '+destination.filePath);
    lastFile=null;$('openFile').classList.add('hidden');
-  }catch(err){await api.abort();throw err}
+  }catch(err){stopStream(micStream);micStream=null;recorder=null;await api.abort();throw err}
  }catch(err){info(explain(err,'recording'),true)}
  finally{busy=false;syncButtons()}
 }
@@ -319,10 +321,10 @@ async function settings(kind){
  try{await api.openSettings(kind);info('System settings opened. Grant permission to ChelRecord, then restart the app if screen permission was changed.')}
  catch(err){info('Could not open settings: '+err.message,true)}
 }
-$('mode').addEventListener('change',async()=>{resetRegion();if(mode()!=='camera'&&screenStream){await closeScreen()}showMode();info('Mode changed. Click Start preview.')});
+$('mode').addEventListener('change',async()=>{await closeScreen();resetRegion();showMode();info('Capture mode changed. Click Start preview.')});
 $('refresh').onclick=listScreens;
 $('testCam').onclick=testCamera;$('stopCam').onclick=stopCamera;
-$('camera').onchange=()=>{if(camStream)stopCamera();$('cameraStatus').textContent='Select Test camera to activate the selected device.'};
+$('camera').onchange=async()=>{if(camStream)stopCamera();if($('camera').value)await testCamera();else $('cameraStatus').textContent='Camera disabled';syncButtons()};
 $('testMic').onclick=testMicrophone;$('stopMic').onclick=()=>{stopMicTest();$('micStatus').textContent='Microphone test stopped'};
 $('previewBtn').onclick=startPreview;$('recordBtn').onclick=startRecord;
 $('stopBtn').onclick=()=>stopRecord(false);$('cancelBtn').onclick=()=>stopRecord(true);
