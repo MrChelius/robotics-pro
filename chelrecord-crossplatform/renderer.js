@@ -254,12 +254,13 @@ $('region').addEventListener('pointermove',e=>{
 $('region').addEventListener('pointerup',()=>{
  anchor=null;
  if(region&&(region.w<.025||region.h<.025))resetRegion();
+ syncButtons();
 });
 $('region').addEventListener('pointercancel',()=>anchor=null);
 async function startRecord(){
  if(busy||recorder)return;
- const ready=mode()==='camera'?cameraIsReady():sourceIsReady();
- if(!ready){info('Start the preview successfully before recording.',true);return}
+ const ready=preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())&&(mode()!=='region'||Boolean(region&&region.w>.025&&region.h>.025));
+ if(!ready){info('Start preview and, for region mode, draw an area before recording.',true);return}
  busy=true;syncButtons();
  try{
   const destination=await api.begin();
