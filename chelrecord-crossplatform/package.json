@@ -6,10 +6,11 @@
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js && node --check tests/verify-ffmpeg.cjs",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js && node --check tests/verify-ffmpeg.cjs && node --check tests/ui-smoke.cjs",
     "dist:mac": "electron-builder --mac dmg --arm64",
     "dist:win": "electron-builder --win nsis --x64",
-    "test:media": "node tests/verify-ffmpeg.cjs"
+    "test:media": "node tests/verify-ffmpeg.cjs",
+    "test:ui": "node tests/ui-smoke.cjs"
   },
   "dependencies": {
     "ffmpeg-static": "5.3.0"
@@ -33,7 +34,8 @@
       "package.json",
       "node_modules/**",
       "build/entitlements.mac.plist",
-      "tests/verify-ffmpeg.cjs"
+      "tests/verify-ffmpeg.cjs",
+      "tests/ui-smoke.cjs"
     ],
     "mac": {
       "target": [
