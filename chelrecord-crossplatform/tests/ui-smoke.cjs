@@ -103,6 +103,7 @@ async function test(){
  await fire('region','pointerdown',{clientX:25,clientY:25,pointerId:1});
  await fire('region','pointermove',{clientX:250,clientY:180});
  await fire('region','pointerup',{});
+ console.log('REGION DEBUG',JSON.stringify({disabled:element('recordBtn').disabled,mode:element('mode').value,sourceStatus:element('sourceHint').textContent,stage:element('stage').style,selected:element('selection').style,currentStatus:element('status').textContent,videoReady:element('captureVideo').readyState,videoStreamActive:element('captureVideo').srcObject?.active}));
  assert.equal(element('recordBtn').disabled,false,'Region recording remains disabled after selection');
  await click('recordBtn');
  await click('stopBtn');
