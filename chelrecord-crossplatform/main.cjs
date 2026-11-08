@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {randomUUID}=require('node:crypto');
 const {spawn}=require('node:child_process');
-let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null;
+let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null;
 const permitted=(e)=>Boolean(windowRef&&e.sender===windowRef.webContents);
 function requireOwner(e){if(!permitted(e))throw new Error('Unauthorized renderer');}
 function ffmpegExecutable(){
@@ -92,7 +92,8 @@ function register(){
   requireOwner(e);
   if(!recording||recording.closing)throw new Error('Not recording');
   const r=recording;
-  const buffer=Buffer.from(data instanceof Uint8Array?data:new Uint8Array(data));
+  if(!(data instanceof Uint8Array)||data.byteLength>32*1024*1024)throw new Error('Invalid recording chunk');
+  const buffer=Buffer.from(data);
   if(!buffer.length)return false;
   r.chain=r.chain.then(()=>fs.promises.appendFile(r.temp,buffer));
   r.count++;
@@ -108,6 +109,7 @@ function register(){
    await r.chain;
    if(!r.count)throw new Error('No video captured');
    await encodeMP4(r.temp,r.finalPath);
+   lastSavedFile=r.finalPath;
    return {filePath:r.finalPath};
   }finally{recording=null;await removeTemp(r)}
  });
@@ -119,7 +121,7 @@ function register(){
  });
  ipcMain.handle('folder:show',async(e,file)=>{
   requireOwner(e);
-  if(typeof file!=='string'||!file.startsWith(app.getPath('home')))throw new Error('Invalid output path');
+  if(typeof file!=='string'||file!==lastSavedFile)throw new Error('Invalid output path');
   shell.showItemInFolder(file);return true;
  });
 }
@@ -135,7 +137,7 @@ app.whenReady().then(()=>{
  });
  ses.setDisplayMediaRequestHandler(async(req,cb)=>{
   try{
-   if(!windowRef || req.frame?.top !== req.frame){cb(null);return}
+   if(!windowRef||!req.videoRequested||!req.frame||req.frame!==windowRef.webContents.mainFrame){cb(null);return}
    // Electron may not provide videoRequested consistently; getDisplayMedia is called after a user click.
    const list=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:0,height:0}});
    const item=list.find(s=>s.id===selectedSourceId)||list.find(s=>s.id.startsWith('screen:'));
@@ -149,7 +151,9 @@ app.whenReady().then(()=>{
   webPreferences:{preload:path.join(__dirname,'preload.cjs'),contextIsolation:true,nodeIntegration:false,
    sandbox:true,webSecurity:true,backgroundThrottling:false}});
  windowRef.loadFile('index.html');
+ windowRef.webContents.setWindowOpenHandler(()=>({action:'deny'}));
+ windowRef.webContents.on('will-navigate',event=>event.preventDefault());
  windowRef.on('closed',()=>{windowRef=null});
 }).catch(err=>{console.error('ChelRecord startup failed:',err);app.quit()});
 app.on('window-all-closed',()=>{if(process.platform!=='darwin')app.quit()});
-app.on('activate',()=>{if(!windowRef)app.relaunch()});
+app.on('activate',()=>{if(!windowRef){app.relaunch();app.quit()}});
