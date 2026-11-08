@@ -218,8 +218,12 @@ function draw(token){
   try{
    if(region&&region.w>0.01&&region.h>0.01){
     const vw=screenVideo.videoWidth||width,vh=screenVideo.videoHeight||height;
-    ctx.drawImage(screenVideo,Math.round(region.x*vw),Math.round(region.y*vh),
-      Math.max(2,Math.round(region.w*vw)),Math.max(2,Math.round(region.h*vh)),0,0,width,height);
+    const sx=Math.floor(region.x*vw),sy=Math.floor(region.y*vh);
+    const sw=Math.max(2,Math.min(vw-sx,Math.floor(region.w*vw)));
+    const sh=Math.max(2,Math.min(vh-sy,Math.floor(region.h*vh)));
+    const scale=Math.min(width/sw,height/sh);
+    const dw=Math.max(1,Math.round(sw*scale)),dh=Math.max(1,Math.round(sh*scale));
+    ctx.drawImage(screenVideo,sx,sy,sw,sh,Math.round((width-dw)/2),Math.round((height-dh)/2),dw,dh);
    }else ctx.drawImage(screenVideo,0,0,width,height);
   }catch(err){console.warn('[draw-screen]',err)}
   if(cameraIsReady()){
