@@ -36,6 +36,8 @@ jobs:
         run: npm run test:media
       - name: Test UI camera and region recording flows
         run: npm run test:ui
+      - name: Test system picker and legacy source enumeration
+        run: npm run test:picker
       - name: Build macOS installer
         if: matrix.target == 'mac'
         run: npm run dist:mac
@@ -50,7 +52,7 @@ jobs:
         run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: ChelRecord-1.9.1-rc1-${{ matrix.target }}
+          name: ChelRecord-1.9.1-rc2-${{ matrix.target }}
           path: chelrecord-crossplatform/dist/*
           retention-days: 30
           if-no-files-found: error
