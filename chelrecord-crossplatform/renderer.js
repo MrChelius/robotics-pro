@@ -47,7 +47,11 @@ async function diagnostics(){
   const d=await api.diagnostics();
   $('permissionStatus').textContent='Screen: '+formatStatus(d.screen)+' · Camera: '+formatStatus(d.camera)+' · Microphone: '+formatStatus(d.microphone)+
    (d.platform==='darwin'?"\nFor screen permissions use System Settings → Privacy & Security → Screen & System Audio Recording.":"");
-  if(d.platform==='darwin'&&d.screen==='denied')info('macOS blocked screen capture. Click Screen settings, enable ChelRecord, then fully quit and reopen it.',true);
+  // The OS permission snapshot can be stale (especially after reinstalling an ad-hoc signed build).
+  // Report it in the diagnostics panel, but only the actual getDisplayMedia result determines capture readiness.
+  if(d.platform==='darwin'&&d.screen==='denied'){
+   $('permissionStatus').textContent+='\nmacOS reports denied here. If Start preview fails, review Screen settings and fully quit/reopen ChelRecord. The OS status alone does not confirm capture failure.';
+  }
   return d;
  }catch(err){$('permissionStatus').textContent='Unable to inspect OS permissions: '+err.message}
 }
@@ -190,7 +194,7 @@ async function startPreview(){
  await closeScreen();
  try{
   info(nativePicker?'Opening macOS screen/window picker…':'Requesting screen capture…');
-  const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
+  const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:false});
   const track=stream.getVideoTracks()[0];
   if(!track)throw new Error('Screen capture returned no video track');
   screenStream=stream;screenVideo.srcObject=screenStream;
@@ -213,7 +217,14 @@ async function startPreview(){
    await closeScreen();info('Screen share stopped. Start preview again.',true)
   },{once:true});
   await diagnostics();
- }catch(err){await closeScreen();info(explain(err,'screen')+'\nIf you just enabled macOS permission, fully quit (⌘Q) and reopen ChelRecord.',true)}
+ }catch(err){
+  await closeScreen();
+  // Only an actual capture rejection should present a blocking error.
+  const wasCancelled=err?.name==='AbortError'||(err?.name==='NotAllowedError'&&/cancel|dismiss/i.test(String(err?.message||'')));
+  const hint=wasCancelled?'Screen selection was cancelled. Click Start preview to try again.':
+   explain(err,'screen')+'\nIf permission was just granted, fully quit (⌘Q) and reopen ChelRecord.';
+  info(hint,!wasCancelled);
+ }
 }
 function draw(token){
  if(!preview||token!==renderToken)return;
