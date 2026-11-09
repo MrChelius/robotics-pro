@@ -1,16 +1,17 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "1.9.1-rc.1",
+  "version": "1.9.1-rc.2",
   "private": true,
   "description": "ChelRecord macOS and Windows screen, region and camera recorder release candidate",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js && node --check tests/verify-ffmpeg.cjs && node --check tests/ui-smoke.cjs",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js && node --check tests/verify-ffmpeg.cjs && node --check tests/ui-smoke.cjs && node --check tests/native-picker.cjs",
     "dist:mac": "electron-builder --mac dmg --arm64",
     "dist:win": "electron-builder --win nsis --x64",
     "test:media": "node tests/verify-ffmpeg.cjs",
-    "test:ui": "node tests/ui-smoke.cjs"
+    "test:ui": "node tests/ui-smoke.cjs && node tests/ui-smoke.cjs native",
+    "test:picker": "node tests/native-picker.cjs"
   },
   "dependencies": {
     "ffmpeg-static": "5.3.0"
@@ -35,7 +36,8 @@
       "node_modules/**",
       "build/entitlements.mac.plist",
       "tests/verify-ffmpeg.cjs",
-      "tests/ui-smoke.cjs"
+      "tests/ui-smoke.cjs",
+      "tests/native-picker.cjs"
     ],
     "mac": {
       "target": [
@@ -61,6 +63,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-1.9.1-rc.1-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-1.9.1-rc.2-${os}-${arch}.${ext}"
   }
 }
