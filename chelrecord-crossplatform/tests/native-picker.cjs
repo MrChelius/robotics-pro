@@ -48,7 +48,7 @@ async function exercise(platform,darwinVersion,expectedNative){
       if(id==='ffmpeg-static')return '/tmp/fake-ffmpeg';
       return require(id);
     },
-    process:{platform}, console, Buffer
+    process:{platform}, __dirname:path.resolve(__dirname,'..'), console, Buffer
   };
   vm.runInNewContext(main,context,{filename:'main.cjs',timeout:4000});
   await new Promise(resolve=>setImmediate(resolve));
