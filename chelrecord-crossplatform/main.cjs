@@ -2,9 +2,13 @@
 const {app,BrowserWindow,desktopCapturer,dialog,ipcMain,session,shell,systemPreferences}=require('electron');
 const fs=require('node:fs');
 const path=require('node:path');
+const os=require('node:os');
 const {randomUUID}=require('node:crypto');
 const {spawn}=require('node:child_process');
 let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null;
+// macOS 15+ supports the native system screen picker. Do not enumerate screen thumbnails there:
+// desktopCapturer.getSources may fail even when TCC permission is already granted.
+const nativeScreenPicker=process.platform==='darwin' && Number.parseInt(os.release().split('.')[0],10)>=24;
 const permitted=(e)=>Boolean(windowRef&&e.sender===windowRef.webContents);
 function requireOwner(e){if(!permitted(e))throw new Error('Unauthorized renderer');}
 function ffmpegExecutable(){
@@ -43,7 +47,8 @@ function register(){
  ipcMain.handle('app:diagnostics',async e=>{
   requireOwner(e);
   return {platform:process.platform,camera:status('camera'),microphone:status('microphone'),
-   screen:status('screen'),chosenSource:selectedSourceId,packaged:app.isPackaged};
+   screen:status('screen'),chosenSource:selectedSourceId,packaged:app.isPackaged,
+   systemPicker:nativeScreenPicker};
  });
  ipcMain.handle('permissions:request',async(e,kind)=>{
   requireOwner(e);
@@ -66,12 +71,18 @@ function register(){
  });
  ipcMain.handle('desktop:list',async e=>{
   requireOwner(e);
+  if(nativeScreenPicker){
+   // The user selects screen or window after pressing Start preview.
+   // Avoid getSources altogether on supported macOS versions.
+   return {selectedId:null,items:[],systemPicker:true};
+  }
   const list=await sources();
   return {selectedId:selectedSourceId,items:list.map(s=>({id:s.id,name:s.name,
-   thumbnail:s.thumbnail.isEmpty()?'':s.thumbnail.toDataURL()}))};
+   thumbnail:s.thumbnail.isEmpty()?'':s.thumbnail.toDataURL()})),systemPicker:false};
  });
  ipcMain.handle('desktop:select',async(e,id)=>{
   requireOwner(e);
+  if(nativeScreenPicker)throw new Error('Choose a screen using the macOS system picker after Start preview');
   if(typeof id!=='string'||!sourceIndex.has(id))throw new Error('Select a valid screen/window from the list');
   selectedSourceId=id;return true;
  });
@@ -137,14 +148,16 @@ app.whenReady().then(()=>{
  });
  ses.setDisplayMediaRequestHandler(async(req,cb)=>{
   try{
-   if(!windowRef||!req.videoRequested||!req.frame||req.frame!==windowRef.webContents.mainFrame){cb(null);return}
+   if(!windowRef||!req.frame||req.frame!==windowRef.webContents.mainFrame){cb(null);return}
    // Electron may not provide videoRequested consistently; getDisplayMedia is called after a user click.
+   // Fallback for Windows and macOS earlier than 15. On macOS 15+ the handler
+   // is never invoked when the native picker is available.
    const list=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:0,height:0}});
    const item=list.find(s=>s.id===selectedSourceId)||list.find(s=>s.id.startsWith('screen:'));
    if(!item){cb(null);return}
    cb({video:item});
   }catch(err){console.error('[display-media]',err);cb(null)}
- },{useSystemPicker:false});
+ },{useSystemPicker:nativeScreenPicker});
  register();
  windowRef=new BrowserWindow({width:1350,height:920,minWidth:980,minHeight:720,
   title:'ChelRecord',backgroundColor:'#081020',
