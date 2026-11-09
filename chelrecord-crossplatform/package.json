@@ -1,6 +1,6 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "1.9.1-rc.2",
+  "version": "1.9.1-rc.3",
   "private": true,
   "description": "ChelRecord macOS and Windows screen, region and camera recorder release candidate",
   "main": "main.cjs",
@@ -10,7 +10,7 @@
     "dist:mac": "electron-builder --mac dmg --arm64",
     "dist:win": "electron-builder --win nsis --x64",
     "test:media": "node tests/verify-ffmpeg.cjs",
-    "test:ui": "node tests/ui-smoke.cjs && node tests/ui-smoke.cjs native",
+    "test:ui": "node tests/ui-smoke.cjs && node tests/ui-smoke.cjs native && node tests/ui-smoke.cjs native screen-denied",
     "test:picker": "node tests/native-picker.cjs"
   },
   "dependencies": {
@@ -63,6 +63,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-1.9.1-rc.2-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-1.9.1-rc.3-${os}-${arch}.${ext}"
   }
 }
