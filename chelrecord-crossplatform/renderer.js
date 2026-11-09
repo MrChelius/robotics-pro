@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id),api=window.chelrecord;
 const canvas=$('screen'),ctx=canvas.getContext('2d',{alpha:false});
 const screenVideo=$('captureVideo'),cameraVideo=$('cameraTest'),overlay=$('cameraOverlay');
-let sources=[],chosen=null,screenStream=null,camStream=null,micStream=null,testMicStream=null;
+let sources=[],chosen=null,nativePicker=false,screenStream=null,camStream=null,micStream=null,testMicStream=null;
 let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false;
 let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterContext=null,meterStream=null,meterRaf=0,meterTimer=null;
 const sourceIsReady=()=>Boolean(screenStream?.active&&screenVideo.readyState>=2);
@@ -53,8 +53,15 @@ async function diagnostics(){
 }
 async function listScreens(){
  try{
-  const data=await api.listSources();sources=data.items;chosen=data.selectedId;
+  const data=await api.listSources();nativePicker=Boolean(data.systemPicker);
+  sources=data.items||[];chosen=data.selectedId;
   $('sourceList').replaceChildren();
+  if(nativePicker){
+   $('refresh').textContent='Apple system screen picker';
+   $('sourceHint').textContent='macOS will ask which screen or window to share when you click Start preview. No manual source list is required.';
+   info('Click Start preview and choose a screen or window in the macOS picker.');
+   return;
+  }
   if(!sources.length){
    $('sourceHint').textContent='No screens/windows returned. Check screen recording permission, then restart this app.';
    info('No desktop sources available. Use Screen settings to grant access.',true);
@@ -178,11 +185,11 @@ async function startPreview(){
   preview=true;++renderToken;draw(renderToken);showMode();
   info('Camera-only preview is active. Click Record to save camera video.');return;
  }
- if(!chosen){await listScreens()}
- if(!chosen){info('No screen selected. Select a screen or enable macOS screen recording permission.',true);return}
+ if(!chosen&&!nativePicker){await listScreens()}
+ if(!chosen&&!nativePicker){info('No screen selected. Select a screen or enable macOS screen recording permission.',true);return}
  await closeScreen();
  try{
-  info('Requesting screen capture…');
+  info(nativePicker?'Opening macOS screen/window picker…':'Requesting screen capture…');
   const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
   const track=stream.getVideoTracks()[0];
   if(!track)throw new Error('Screen capture returned no video track');
