@@ -5,6 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 const source=fs.readFileSync(path.join(__dirname,'../renderer.js'),'utf8');
 const useNativePicker=process.argv.includes('native');
+const screenStatusDenied=process.argv.includes('screen-denied');
 const elements=new Map();
 class FakeElement{
  constructor(id=''){
@@ -40,7 +41,7 @@ function fakeStream(kind){
 }
 let writeCount=0,exportCount=0,permissionChecks=0;
 const api={
- diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:'granted'}),
+ diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:screenStatusDenied?'denied':'granted'}),
  listSources:async()=>useNativePicker?{selectedId:null,systemPicker:true,items:[]}:
   {selectedId:'screen:0:0',systemPicker:false,items:[{id:'screen:0:0',name:'Desktop',thumbnail:''}]},
  chooseSource:async()=>true,requestPermission:async()=>{permissionChecks++;return 'granted'},
@@ -88,6 +89,12 @@ async function test(){
   assert.equal(element('sourceList').children.length,0,'Native macOS picker should not enumerate windows');
   assert.match(element('sourceHint').textContent,/macOS will ask/i);
  }else assert.ok(element('sourceList').children.length,'Desktop source listing did not render');
+ // Even if the OS permission snapshot looks stale/denied, a real successful
+ // screen capture must enable Record and keep the success message visible.
+ assert.doesNotMatch(element('status').textContent,/macOS blocked screen capture/);
+ await click('previewBtn');
+ assert.equal(element('recordBtn').disabled,false,'Full-screen capture must enable Record after preview');
+ assert.match(element('status').textContent,/Screen preview active/i,'Successful capture was replaced with a permission warning');
  // Camera independent of screen capture
  element('mode').value='camera';
  await fire('mode','change');
@@ -114,6 +121,6 @@ async function test(){
  assert.equal(exportCount,2);
  assert.ok(writeCount>=2,'Recording chunks were not written');
  assert.ok(permissionChecks>=1,'Camera access was not requested');
- console.log('PASS: '+(useNativePicker?'macOS native picker':'custom source picker')+', camera-only preview/record/stop, region gating, MP4 writer controller');
+ console.log('PASS: '+(useNativePicker?'macOS native picker':'custom source picker')+(screenStatusDenied?' with stale OS denied status':'')+', real capture readiness, camera-only preview/record/stop, region gating, MP4 writer controller');
 }
 test().catch(e=>{console.error(e);process.exitCode=1});
