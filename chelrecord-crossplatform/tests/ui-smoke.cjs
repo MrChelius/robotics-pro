@@ -4,6 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const source=fs.readFileSync(path.join(__dirname,'../renderer.js'),'utf8');
+const useNativePicker=process.argv.includes('native');
 const elements=new Map();
 class FakeElement{
  constructor(id=''){
@@ -40,7 +41,8 @@ function fakeStream(kind){
 let writeCount=0,exportCount=0,permissionChecks=0;
 const api={
  diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:'granted'}),
- listSources:async()=>({selectedId:'screen:0:0',items:[{id:'screen:0:0',name:'Desktop',thumbnail:''}]}),
+ listSources:async()=>useNativePicker?{selectedId:null,systemPicker:true,items:[]}:
+  {selectedId:'screen:0:0',systemPicker:false,items:[{id:'screen:0:0',name:'Desktop',thumbnail:''}]},
  chooseSource:async()=>true,requestPermission:async()=>{permissionChecks++;return 'granted'},
  openSettings:async()=>true,begin:async()=>({filePath:'/tmp/synthetic.mp4'}),
  write:async()=>{writeCount++;return true},
@@ -82,7 +84,10 @@ async function click(id){const el=element(id);assert.equal(el.disabled,false,id+
 async function fire(id,kind,event){return element(id).handlers[kind](event)}
 async function test(){
  await flush();
- assert.ok(element('sourceList').children.length,'Desktop source listing did not render');
+ if(useNativePicker){
+  assert.equal(element('sourceList').children.length,0,'Native macOS picker should not enumerate windows');
+  assert.match(element('sourceHint').textContent,/macOS will ask/i);
+ }else assert.ok(element('sourceList').children.length,'Desktop source listing did not render');
  // Camera independent of screen capture
  element('mode').value='camera';
  await fire('mode','change');
@@ -103,13 +108,12 @@ async function test(){
  await fire('region','pointerdown',{clientX:25,clientY:25,pointerId:1});
  await fire('region','pointermove',{clientX:250,clientY:180});
  await fire('region','pointerup',{});
- console.log('REGION DEBUG',JSON.stringify({disabled:element('recordBtn').disabled,mode:element('mode').value,sourceStatus:element('sourceHint').textContent,stage:element('stage').style,selected:element('selection').style,currentStatus:element('status').textContent,videoReady:element('captureVideo').readyState,videoStreamActive:element('captureVideo').srcObject?.active}));
  assert.equal(element('recordBtn').disabled,false,'Region recording remains disabled after selection');
  await click('recordBtn');
  await click('stopBtn');
  assert.equal(exportCount,2);
  assert.ok(writeCount>=2,'Recording chunks were not written');
  assert.ok(permissionChecks>=1,'Camera access was not requested');
- console.log('PASS: camera-only preview/record/stop, region gating, MP4 writer controller');
+ console.log('PASS: '+(useNativePicker?'macOS native picker':'custom source picker')+', camera-only preview/record/stop, region gating, MP4 writer controller');
 }
 test().catch(e=>{console.error(e);process.exitCode=1});
