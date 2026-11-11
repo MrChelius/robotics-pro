@@ -40,8 +40,7 @@
       "tests/ui-smoke.cjs",
       "tests/native-picker.cjs",
       "region-picker.html",
-      "build/icon.png",
-      "build/icon.icns"
+      "build/icon.png"
     ],
     "mac": {
       "target": [
