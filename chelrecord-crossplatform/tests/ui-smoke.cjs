@@ -4,6 +4,10 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const source=fs.readFileSync(path.join(__dirname,'../renderer.js'),'utf8');
+const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+for(const required of ['mode','camera','mic','testCam','testMic','previewBtn','recordBtn','stopBtn','cancelBtn','quickRecord','copyDiagnostics','emptyState','stage','screen']){
+ assert.ok(html.includes('id="'+required+'"'),'UI missing: '+required)
+}
 const useNativePicker=process.argv.includes('native');
 const screenStatusDenied=process.argv.includes('screen-denied');
 const elements=new Map();
@@ -39,12 +43,13 @@ function fakeStream(kind){
  getAudioTracks(){return tracks.filter(t=>t.kind==='audio')},getTracks(){return tracks},
  addTrack(t){tracks.push(t)}};
 }
-let writeCount=0,exportCount=0,permissionChecks=0;
+let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='';
 const api={
  diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:screenStatusDenied?'denied':'granted'}),
  listSources:async()=>useNativePicker?{selectedId:null,systemPicker:true,items:[]}:
   {selectedId:'screen:0:0',systemPicker:false,items:[{id:'screen:0:0',name:'Desktop',thumbnail:''}]},
  chooseSource:async()=>true,requestPermission:async()=>{permissionChecks++;return 'granted'},
+ copyDiagnostics:async text=>{copiedReport=text;return true},
  openSettings:async()=>true,begin:async()=>({filePath:'/tmp/synthetic.mp4'}),
  write:async()=>{writeCount++;return true},
  finish:async()=>{exportCount++;return {filePath:'/tmp/synthetic.mp4'}},
@@ -107,6 +112,13 @@ async function test(){
  await click('stopBtn');
  assert.match(element('status').textContent,/saved/i);
  assert.equal(exportCount,1);
+ // Verify quick-record can start a second camera recording without screen enumeration.
+ await click('quickRecord');
+ assert.equal(element('stopBtn').disabled,false,'Quick record did not start');
+ await click('stopBtn');
+ assert.equal(exportCount,2);
+ await click('copyDiagnostics');
+ assert.match(copiedReport,/ChelRecord Studio diagnostic report/);
  // Screen region must be selected before enabling Record
  element('mode').value='region';
  await fire('mode','change');
@@ -118,8 +130,8 @@ async function test(){
  assert.equal(element('recordBtn').disabled,false,'Region recording remains disabled after selection');
  await click('recordBtn');
  await click('stopBtn');
- assert.equal(exportCount,2);
- assert.ok(writeCount>=2,'Recording chunks were not written');
+ assert.equal(exportCount,3);
+ assert.ok(writeCount>=3,'Recording chunks were not written');
  assert.ok(permissionChecks>=1,'Camera access was not requested');
  console.log('PASS: '+(useNativePicker?'macOS native picker':'custom source picker')+(screenStatusDenied?' with stale OS denied status':'')+', real capture readiness, camera-only preview/record/stop, region gating, MP4 writer controller');
 }
