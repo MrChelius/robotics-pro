@@ -151,7 +151,7 @@ body{background:#080b13}
   <div class="logo" aria-hidden="true"><svg viewBox="0 0 36 36"><rect x="7" y="9" width="22" height="18" rx="6"/><circle cx="18" cy="18" r="4"/><path d="M11 7v2m14-2v2M18 27v3m-7-10h3m8 0h3"/></svg></div>
   <div><div class="brand">Chel<em>Record</em></div><div class="brand-sub">STUDIO · SCREEN & CAMERA</div></div>
  </div>
- <div class="top-actions"><span class="status-badge">LOCAL RECORDING</span><span class="version">2.1 Studio · Preview</span></div>
+ <div class="top-actions"><span class="status-badge">LOCAL RECORDING</span><span class="version">2.2 Studio · Desktop Capture Fix</span></div>
 </header>
 <main class="shell">
  <aside class="sidebar" aria-label="Capture controls">
@@ -166,7 +166,7 @@ body{background:#080b13}
   <section class="panel configuration">
    <div class="section-head"><div><div class="kicker">01 / Capture</div><h2>Recording setup</h2></div><div class="step-number">01</div></div>
    <label for="mode">What would you like to capture?</label>
-   <select id="mode"><option value="full">▣  Entire display or application window</option><option value="region">▧  Custom screen region</option><option value="camera">◉  Camera only</option></select>
+   <select id="mode"><option value="full">▣  Entire desktop / monitor</option><option value="window">▤  Single application window</option><option value="region">▧  Custom desktop region</option><option value="camera">◉  Camera only</option></select>
    <div id="areaControl" class="area-control hidden">
     <button class="btn area-button" id="selectAreaBtn">▧ Select area directly on desktop</button>
     <div class="micro" id="areaSummary">No area selected. Click above, then drag a rectangle on the actual screen.</div>
@@ -217,7 +217,7 @@ body{background:#080b13}
     <div id="region" class="hidden"><div id="selection"></div></div>
    </div>
    <div class="footer-controls"><div id="timer" class="clock">00:00</div><div id="state">Idle</div></div>
-   <div class="guide">To capture a region, choose <b>Custom screen region → Select area directly on desktop</b>. Press <b>RECORD NOW</b> to open screen capture, or preview the source first.</div>
+   <div class="guide">To record the desktop, choose <b>Entire desktop / monitor</b>. For a rectangle, use <b>Custom desktop region → Select area</b>. App-window capture is a separate mode.</div>
   </section>
   <div class="shortcuts"><span><strong>Private by design.</strong> Files stay on your computer; no recording is uploaded.</span><span>Video <kbd>H.264</kbd> Audio <kbd>AAC</kbd></span></div>
  </div>
