@@ -10,6 +10,7 @@ let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterCo
 const sourceIsReady=()=>Boolean(screenStream?.active&&screenVideo.readyState>=2);
 const cameraIsReady=()=>Boolean(camStream?.active&&cameraVideo.readyState>=2);
 const mode=()=>$('mode').value;
+const desiredSurface=()=>mode()==='window'?'window':'monitor';
 function info(msg,isError=false){
  const box=$('status');box.textContent=msg;box.classList.toggle('warning',isError);
  box.classList.toggle('success',!isError&&/saved:|saved recording|video saved/i.test(msg));
@@ -71,13 +72,13 @@ async function diagnostics(){
 }
 async function listScreens(){
  try{
-  const data=await api.listSources();nativePicker=Boolean(data.systemPicker);
+  const data=await api.listSources(desiredSurface()==='window'?'window':'screen');nativePicker=Boolean(data.systemPicker);
   diagnosticNote('Picker mode: '+(nativePicker?'native macOS screen picker':'desktop source list'));
   sources=data.items||[];chosen=data.selectedId;
   $('sourceList').replaceChildren();
   if(nativePicker){
    $('refresh').textContent='Apple system screen picker';
-   $('sourceHint').textContent='macOS will ask which screen or window to share when you click Start preview. No manual source list is required.';
+   $('sourceHint').textContent=desiredSurface()==='window'?'macOS will show application windows. Select the window you want to capture.':'macOS will show MONITORS only. Select the entire MacBook display, not the ChelRecord window.';
    info('Click Start preview and choose a screen or window in the macOS picker.');
    return;
   }
@@ -210,13 +211,21 @@ async function startPreview(){
  await closeScreen(mode()==='region');
  try{
   info(nativePicker?'Opening macOS screen/window picker…':'Requesting screen capture…');
-  const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:false});
+  const expectedSurface=desiredSurface();
+  const stream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:expectedSurface,frameRate:30},audio:false});
   diagnosticNote('Screen picker returned '+stream.getVideoTracks().length+' video track(s)');
   const track=stream.getVideoTracks()[0];
   if(!track)throw new Error('Screen capture returned no video track');
+  const settings=track.getSettings();
+  const actualSurface=settings.displaySurface;
+  diagnosticNote('Requested '+expectedSurface+'; actual share: '+String(actualSurface||'unknown')+'; track label: '+track.label);
+  // A macOS picker offering an application/window must never silently pass as a desktop capture.
+  if(actualSurface && actualSurface!==expectedSurface){
+   stopStream(stream);
+   throw new Error('Wrong screen source selected: got '+actualSurface+' instead of '+expectedSurface+'. Select '+(expectedSurface==='monitor'?'the Entire Screen / Monitor':'an application window')+' in the macOS sharing picker.');
+  }
   screenStream=stream;screenVideo.srcObject=screenStream;
   await screenVideo.play();
-  const settings=track.getSettings();
   let width=Math.max(320,settings.width||screenVideo.videoWidth||1280);
   let height=Math.max(240,settings.height||screenVideo.videoHeight||720);
   const scale=Math.min(1,1920/width,1080/height);
@@ -227,7 +236,7 @@ async function startPreview(){
   if($('camera').value && !cameraIsReady())await testCamera();
   overlay.classList.toggle('hidden',!cameraIsReady());
   syncButtons();
-  info('Screen preview active. '+(mode()==='region'?(regionIsReady()?'Your selected desktop region is ready. Click RECORD NOW.':'Select a region on the screen, then click RECORD NOW.'):'Click RECORD NOW to begin.')+(cameraIsReady()?' Camera is active.':''));
+  info((expectedSurface==='monitor'?'Entire desktop':'Window')+' preview active. '+(mode()==='region'?(regionIsReady()?'Your selected desktop region is ready. Click RECORD NOW.':'Select a region on the screen, then click RECORD NOW.'):'Click RECORD NOW to begin.')+(cameraIsReady()?' Camera is active.':''));
   track.addEventListener('ended',async()=>{
    if(screenStream!==stream)return;
    if(recorder)await stopRecord(false);
@@ -362,7 +371,7 @@ async function settings(kind){
  try{await api.openSettings(kind);info('System settings opened. Grant permission to ChelRecord, then restart the app if screen permission was changed.')}
  catch(err){info('Could not open settings: '+err.message,true)}
 }
-$('mode').addEventListener('change',async()=>{await closeScreen();resetRegion();showMode();info(mode()==='region'?'Click Select area directly on desktop, then RECORD NOW.':'Capture mode selected. Press RECORD NOW to begin.')});
+$('mode').addEventListener('change',async()=>{await closeScreen();resetRegion();showMode();await listScreens();info(mode()==='region'?'Select your desktop region, then RECORD NOW.':mode()==='window'?'Window mode selected. Press RECORD NOW to choose an application window.':'Entire desktop mode selected. Press RECORD NOW to capture the monitor.')});
 $('refresh').onclick=listScreens;
 $('testCam').onclick=testCamera;$('stopCam').onclick=stopCamera;
 $('camera').onchange=async()=>{if(camStream)stopCamera();if($('camera').value)await testCamera();else $('cameraStatus').textContent='Camera disabled';syncButtons()};
