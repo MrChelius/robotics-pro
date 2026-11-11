@@ -143,15 +143,62 @@ body{background:#080b13}
 .topbar{border-bottom:1px solid #415577}
 .view-state{border-color:#477194}
 .shortcuts{flex-shrink:0}
+
+/* ChelRecord Aurora: visual-only upgrade; preserve existing capture control IDs and events. */
+:root{--bg:#070817;--surface:#0e1126;--panel:#151a34;--panel2:#10152c;--edge:rgba(151,140,255,.23);--cyan:#7bdcff;--accent:#8061ff;--violet:#bf62fa;--green:#4df0b2;--red:#ff5c83;--r:22px}
+body{background:#070817;letter-spacing:.05px}
+body:before{z-index:0;pointer-events:none;background:radial-gradient(ellipse at 83% -8%,rgba(152,53,251,.24),transparent 48%),radial-gradient(ellipse at -10% 98%,rgba(25,130,252,.2),transparent 46%)}
+.topbar{position:relative;z-index:1;height:82px;background:rgba(11,12,29,.95);border-bottom:1px solid #53478b65;box-shadow:0 4px 32px #0005}
+.shell{position:relative;z-index:1;grid-template-columns:minmax(335px,370px) minmax(440px,1fr);gap:18px;height:calc(100vh - 82px);padding:20px}
+.logo{height:49px;width:49px;border-radius:16px;background:linear-gradient(140deg,#1bd5f7 0%,#5d63ff 46%,#d448f7 100%);box-shadow:0 8px 26px #7c49f77d}
+.logo svg{width:37px;height:37px;stroke:#fff;stroke-width:3.5}
+.brand{font-size:24px;letter-spacing:-1.2px}
+.brand em{color:#75e9ff}
+.brand-sub{letter-spacing:2.1px}
+.version{background:#262044;color:#d8caff;border:1px solid #554787}
+.panel{border:1px solid #57518a70;border-radius:22px;background:linear-gradient(155deg,rgba(29,32,64,.97),rgba(12,17,37,.97));box-shadow:0 14px 44px #0005}
+.configuration{border-left:2px solid #8a70ff}
+.action-panel{background:linear-gradient(150deg,#30274f,#181a3a 65%,#10152b);border-color:#8664ef85}
+.action-header strong{font-size:18px}
+.kicker{color:#ab90ff}
+.section-head h2{font-size:22px}
+.btn{border-radius:13px;border-color:#56537e;background:#272c51;min-height:46px}
+.btn:hover:not(:disabled){background:#383c69;border-color:#ab8cff}
+.btn.primary{background:linear-gradient(100deg,#ff527f,#cc48d3,#7959ff)}
+#recordBtn{background:linear-gradient(105deg,#ff627e,#f044a2 48%,#8758ff);box-shadow:0 9px 28px #d13bba59;border-radius:14px}
+#quickRecord{background:linear-gradient(100deg,#4c3886,#3b367a);border-color:#8e7bf0}
+select{background:#0d122b;border-color:#514c7e;border-radius:14px}
+select:hover{border-color:#b087ff}
+.device-card{border-color:#46477680}
+.device-icon{background:#352b61;color:#c5a2ff}
+.hero{min-height:155px;background:radial-gradient(ellipse at 90% 0%,#6232a547,transparent 60%),linear-gradient(130deg,#1d2245,#10162c)}
+.hero h1{font-size:clamp(23px,2.7vw,37px);letter-spacing:-1.4px}
+.hero h1 em{background:linear-gradient(90deg,#62d7ff,#c479ff,#ff78d1);background-clip:text;-webkit-background-clip:text}
+.hero p{font-size:13px;color:#b4badb}
+.stat{background:#1d2444;border-color:#575483}
+.viewport-panel{background:linear-gradient(160deg,#1c2240,#0c1329)}
+.preview{border-color:#6557a2;border-radius:18px;box-shadow:0 0 0 5px #080d20}
+.view-state{background:#242454;color:#d5c5ff;border-color:#7663c3}
+.guide{background:#171c39;border-color:#454574;color:#b5b6d5}
+.shortcuts{background:#11172d;border-color:#38365f}
+.notice{background:#17274b;border-color:#4468a1}
+.notice.warning{background:#473020}
+.area-control{background:#141e3f;border-color:#605ba5}
+.area-button{background:linear-gradient(110deg,#5165f9,#9259e9)}
+#cameraOverlay{border-color:#dfb9ff;box-shadow:0 0 0 4px #6c40b14d,0 14px 40px #000a}
+#state:before{background:#a78bfa}
+.sidebar{scrollbar-color:#62548d transparent}
+@media(max-width:1200px){.shell{grid-template-columns:325px minmax(380px,1fr);padding:12px;gap:12px}}
+@media(max-width:870px){.shell{height:auto;display:flex;flex-direction:column}.stage-pane{order:1}.sidebar{order:2}}
 </style>
 </head>
 <body>
 <header class="topbar">
  <div class="identity">
-  <div class="logo" aria-hidden="true"><svg viewBox="0 0 36 36"><rect x="7" y="9" width="22" height="18" rx="6"/><circle cx="18" cy="18" r="4"/><path d="M11 7v2m14-2v2M18 27v3m-7-10h3m8 0h3"/></svg></div>
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M43 12A23 23 0 1 0 43 52" stroke-width="7"/><path d="M47 14h7v8M47 50h7v-8" stroke-width="4"/><circle cx="32" cy="32" r="8" fill="#ff647f" stroke="none"/><path d="M27 32h10" stroke-width="2" stroke="#fff"/></svg></div>
   <div><div class="brand">Chel<em>Record</em></div><div class="brand-sub">STUDIO · SCREEN & CAMERA</div></div>
  </div>
- <div class="top-actions"><span class="status-badge">LOCAL RECORDING</span><span class="version">2.2 Studio · Desktop Capture Fix</span></div>
+ <div class="top-actions"><span class="status-badge">LOCAL RECORDING</span><span class="version">2.3 Studio · Aurora</span></div>
 </header>
 <main class="shell">
  <aside class="sidebar" aria-label="Capture controls">
@@ -164,7 +211,7 @@ body{background:#080b13}
    <button class="btn subtle hidden" id="openFile">Show saved recording</button>
   </section>
   <section class="panel configuration">
-   <div class="section-head"><div><div class="kicker">01 / Capture</div><h2>Recording setup</h2></div><div class="step-number">01</div></div>
+   <div class="section-head"><div><div class="kicker">01 / Capture</div><h2>Choose your capture</h2></div><div class="step-number">01</div></div>
    <label for="mode">What would you like to capture?</label>
    <select id="mode"><option value="full">▣  Entire desktop / monitor</option><option value="window">▤  Single application window</option><option value="region">▧  Custom desktop region</option><option value="camera">◉  Camera only</option></select>
    <div id="areaControl" class="area-control hidden">
@@ -205,7 +252,7 @@ body{background:#080b13}
  </aside>
 
  <div class="stage-pane">
-  <section class="panel hero"><div><div class="kicker">CAPTURE WORKSPACE</div><h1>Record anything. <em>Beautifully.</em></h1><p>Capture an app, a custom region, or your camera — with a separate mic and optional picture-in-picture overlay.</p></div>
+  <section class="panel hero"><div><div class="kicker">CAPTURE WORKSPACE</div><h1>Your recording studio. <em>Reimagined.</em></h1><p>Capture your entire desktop, a selected area, a window or your camera. Keep complete control over your microphone and picture-in-picture.</p></div>
   <div class="hero-stats"><div class="stat"><b>30</b><small>FPS TARGET</small></div><div class="stat"><b>MP4</b><small>EXPORT</small></div><div class="stat"><b>LOCAL</b><small>PRIVATE</small></div></div></section>
 
   <section class="panel viewport-panel">
