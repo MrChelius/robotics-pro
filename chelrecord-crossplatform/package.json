@@ -1,8 +1,8 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "1.9.1-rc.3",
+  "version": "2.0.0-rc.1",
   "private": true,
-  "description": "ChelRecord macOS and Windows screen, region and camera recorder release candidate",
+  "description": "ChelRecord Studio: screen, region and camera recording for macOS and Windows",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
@@ -21,8 +21,8 @@
     "electron-builder": "^26.0.0"
   },
   "build": {
-    "appId": "com.chelrecord.desktop",
-    "productName": "ChelRecord",
+    "appId": "com.chelrecord.studio",
+    "productName": "ChelRecord Studio",
     "asar": true,
     "asarUnpack": [
       "**/node_modules/ffmpeg-static/**"
@@ -46,13 +46,14 @@
       "category": "public.app-category.video",
       "hardenedRuntime": true,
       "extendInfo": {
-        "NSCameraUsageDescription": "Camera access is used only when you enable the camera overlay.",
-        "NSMicrophoneUsageDescription": "Microphone access is used only when you select microphone recording.",
-        "NSScreenCaptureUsageDescription": "ChelRecord needs screen capture access to record a selected display or window."
+        "NSCameraUsageDescription": "ChelRecord Studio uses a camera only when you enable its video preview or recording.",
+        "NSMicrophoneUsageDescription": "ChelRecord Studio uses the selected microphone for local recording.",
+        "NSScreenCaptureUsageDescription": "ChelRecord Studio captures the screen or window you explicitly select."
       },
       "identity": "-",
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.plist"
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "darkModeSupport": true
     },
     "win": {
       "target": [
@@ -63,6 +64,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-1.9.1-rc.3-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-Studio-2.0.0-rc1-${os}-${arch}.${ext}"
   }
 }
