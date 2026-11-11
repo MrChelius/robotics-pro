@@ -124,6 +124,25 @@ details ol{margin:8px 0;padding-left:17px}
 kbd{background:#25344b;color:#d9e7ff;padding:3px 6px;border-radius:5px;border:1px solid #3a4e69;font:600 11px inherit}
 @media(max-width:1200px){.shell{grid-template-columns:338px minmax(400px,1fr);gap:12px;padding:12px}.hero{padding:19px}.configuration{padding:16px}.hero-stats{display:none}.topbar{padding:0 18px}}
 @media(max-width:870px){body{overflow:auto}.shell{display:flex;flex-direction:column;height:auto}.sidebar{overflow:visible;order:2}.stage-pane{order:1}.preview{max-height:none}.topbar{height:70px}.top-actions{gap:5px}.hero{padding:17px}}
+
+/* Studio 2.1 visual refinement: high-contrast controls, clearer source selection. */
+body{background:#080b13}
+.panel{border-color:#293953;box-shadow:0 10px 44px #0000002a}
+.configuration{border-left:3px solid #59c6f3}
+.action-panel{margin:0 0 15px;background:linear-gradient(146deg,#252843,#141b30 58%,#0f1829);border:1px solid #6d72cf66;box-shadow:0 13px 48px #4b3e8725}
+.action-header strong{font-size:17px;letter-spacing:-.3px}
+#recordBtn{background:linear-gradient(120deg,#ff5e75,#ee447a 52%,#ad49d6);color:white;box-shadow:0 9px 25px #ec47734d;font-size:16px;letter-spacing:.1px;min-height:51px}
+#recordBtn:hover:not(:disabled){background:linear-gradient(120deg,#ff788a,#fc5f90 54%,#bd61e2);box-shadow:0 11px 28px #ff507659}
+#quickRecord{border:1px solid #8c87ff85;background:linear-gradient(100deg,#454a8a,#2e3476);color:#f2efff;font-weight:800}
+#previewBtn{background:#1e314b;color:#e7f5ff}
+.area-control{padding:12px;border:1px solid #4a6182;border-radius:13px;background:#0d2139;margin:13px 0}
+.area-button{background:linear-gradient(110deg,#167fad,#3557ab);border:1px solid #47c5f891;color:#fff}
+.area-button:hover{background:#217db2}
+#areaSummary{margin-top:8px;color:#bed5ee;font-weight:600;line-height:1.5}
+.source-hint{font-size:11px}
+.topbar{border-bottom:1px solid #415577}
+.view-state{border-color:#477194}
+.shortcuts{flex-shrink:0}
 </style>
 </head>
 <body>
@@ -132,14 +151,26 @@ kbd{background:#25344b;color:#d9e7ff;padding:3px 6px;border-radius:5px;border:1p
   <div class="logo" aria-hidden="true"><svg viewBox="0 0 36 36"><rect x="7" y="9" width="22" height="18" rx="6"/><circle cx="18" cy="18" r="4"/><path d="M11 7v2m14-2v2M18 27v3m-7-10h3m8 0h3"/></svg></div>
   <div><div class="brand">Chel<em>Record</em></div><div class="brand-sub">STUDIO · SCREEN & CAMERA</div></div>
  </div>
- <div class="top-actions"><span class="status-badge">LOCAL RECORDING</span><span class="version">2.0 Studio Preview</span></div>
+ <div class="top-actions"><span class="status-badge">LOCAL RECORDING</span><span class="version">2.1 Studio · Preview</span></div>
 </header>
 <main class="shell">
  <aside class="sidebar" aria-label="Capture controls">
+  <section class="panel action-panel">
+   <div class="action-header"><strong><span class="record-dot"></span> Start recording</strong><span>LOCAL · MP4</span></div>
+   <div class="row"><button class="btn subtle" id="previewBtn">▶ Start preview</button><button class="btn primary" id="recordBtn">● RECORD NOW</button></div>
+   <button class="btn" id="quickRecord" style="margin-top:9px">⚡ Capture and record automatically</button>
+   <div class="row" style="margin-top:9px"><button class="btn danger" id="stopBtn" disabled>■ Stop & save MP4</button><button class="btn subtle" id="cancelBtn" disabled>Discard</button></div>
+   <div id="status" class="notice" role="status">Ready. Press RECORD NOW; ChelRecord will open the source picker automatically.</div>
+   <button class="btn subtle hidden" id="openFile">Show saved recording</button>
+  </section>
   <section class="panel configuration">
    <div class="section-head"><div><div class="kicker">01 / Capture</div><h2>Recording setup</h2></div><div class="step-number">01</div></div>
    <label for="mode">What would you like to capture?</label>
    <select id="mode"><option value="full">▣  Entire display or application window</option><option value="region">▧  Custom screen region</option><option value="camera">◉  Camera only</option></select>
+   <div id="areaControl" class="area-control hidden">
+    <button class="btn area-button" id="selectAreaBtn">▧ Select area directly on desktop</button>
+    <div class="micro" id="areaSummary">No area selected. Click above, then drag a rectangle on the actual screen.</div>
+   </div>
    <div id="desktopControls"><label>Screen source</label><button class="btn subtle" id="refresh">↻  Refresh screens & windows</button><div id="sourceList" class="source-list"></div><div id="sourceHint" class="micro source-hint">Checking screens…</div></div>
   </section>
 
@@ -162,14 +193,7 @@ kbd{background:#25344b;color:#d9e7ff;padding:3px 6px;border-radius:5px;border:1p
    <div id="meter"><div id="meterBar"></div></div><div id="micStatus" class="micro">Test to see your voice level.</div>
   </section>
 
-  <section class="panel action-panel">
-   <div class="action-header"><strong><span class="record-dot"></span> Recording controls</strong><span>MP4 · H.264</span></div>
-   <div class="row"><button class="btn subtle" id="previewBtn">▶ Start preview</button><button class="btn primary" id="recordBtn" disabled>● Record</button></div>
-   <button class="btn" id="quickRecord" style="margin-top:9px">⚡ Quick record (screen / camera)</button>
-   <div class="row" style="margin-top:9px"><button class="btn danger" id="stopBtn" disabled>■ Stop & save MP4</button><button class="btn subtle" id="cancelBtn" disabled>Discard</button></div>
-   <div id="status" class="notice" role="status">Ready to configure your recording.</div>
-   <button class="btn subtle hidden" id="openFile">Show saved recording</button>
-  </section>
+
 
   <details class="panel permissions"><summary>Device permissions & diagnostics</summary>
    <div class="detail-body"><p id="permissionStatus">Checking system permissions…</p>
@@ -193,7 +217,7 @@ kbd{background:#25344b;color:#d9e7ff;padding:3px 6px;border-radius:5px;border:1p
     <div id="region" class="hidden"><div id="selection"></div></div>
    </div>
    <div class="footer-controls"><div id="timer" class="clock">00:00</div><div id="state">Idle</div></div>
-   <div class="guide">Tip: In <b>Custom screen region</b> mode, start the preview first and drag a rectangle on the preview. The Record button becomes available after the selection is complete.</div>
+   <div class="guide">To capture a region, choose <b>Custom screen region → Select area directly on desktop</b>. Press <b>RECORD NOW</b> to open screen capture, or preview the source first.</div>
   </section>
   <div class="shortcuts"><span><strong>Private by design.</strong> Files stay on your computer; no recording is uploaded.</span><span>Video <kbd>H.264</kbd> Audio <kbd>AAC</kbd></span></div>
  </div>
