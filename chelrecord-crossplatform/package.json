@@ -1,14 +1,14 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "2.2.0-rc.1",
+  "version": "2.3.0-rc.1",
   "private": true,
-  "description": "ChelRecord Studio: verified monitor-only desktop screen picker, separate window and region recording",
+  "description": "ChelRecord Studio Aurora: refreshed desktop recorder UI and custom application icon",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js && node --check tests/verify-ffmpeg.cjs && node --check tests/ui-smoke.cjs && node --check tests/native-picker.cjs",
-    "dist:mac": "electron-builder --mac dmg --arm64",
-    "dist:win": "electron-builder --win nsis --x64",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js && node --check generate-icons.cjs && node --check tests/verify-ffmpeg.cjs && node --check tests/ui-smoke.cjs && node --check tests/native-picker.cjs",
+    "dist:mac": "node generate-icons.cjs && electron-builder --mac dmg --arm64",
+    "dist:win": "node generate-icons.cjs && electron-builder --win nsis --x64",
     "test:media": "node tests/verify-ffmpeg.cjs",
     "test:ui": "node tests/ui-smoke.cjs && node tests/ui-smoke.cjs native && node tests/ui-smoke.cjs native screen-denied && node tests/ui-smoke.cjs native wrong-surface",
     "test:picker": "node tests/native-picker.cjs"
@@ -18,7 +18,8 @@
   },
   "devDependencies": {
     "electron": "^39.0.0",
-    "electron-builder": "^26.0.0"
+    "electron-builder": "^26.0.0",
+    "sharp": "^0.34.4"
   },
   "build": {
     "appId": "com.chelrecord.studio",
@@ -38,7 +39,9 @@
       "tests/verify-ffmpeg.cjs",
       "tests/ui-smoke.cjs",
       "tests/native-picker.cjs",
-      "region-picker.html"
+      "region-picker.html",
+      "build/icon.png",
+      "build/icon.icns"
     ],
     "mac": {
       "target": [
@@ -54,17 +57,19 @@
       "identity": "-",
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "darkModeSupport": true
+      "darkModeSupport": true,
+      "icon": "build/icon.icns"
     },
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "icon": "build/icon.png"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-Studio-2.2.0-rc1-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-Studio-2.3.0-Aurora-${os}-${arch}.${ext}"
   }
 }
