@@ -3,6 +3,7 @@ const {contextBridge,ipcRenderer}=require('electron');
 // No Node APIs are exposed to the untrusted rendering context.
 contextBridge.exposeInMainWorld('chelrecord',Object.freeze({
  diagnostics:()=>ipcRenderer.invoke('app:diagnostics'),
+ copyDiagnostics:content=>ipcRenderer.invoke('diagnostics:copy',content),
  requestPermission:kind=>ipcRenderer.invoke('permissions:request',kind),
  openSettings:kind=>ipcRenderer.invoke('permissions:settings',kind),
  listSources:()=>ipcRenderer.invoke('desktop:list'),
