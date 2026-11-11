@@ -102,7 +102,7 @@ async function test(){
  await flush();
  if(useNativePicker){
   assert.equal(element('sourceList').children.length,0,'Native macOS picker should not enumerate windows');
-  assert.match(element('sourceHint').textContent,/macOS will ask/i);
+  assert.match(element('sourceHint').textContent,/macOS will show MONITORS|macOS will ask/i);
  }else assert.ok(element('sourceList').children.length,'Desktop source listing did not render');
  // Even if the OS permission snapshot looks stale/denied, a real successful
  // screen capture must enable Record and keep the success message visible.
