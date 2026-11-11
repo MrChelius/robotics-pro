@@ -6,15 +6,20 @@ const vm=require('node:vm');
 const main=fs.readFileSync(path.join(__dirname,'../main.cjs'),'utf8');
 
 async function exercise(platform,darwinVersion,expectedNative){
-  const ipc=new Map();
-  let pickerOptions=null,enumerations=0,windowRef=null;
+  const ipc=new Map(),ipcEvents=new Map();
+  let pickerOptions=null,enumerations=0,windowRef=null,overlayWindow=null;
   class MockWindow{
     constructor(){
       this.webContents={mainFrame:{},setWindowOpenHandler(){},on(){}};
-      windowRef=this;
+      if(windowRef)overlayWindow=this;else windowRef=this;
     }
-    loadFile(){}
+    loadFile(){return Promise.resolve()}
     on(){}
+    show(){}
+    focus(){}
+    setAlwaysOnTop(){}
+    isDestroyed(){return false}
+    close(){}
   }
   const fakeApp={
     whenReady(){return Promise.resolve()},
@@ -36,7 +41,8 @@ async function exercise(platform,darwinVersion,expectedNative){
   }};
   const electron={
     app:fakeApp, BrowserWindow:MockWindow, desktopCapturer,session,
-    ipcMain:{handle(name,fn){ipc.set(name,fn)}},
+    ipcMain:{handle(name,fn){ipc.set(name,fn)},on(name,fn){ipcEvents.set(name,fn)},removeListener(name,fn){if(ipcEvents.get(name)===fn)ipcEvents.delete(name)}},
+    screen:{getCursorScreenPoint(){return {x:30,y:50}},getDisplayNearestPoint(){return {id:9,bounds:{x:0,y:0,width:1440,height:900}}}},
     systemPreferences:{getMediaAccessStatus(){return 'granted'}},
     dialog:{showSaveDialog:async()=>({canceled:true})},
     shell:{openExternal:async()=>{},showItemInFolder(){}}
@@ -63,6 +69,17 @@ async function exercise(platform,darwinVersion,expectedNative){
     assert.equal(list.items.length,1,'Non-native picker did not enumerate sources');
     assert.equal(enumerations,1,'Unexpected desktop source query count');
   }
+  // The area picker is independent of screen capture and never calls getSources().
+  const before=enumerations;
+  const pending=ipc.get('desktop:pick-region')({sender:windowRef.webContents});
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.ok(overlayWindow,'Desktop region overlay was not created');
+  assert.equal(typeof ipcEvents.get('region:done'),'function');
+  ipcEvents.get('region:done')({sender:overlayWindow.webContents},{x:.1,y:.2,w:.45,h:.4});
+  const selected=await pending;
+  assert.equal(selected.displayId,9);
+  assert.equal(selected.region.w,.45);
+  assert.equal(enumerations,before,'Area picker unexpectedly queried desktopCapturer');
 }
 (async()=>{
   await exercise('darwin','24.6.0',true);
