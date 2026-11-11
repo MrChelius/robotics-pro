@@ -5,7 +5,7 @@ const path=require('node:path');
 const os=require('node:os');
 const {randomUUID}=require('node:crypto');
 const {spawn}=require('node:child_process');
-let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false;
+let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false,sourceKind='screen';
 // macOS 15+ supports the native system screen picker. Do not enumerate screen thumbnails there:
 // desktopCapturer.getSources may fail even when TCC permission is already granted.
 const nativeScreenPicker=process.platform==='darwin' && Number.parseInt(os.release().split('.')[0],10)>=24;
@@ -34,8 +34,8 @@ function status(kind){
  if(process.platform!=='darwin')return 'managed-by-windows';
  try{return systemPreferences.getMediaAccessStatus(kind)}catch(err){return 'unavailable: '+err.message}
 }
-async function sources(){
- const list=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:224,height:126}});
+async function sources(kind=sourceKind){
+ const list=await desktopCapturer.getSources({types:[kind],thumbnailSize:{width:224,height:126}});
  sourceIndex=new Map(list.map(x=>[x.id,x]));
  if(!sourceIndex.has(selectedSourceId)){
   selectedSourceId=list.find(x=>x.id.startsWith('screen:'))?.id||list[0]?.id||null;
@@ -101,7 +101,7 @@ function register(){
   requireOwner(e);
   return {platform:process.platform,camera:status('camera'),microphone:status('microphone'),
    screen:status('screen'),chosenSource:selectedSourceId,packaged:app.isPackaged,
-   systemPicker:nativeScreenPicker};
+   systemPicker:nativeScreenPicker,sourceKind};
  });
  ipcMain.handle('permissions:request',async(e,kind)=>{
   requireOwner(e);
@@ -123,14 +123,17 @@ function register(){
   return true;
  });
  ipcMain.handle('desktop:pick-region',async e=>{requireOwner(e);return chooseDesktopRegion()});
- ipcMain.handle('desktop:list',async e=>{
+ ipcMain.handle('desktop:list',async(e,kind='screen')=>{
   requireOwner(e);
+  if(!['screen','window'].includes(kind))throw new Error('Invalid capture source kind');
+  if(recording)throw new Error('Cannot switch capture type while recording');
+  sourceKind=kind;
   if(nativeScreenPicker){
    // The user selects screen or window after pressing Start preview.
    // Avoid getSources altogether on supported macOS versions.
    return {selectedId:null,items:[],systemPicker:true};
   }
-  const list=await sources();
+  const list=await sources(sourceKind);
   return {selectedId:selectedSourceId,items:list.map(s=>({id:s.id,name:s.name,
    thumbnail:s.thumbnail.isEmpty()?'':s.thumbnail.toDataURL()})),systemPicker:false};
  });
@@ -211,8 +214,8 @@ app.whenReady().then(()=>{
    // Electron may not provide videoRequested consistently; getDisplayMedia is called after a user click.
    // Fallback for Windows and macOS earlier than 15. On macOS 15+ the handler
    // is never invoked when the native picker is available.
-   const list=await desktopCapturer.getSources({types:['screen','window'],thumbnailSize:{width:0,height:0}});
-   const item=list.find(s=>s.id===selectedSourceId)||list.find(s=>s.id.startsWith('screen:'));
+   const list=await desktopCapturer.getSources({types:[sourceKind],thumbnailSize:{width:0,height:0}});
+   const item=list.find(s=>s.id===selectedSourceId)||list[0];
    if(!item){cb(null);return}
    cb({video:item});
   }catch(err){console.error('[display-media]',err);cb(null)}
