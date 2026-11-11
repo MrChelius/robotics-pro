@@ -45,14 +45,14 @@ jobs:
         if: matrix.target == 'mac'
         shell: bash
         run: |
-          codesign --verify --deep --strict --verbose=2 dist/mac-arm64/ChelRecord.app
-          codesign -d --entitlements :- dist/mac-arm64/ChelRecord.app
+          codesign --verify --deep --strict --verbose=2 dist/mac-arm64/ChelRecord Studio.app
+          codesign -d --entitlements :- dist/mac-arm64/ChelRecord Studio.app
       - name: Build Windows installer
         if: matrix.target == 'win'
         run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: ChelRecord-1.9.1-rc3-${{ matrix.target }}
+          name: ChelRecord-Studio-2.0.0-rc1-${{ matrix.target }}
           path: chelrecord-crossplatform/dist/*
           retention-days: 30
           if-no-files-found: error
