@@ -1,8 +1,8 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "2.1.0-rc.1",
+  "version": "2.2.0-rc.1",
   "private": true,
-  "description": "ChelRecord Studio desktop region selector, one-click recording, webcam and microphone capture",
+  "description": "ChelRecord Studio: verified monitor-only desktop screen picker, separate window and region recording",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
@@ -10,7 +10,7 @@
     "dist:mac": "electron-builder --mac dmg --arm64",
     "dist:win": "electron-builder --win nsis --x64",
     "test:media": "node tests/verify-ffmpeg.cjs",
-    "test:ui": "node tests/ui-smoke.cjs && node tests/ui-smoke.cjs native && node tests/ui-smoke.cjs native screen-denied",
+    "test:ui": "node tests/ui-smoke.cjs && node tests/ui-smoke.cjs native && node tests/ui-smoke.cjs native screen-denied && node tests/ui-smoke.cjs native wrong-surface",
     "test:picker": "node tests/native-picker.cjs"
   },
   "dependencies": {
@@ -65,6 +65,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-Studio-2.1.0-rc1-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-Studio-2.2.0-rc1-${os}-${arch}.${ext}"
   }
 }
