@@ -3,12 +3,18 @@ const $=id=>document.getElementById(id),api=window.chelrecord;
 const canvas=$('screen'),ctx=canvas.getContext('2d',{alpha:false});
 const screenVideo=$('captureVideo'),cameraVideo=$('cameraTest'),overlay=$('cameraOverlay');
 let sources=[],chosen=null,nativePicker=false,screenStream=null,camStream=null,micStream=null,testMicStream=null;
-let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false;
+let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false,quickStarting=false;
+const diagnosticTrail=[];
+function diagnosticNote(message){diagnosticTrail.push(new Date().toISOString()+' '+String(message));if(diagnosticTrail.length>30)diagnosticTrail.shift()}
 let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterContext=null,meterStream=null,meterRaf=0,meterTimer=null;
 const sourceIsReady=()=>Boolean(screenStream?.active&&screenVideo.readyState>=2);
 const cameraIsReady=()=>Boolean(camStream?.active&&cameraVideo.readyState>=2);
 const mode=()=>$('mode').value;
-function info(msg,isError=false){$('status').textContent=msg;$('status').classList.toggle('warning',isError)}
+function info(msg,isError=false){
+ const box=$('status');box.textContent=msg;box.classList.toggle('warning',isError);
+ box.classList.toggle('success',!isError&&/saved:|saved recording|video saved/i.test(msg));
+ diagnosticNote((isError?'ERROR ':'INFO ')+msg);
+}
 function explain(error,kind='device'){
  const name=error?.name||'Error',message=error?.message||String(error);
  if(name==='NotAllowedError'||name==='PermissionDeniedError')return kind+' permission was denied. Open the corresponding system settings, grant access, then restart ChelRecord if necessary. ('+message+')';
@@ -27,6 +33,8 @@ function syncButtons(){
  const isRecording=Boolean(recorder);
  const ready=preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())&&(mode()!=='region'||Boolean(region&&region.w>.025&&region.h>.025));
  $('recordBtn').disabled=isRecording||busy||!ready;
+ $('quickRecord').disabled=isRecording||busy||quickStarting;
+ $('emptyState').classList.toggle('hidden',Boolean(preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())));
  $('stopBtn').disabled=!isRecording||busy;
  $('cancelBtn').disabled=!isRecording||busy;
  $('previewBtn').disabled=isRecording||busy;
@@ -58,6 +66,7 @@ async function diagnostics(){
 async function listScreens(){
  try{
   const data=await api.listSources();nativePicker=Boolean(data.systemPicker);
+  diagnosticNote('Picker mode: '+(nativePicker?'native macOS screen picker':'desktop source list'));
   sources=data.items||[];chosen=data.selectedId;
   $('sourceList').replaceChildren();
   if(nativePicker){
@@ -129,6 +138,7 @@ async function testCamera(){
   const id=$('camera').value;
   const videoConstraints=id&&id!=='auto'?{deviceId:{exact:id},width:{ideal:1280},height:{ideal:720}}:{width:{ideal:1280},height:{ideal:720}};
   camStream=await navigator.mediaDevices.getUserMedia({video:videoConstraints,audio:false});
+  diagnosticNote('Camera track opened: '+(camStream.getVideoTracks()[0]?.label||'unknown'));
   connectCamera();
   await cameraVideo.play();
   $('cameraStatus').textContent='Camera active: '+(camStream.getVideoTracks()[0]?.label||'video');
@@ -195,6 +205,7 @@ async function startPreview(){
  try{
   info(nativePicker?'Opening macOS screen/window picker…':'Requesting screen capture…');
   const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:false});
+  diagnosticNote('Screen picker returned '+stream.getVideoTracks().length+' video track(s)');
   const track=stream.getVideoTracks()[0];
   if(!track)throw new Error('Screen capture returned no video track');
   screenStream=stream;screenVideo.srcObject=screenStream;
@@ -296,6 +307,7 @@ async function startRecord(){
    if(!mime)throw new Error('WebM encoder unavailable in this Electron build');
    const stream=canvas.captureStream(30);
    if(micStream)for(const track of micStream.getAudioTracks())stream.addTrack(track);
+   diagnosticNote('Starting recording: video canvas with '+(micStream?.getAudioTracks().length||0)+' microphone tracks');
    writing=Promise.resolve();
    const r=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:5_000_000});
    recorder=r;
@@ -358,4 +370,47 @@ $('settingsMic').onclick=()=>settings('microphone');
 $('checkPermissions').onclick=diagnostics;
 navigator.mediaDevices?.addEventListener?.('devicechange',listMedia);
 window.addEventListener('beforeunload',()=>{stopStream(screenStream);stopStream(camStream);stopStream(testMicStream);stopStream(micStream);stopMicTest()});
+async function quickRecord(){
+ if(quickStarting||busy||recorder)return;
+ quickStarting=true;syncButtons();
+ try{
+  if(!preview||(mode()==='camera'&&!cameraIsReady())||(mode()!=='camera'&&!sourceIsReady())){
+   await startPreview();
+  }
+  if(mode()==='region'){
+   info('Preview ready. Drag a rectangular region on the image, then press Record.');
+   return;
+  }
+  if(preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())){
+   await startRecord();
+  }else info('Could not open the capture source. Test the camera or check the screen picker and permissions.',true);
+ }finally{quickStarting=false;syncButtons()}
+}
+async function copyDiagnostics(){
+ try{
+  const d=await api.diagnostics();
+  const report=[
+   'ChelRecord Studio diagnostic report',
+   'Date: '+new Date().toISOString(),
+   'OS: '+d.platform,
+   'App packaged: '+d.packaged,
+   'Screen permission: '+d.screen,
+   'Camera permission: '+d.camera,
+   'Mic permission: '+d.microphone,
+   'Capture picker: '+(nativePicker?'native':'desktopCapturer'),
+   'Current mode: '+mode(),
+   'Source selected: '+Boolean(chosen),
+   'Screen stream active: '+Boolean(screenStream?.active),
+   'Camera stream active: '+Boolean(camStream?.active),
+   'Microphone stream active: '+Boolean(micStream?.active),
+   'Preview active: '+Boolean(preview),
+   'Recording active: '+Boolean(recorder),
+   'Recent application events:',...diagnosticTrail
+  ].join('\n');
+  await api.copyDiagnostics(report);
+  info('Diagnostic report copied. You can paste it into a bug report.');
+ }catch(error){info('Could not copy diagnostics: '+error.message,true)}
+}
+$('quickRecord').onclick=quickRecord;
+$('copyDiagnostics').onclick=copyDiagnostics;
 showMode();listScreens();listMedia();diagnostics();
