@@ -25,6 +25,7 @@ function explain(error,kind='device'){
 function stopStream(stream){stream?.getTracks().forEach(track=>track.stop())}
 function showMode(){
  $('desktopControls').classList.toggle('hidden',mode()==='camera');
+ $('areaControl').classList.toggle('hidden',mode()!=='region');
  $('region').classList.toggle('hidden',!(mode()==='region'&&sourceIsReady()));
  if(mode()!=='region')resetRegion();
  syncButtons();
@@ -32,12 +33,13 @@ function showMode(){
 function syncButtons(){
  const isRecording=Boolean(recorder);
  const ready=preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())&&(mode()!=='region'||Boolean(region&&region.w>.025&&region.h>.025));
- $('recordBtn').disabled=isRecording||busy||!ready;
+ $('recordBtn').disabled=isRecording||busy||quickStarting;
  $('quickRecord').disabled=isRecording||busy||quickStarting;
  $('emptyState').classList.toggle('hidden',Boolean(preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())));
  $('stopBtn').disabled=!isRecording||busy;
  $('cancelBtn').disabled=!isRecording||busy;
  $('previewBtn').disabled=isRecording||busy;
+ $('selectAreaBtn').disabled=isRecording||busy;
  $('mode').disabled=isRecording||busy;
  $('refresh').disabled=isRecording||busy;
  $('camera').disabled=isRecording||busy;
@@ -48,7 +50,11 @@ function syncButtons(){
  $('stopMic').disabled=isRecording||busy;
  $('sourceList').style.pointerEvents=isRecording?'none':'auto';
 }
-function resetRegion(){region=null;$('selection').style.display='none'}
+function resetRegion(){region=null;$('selection').style.display='none';$('areaSummary').textContent='No area selected. Press Select area, then drag anywhere on the desktop.';}
+function regionIsReady(){return Boolean(region&&region.w>.025&&region.h>.025)}
+function describeRegion(){
+ $('areaSummary').textContent=regionIsReady()?'Area selected: '+Math.round(region.w*100)+'% wide × '+Math.round(region.h*100)+'% high. Press RECORD NOW to capture it.':'Choose a region directly on the desktop before recording.';
+}
 function formatStatus(x){return String(x||'unknown').replace(/-/g,' ')}
 async function diagnostics(){
  try{
@@ -184,10 +190,10 @@ async function testMicrophone(){
   await listMedia();
  }catch(err){stopMicTest();$('micStatus').textContent=explain(err,'microphone');info(explain(err,'microphone'),true)}
 }
-async function closeScreen(){
+async function closeScreen(preserveRegion=false){
  ++renderToken;stopStream(screenStream);screenStream=null;screenVideo.srcObject=null;
  preview=false;
- overlay.classList.add('hidden');resetRegion();showMode();syncButtons();
+ overlay.classList.add('hidden');if(!preserveRegion)resetRegion();showMode();syncButtons();
 }
 async function startPreview(){
  if(busy||recorder)return;
@@ -201,7 +207,7 @@ async function startPreview(){
  }
  if(!chosen&&!nativePicker){await listScreens()}
  if(!chosen&&!nativePicker){info('No screen selected. Select a screen or enable macOS screen recording permission.',true);return}
- await closeScreen();
+ await closeScreen(mode()==='region');
  try{
   info(nativePicker?'Opening macOS screen/window picker…':'Requesting screen capture…');
   const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:30},audio:false});
@@ -221,7 +227,7 @@ async function startPreview(){
   if($('camera').value && !cameraIsReady())await testCamera();
   overlay.classList.toggle('hidden',!cameraIsReady());
   syncButtons();
-  info('Screen preview active. '+(mode()==='region'?'Drag to select a region, then click Record.':'Click Record to begin.')+(cameraIsReady()?' Camera is active.':''));
+  info('Screen preview active. '+(mode()==='region'?(regionIsReady()?'Your selected desktop region is ready. Click RECORD NOW.':'Select a region on the screen, then click RECORD NOW.'):'Click RECORD NOW to begin.')+(cameraIsReady()?' Camera is active.':''));
   track.addEventListener('ended',async()=>{
    if(screenStream!==stream)return;
    if(recorder)await stopRecord(false);
@@ -229,7 +235,7 @@ async function startPreview(){
   },{once:true});
   await diagnostics();
  }catch(err){
-  await closeScreen();
+  await closeScreen(mode()==='region');
   // Only an actual capture rejection should present a blocking error.
   const wasCancelled=err?.name==='AbortError'||(err?.name==='NotAllowedError'&&/cancel|dismiss/i.test(String(err?.message||'')));
   const hint=wasCancelled?'Screen selection was cancelled. Click Start preview to try again.':
@@ -288,8 +294,8 @@ $('region').addEventListener('pointerup',()=>{
 $('region').addEventListener('pointercancel',()=>anchor=null);
 async function startRecord(){
  if(busy||recorder)return;
- const ready=preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())&&(mode()!=='region'||Boolean(region&&region.w>.025&&region.h>.025));
- if(!ready){info('Start preview and, for region mode, draw an area before recording.',true);return}
+ const ready=preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())&&(mode()!=='region'||regionIsReady());
+ if(!ready){info('A working screen or camera source and a valid region are required for recording.',true);return}
  busy=true;syncButtons();
  try{
   const destination=await api.begin();
@@ -356,12 +362,13 @@ async function settings(kind){
  try{await api.openSettings(kind);info('System settings opened. Grant permission to ChelRecord, then restart the app if screen permission was changed.')}
  catch(err){info('Could not open settings: '+err.message,true)}
 }
-$('mode').addEventListener('change',async()=>{await closeScreen();resetRegion();showMode();info('Capture mode changed. Click Start preview.')});
+$('mode').addEventListener('change',async()=>{await closeScreen();resetRegion();showMode();info(mode()==='region'?'Click Select area directly on desktop, then RECORD NOW.':'Capture mode selected. Press RECORD NOW to begin.')});
 $('refresh').onclick=listScreens;
 $('testCam').onclick=testCamera;$('stopCam').onclick=stopCamera;
 $('camera').onchange=async()=>{if(camStream)stopCamera();if($('camera').value)await testCamera();else $('cameraStatus').textContent='Camera disabled';syncButtons()};
 $('testMic').onclick=testMicrophone;$('stopMic').onclick=()=>{stopMicTest();$('micStatus').textContent='Microphone test stopped'};
-$('previewBtn').onclick=startPreview;$('recordBtn').onclick=startRecord;
+$('previewBtn').onclick=startPreview;$('recordBtn').onclick=requestRecord;
+$('selectAreaBtn').onclick=selectAreaOnDesktop;
 $('stopBtn').onclick=()=>stopRecord(false);$('cancelBtn').onclick=()=>stopRecord(true);
 $('openFile').onclick=()=>{if(lastFile)api.showFile(lastFile)};
 $('settingsScreen').onclick=()=>settings('screen');
@@ -370,21 +377,48 @@ $('settingsMic').onclick=()=>settings('microphone');
 $('checkPermissions').onclick=diagnostics;
 navigator.mediaDevices?.addEventListener?.('devicechange',listMedia);
 window.addEventListener('beforeunload',()=>{stopStream(screenStream);stopStream(camStream);stopStream(testMicStream);stopStream(micStream);stopMicTest()});
+async function selectAreaOnDesktop(){
+ if(recorder||busy)return null;
+ try{
+  info('Choose the area on the desktop. Release the mouse to confirm or press Esc to cancel.');
+  const selected=await api.selectRegion();
+  if(!selected||!selected.region){info('Area selection cancelled.');return null}
+  const r=selected.region;
+  if(!['x','y','w','h'].every(k=>Number.isFinite(r[k]))||r.w<.025||r.h<.025){
+   info('The selected region was too small. Try again.',true);return null;
+  }
+  region=r;
+  describeRegion();syncButtons();
+  diagnosticNote('Desktop region selected on display '+selected.displayId+': '+JSON.stringify(r));
+  info('Screen region selected. Press RECORD NOW and choose the same display in the macOS sharing picker.');
+  return region;
+ }catch(err){info('Could not open the area selector: '+err.message,true);return null}
+}
+async function requestRecord(){
+ if(recorder||busy)return;
+ if(mode()==='region'&&!regionIsReady()){
+  const r=await selectAreaOnDesktop();
+  if(!r)return;
+ }
+ if(!preview||(mode()==='camera'&&!cameraIsReady())||(mode()!=='camera'&&!sourceIsReady())){
+  await startPreview();
+ }
+ if(mode()==='camera' ? cameraIsReady()&&preview : sourceIsReady()&&preview){
+  if(mode()==='region'&&!regionIsReady()){
+   info('Screen area was not selected; try Select area directly on desktop.',true);
+   return;
+  }
+  await startRecord();
+ }else{
+  // A real screen source is mandatory. Never create a fake or blank recording.
+  info('Screen capture could not start. In Device permissions, copy the diagnostic report to investigate the exact OS error. A macOS screen-access permission issue can block even an enabled switch.',true);
+ }
+}
 async function quickRecord(){
  if(quickStarting||busy||recorder)return;
  quickStarting=true;syncButtons();
- try{
-  if(!preview||(mode()==='camera'&&!cameraIsReady())||(mode()!=='camera'&&!sourceIsReady())){
-   await startPreview();
-  }
-  if(mode()==='region'){
-   info('Preview ready. Drag a rectangular region on the image, then press Record.');
-   return;
-  }
-  if(preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())){
-   await startRecord();
-  }else info('Could not open the capture source. Test the camera or check the screen picker and permissions.',true);
- }finally{quickStarting=false;syncButtons()}
+ try{await requestRecord()}
+ finally{quickStarting=false;syncButtons()}
 }
 async function copyDiagnostics(){
  try{
