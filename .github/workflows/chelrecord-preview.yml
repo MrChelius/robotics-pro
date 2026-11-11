@@ -45,8 +45,8 @@ jobs:
         if: matrix.target == 'mac'
         shell: bash
         run: |
-          codesign --verify --deep --strict --verbose=2 dist/mac-arm64/ChelRecord Studio.app
-          codesign -d --entitlements :- dist/mac-arm64/ChelRecord Studio.app
+          codesign --verify --deep --strict --verbose=2 "dist/mac-arm64/ChelRecord Studio.app"
+          codesign -d --entitlements :- "dist/mac-arm64/ChelRecord Studio.app"
       - name: Build Windows installer
         if: matrix.target == 'win'
         run: npm run dist:win
