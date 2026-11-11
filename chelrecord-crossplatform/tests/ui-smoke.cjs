@@ -10,6 +10,7 @@ for(const required of ['mode','camera','mic','testCam','testMic','previewBtn','r
 }
 const useNativePicker=process.argv.includes('native');
 const screenStatusDenied=process.argv.includes('screen-denied');
+const simulateWrongSurface=process.argv.includes('wrong-surface');
 const elements=new Map();
 class FakeElement{
  constructor(id=''){
@@ -43,7 +44,7 @@ function fakeStream(kind){
  getAudioTracks(){return tracks.filter(t=>t.kind==='audio')},getTracks(){return tracks},
  addTrack(t){tracks.push(t)}};
 }
-let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0;
+let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0,lastRequestedSurface=null;
 const api={
  diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:screenStatusDenied?'denied':'granted'}),
  listSources:async()=>useNativePicker?{selectedId:null,systemPicker:true,items:[]}:
@@ -73,7 +74,15 @@ const devices={
  enumerateDevices:async()=>[{kind:'videoinput',deviceId:'cam1',label:'Synthetic camera'},
   {kind:'audioinput',deviceId:'mic1',label:'Synthetic microphone'}],
  getUserMedia:async(constraints)=>fakeStream(constraints.video?'camera':'mic'),
- getDisplayMedia:async()=>fakeStream('screen'),
+ getDisplayMedia:async options=>{
+  lastRequestedSurface=options?.video?.displaySurface;
+  const stream=fakeStream('screen');
+  for(const track of stream.getVideoTracks()){
+   const originalSettings=track.getSettings();
+   track.getSettings=()=>({...originalSettings,displaySurface:simulateWrongSurface?'window':lastRequestedSurface});
+  }
+  return stream;
+ },
  addEventListener(){}
 };
 const context={
@@ -99,8 +108,23 @@ async function test(){
  // screen capture must enable Record and keep the success message visible.
  assert.doesNotMatch(element('status').textContent,/macOS blocked screen capture/);
  await click('previewBtn');
+ assert.equal(lastRequestedSurface,'monitor','Entire desktop must request only a monitor from the native macOS picker');
+ if(simulateWrongSurface){
+  assert.match(element('status').textContent,/Wrong screen source selected/i,'Window capture was accepted in desktop-only mode');
+  assert.doesNotMatch(element('status').textContent,/preview active/i,'Wrong window source was reported as active');
+  console.log('PASS: application window rejected when entire desktop monitor was requested');
+  return;
+ }
  assert.equal(element('recordBtn').disabled,false,'Full-screen capture must enable Record after preview');
- assert.match(element('status').textContent,/Screen preview active/i,'Successful capture was replaced with a permission warning');
+ assert.match(element('status').textContent,/Entire desktop preview active/i,'Successful desktop capture was replaced by a permission warning');
+ // A separate Window mode must request exactly window sources.
+ element('mode').value='window';
+ await fire('mode','change');
+ await click('previewBtn');
+ assert.equal(lastRequestedSurface,'window','Window capture mode must request the native window picker');
+ assert.match(element('status').textContent,/Window preview active/i);
+ element('mode').value='full';
+ await fire('mode','change');
  // Camera independent of screen capture
  element('mode').value='camera';
  await fire('mode','change');
@@ -126,6 +150,7 @@ async function test(){
  assert.equal(element('recordBtn').disabled,false,'Record should be clickable before preview');
  assert.equal(element('areaControl').classList!==null,true);
  await click('recordBtn');
+ assert.equal(lastRequestedSurface,'monitor','A custom region must be cropped from a full monitor, not an application window');
  assert.equal(regionPickCount,1,'Record should invoke full-desktop region selector');
  assert.match(element('areaSummary').textContent,/Area selected/);
  assert.equal(element('stopBtn').disabled,false,'Record did not start after selecting an area');
