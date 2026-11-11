@@ -1,5 +1,5 @@
 'use strict';
-const {app,BrowserWindow,desktopCapturer,dialog,ipcMain,session,shell,systemPreferences}=require('electron');
+const {app,BrowserWindow,desktopCapturer,dialog,ipcMain,session,shell,systemPreferences,clipboard}=require('electron');
 const fs=require('node:fs');
 const path=require('node:path');
 const os=require('node:os');
@@ -130,6 +130,11 @@ function register(){
   if(r){await r.chain.catch(()=>{});await removeTemp(r)}
   return true;
  });
+ ipcMain.handle('diagnostics:copy',async(e,content)=>{
+  requireOwner(e);
+  if(typeof content!=='string'||content.length>16000)throw new Error('Invalid diagnostic report');
+  clipboard.writeText(content);return true;
+ });
  ipcMain.handle('folder:show',async(e,file)=>{
   requireOwner(e);
   if(typeof file!=='string'||file!==lastSavedFile)throw new Error('Invalid output path');
@@ -137,7 +142,7 @@ function register(){
  });
 }
 app.whenReady().then(()=>{
- app.setAppUserModelId('com.chelrecord.desktop');
+ app.setAppUserModelId('com.chelrecord.studio');
  const ses=session.defaultSession;
  const allowedMedia=new Set(['media','display-capture']);
  ses.setPermissionRequestHandler((wc,permission,cb)=>{
