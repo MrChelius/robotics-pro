@@ -5,7 +5,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 const source=fs.readFileSync(path.join(__dirname,'../renderer.js'),'utf8');
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-for(const required of ['mode','camera','mic','testCam','testMic','previewBtn','recordBtn','stopBtn','cancelBtn','quickRecord','copyDiagnostics','emptyState','stage','screen']){
+for(const required of ['mode','camera','mic','testCam','testMic','previewBtn','recordBtn','stopBtn','cancelBtn','quickRecord','copyDiagnostics','emptyState','stage','screen','selectAreaBtn','areaSummary']){
  assert.ok(html.includes('id="'+required+'"'),'UI missing: '+required)
 }
 const useNativePicker=process.argv.includes('native');
@@ -28,7 +28,7 @@ class FakeElement{
  add(x){this.options.push(x)}
 }
 const element=id=>{if(!elements.has(id))elements.set(id,new FakeElement(id));return elements.get(id)};
-const ids=['screen','captureVideo','cameraTest','cameraOverlay','region','selection',
+const ids=['screen','captureVideo','cameraTest','cameraOverlay','region','selection','areaControl','areaSummary','selectAreaBtn','emptyState','quickRecord','copyDiagnostics',
  'status','permissionStatus','sourceList','sourceHint','desktopControls','cameraStatus','micStatus',
  'camera','mic','mode','stage','timer','state','refresh','testCam','stopCam','testMic',
  'stopMic','previewBtn','recordBtn','stopBtn','cancelBtn','openFile','settingsScreen',
@@ -43,12 +43,13 @@ function fakeStream(kind){
  getAudioTracks(){return tracks.filter(t=>t.kind==='audio')},getTracks(){return tracks},
  addTrack(t){tracks.push(t)}};
 }
-let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='';
+let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0;
 const api={
  diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:screenStatusDenied?'denied':'granted'}),
  listSources:async()=>useNativePicker?{selectedId:null,systemPicker:true,items:[]}:
   {selectedId:'screen:0:0',systemPicker:false,items:[{id:'screen:0:0',name:'Desktop',thumbnail:''}]},
  chooseSource:async()=>true,requestPermission:async()=>{permissionChecks++;return 'granted'},
+ selectRegion:async()=>{regionPickCount++;return {region:{x:.15,y:.12,w:.47,h:.61},displayId:1}},
  copyDiagnostics:async text=>{copiedReport=text;return true},
  openSettings:async()=>true,begin:async()=>({filePath:'/tmp/synthetic.mp4'}),
  write:async()=>{writeCount++;return true},
@@ -119,18 +120,20 @@ async function test(){
  assert.equal(exportCount,2);
  await click('copyDiagnostics');
  assert.match(copiedReport,/ChelRecord Studio diagnostic report/);
- // Screen region must be selected before enabling Record
+ // Region can be selected on the actual desktop BEFORE preview exists.
  element('mode').value='region';
  await fire('mode','change');
- await click('previewBtn');
- assert.equal(element('recordBtn').disabled,true,'Region recording enabled before selection');
- await fire('region','pointerdown',{clientX:25,clientY:25,pointerId:1});
- await fire('region','pointermove',{clientX:250,clientY:180});
- await fire('region','pointerup',{});
- assert.equal(element('recordBtn').disabled,false,'Region recording remains disabled after selection');
+ assert.equal(element('recordBtn').disabled,false,'Record should be clickable before preview');
+ assert.equal(element('areaControl').classList!==null,true);
  await click('recordBtn');
+ assert.equal(regionPickCount,1,'Record should invoke full-desktop region selector');
+ assert.match(element('areaSummary').textContent,/Area selected/);
+ assert.equal(element('stopBtn').disabled,false,'Record did not start after selecting an area');
  await click('stopBtn');
  assert.equal(exportCount,3);
+ // Dedicated area button also opens the OS overlay.
+ await click('selectAreaBtn');
+ assert.equal(regionPickCount,2,'Area button did not open the selector');
  assert.ok(writeCount>=3,'Recording chunks were not written');
  assert.ok(permissionChecks>=1,'Camera access was not requested');
  console.log('PASS: '+(useNativePicker?'macOS native picker':'custom source picker')+(screenStatusDenied?' with stale OS denied status':'')+', real capture readiness, camera-only preview/record/stop, region gating, MP4 writer controller');
