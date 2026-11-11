@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld('chelrecord',Object.freeze({
  selectRegion:()=>ipcRenderer.invoke('desktop:pick-region'),
  finishRegion:rect=>ipcRenderer.send('region:done',rect),
  cancelRegion:()=>ipcRenderer.send('region:cancel'),
- listSources:()=>ipcRenderer.invoke('desktop:list'),
+ listSources:kind=>ipcRenderer.invoke('desktop:list',kind),
  chooseSource:id=>ipcRenderer.invoke('desktop:select',id),
  begin:()=>ipcRenderer.invoke('record:begin'),
  write:data=>ipcRenderer.invoke('record:chunk',data),
