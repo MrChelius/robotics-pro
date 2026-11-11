@@ -1,11 +1,11 @@
 'use strict';
-const {app,BrowserWindow,desktopCapturer,dialog,ipcMain,session,shell,systemPreferences,clipboard}=require('electron');
+const {app,BrowserWindow,desktopCapturer,dialog,ipcMain,session,shell,systemPreferences,clipboard,screen}=require('electron');
 const fs=require('node:fs');
 const path=require('node:path');
 const os=require('node:os');
 const {randomUUID}=require('node:crypto');
 const {spawn}=require('node:child_process');
-let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null;
+let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false;
 // macOS 15+ supports the native system screen picker. Do not enumerate screen thumbnails there:
 // desktopCapturer.getSources may fail even when TCC permission is already granted.
 const nativeScreenPicker=process.platform==='darwin' && Number.parseInt(os.release().split('.')[0],10)>=24;
@@ -43,6 +43,59 @@ async function sources(){
  return list;
 }
 async function removeTemp(r){if(r)try{await fs.promises.unlink(r.temp)}catch{}}
+
+async function chooseDesktopRegion(){
+ if(selectionOpen)throw new Error('A region selection is already in progress');
+ selectionOpen=true;
+ const display=screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+ return new Promise((resolve,reject)=>{
+  let overlay=null,settled=false;
+  const validRect=rect=>{
+   if(!rect||typeof rect!=='object')return false;
+   return ['x','y','w','h'].every(k=>Number.isFinite(rect[k])&&rect[k]>=0&&rect[k]<=1) &&
+    rect.w>0.025&&rect.h>0.025&&rect.x+rect.w<=1.001&&rect.y+rect.h<=1.001;
+  };
+  function finish(result){
+   if(settled)return;
+   settled=true;selectionOpen=false;
+   ipcMain.removeListener('region:done',onDone);
+   ipcMain.removeListener('region:cancel',onCancel);
+   if(overlay&&!overlay.isDestroyed())overlay.close();
+   if(windowRef&&!windowRef.isDestroyed())windowRef.focus();
+   resolve(result);
+  }
+  const onDone=(event,rect)=>{
+   if(!overlay||event.sender!==overlay.webContents)return;
+   if(!validRect(rect)){finish(null);return}
+   finish({region:rect,displayId:display.id,displayBounds:display.bounds});
+  };
+  const onCancel=event=>{if(overlay&&event.sender===overlay.webContents)finish(null)};
+  ipcMain.on('region:done',onDone);
+  ipcMain.on('region:cancel',onCancel);
+  try{
+   overlay=new BrowserWindow({
+    x:display.bounds.x,y:display.bounds.y,
+    width:display.bounds.width,height:display.bounds.height,
+    frame:false,transparent:true,backgroundColor:'#00000000',
+    resizable:false,movable:false,alwaysOnTop:true,focusable:true,fullscreenable:false,
+    skipTaskbar:true,show:false,hasShadow:false,
+    title:'Select capture region',
+    webPreferences:{
+     preload:path.join(__dirname,'preload.cjs'),
+     contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true
+    }
+   });
+   overlay.setAlwaysOnTop(true,'screen-saver');
+   overlay.on('closed',()=>finish(null));
+   overlay.loadFile('region-picker.html').then(()=>{if(!settled){overlay.show();overlay.focus()}})
+   .catch(error=>{console.error('Region overlay failed:',error);finish(null)});
+  }catch(error){
+   console.error('Region overlay creation failed:',error);
+   finish(null);
+  }
+ });
+}
+
 function register(){
  ipcMain.handle('app:diagnostics',async e=>{
   requireOwner(e);
@@ -69,6 +122,7 @@ function register(){
   }
   return true;
  });
+ ipcMain.handle('desktop:pick-region',async e=>{requireOwner(e);return chooseDesktopRegion()});
  ipcMain.handle('desktop:list',async e=>{
   requireOwner(e);
   if(nativeScreenPicker){
