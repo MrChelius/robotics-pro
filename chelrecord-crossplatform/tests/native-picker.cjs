@@ -29,10 +29,11 @@ async function exercise(platform,darwinVersion,expectedNative){
     quit(){},
     relaunch(){}
   };
-  const desktopCapturer={async getSources(){
+  const desktopCapturer={async getSources(options){
     enumerations++;
     if(expectedNative)throw Error('Failed to get sources');
-    return [{id:'screen:0:0',name:'Display',thumbnail:{isEmpty:()=>true}}];
+    const kind=options.types[0];
+    return [{id:kind+':0:0',name:kind==='screen'?'Display':'Application',thumbnail:{isEmpty:()=>true}}];
   }};
   const session={defaultSession:{
     setPermissionRequestHandler(){},
@@ -68,6 +69,15 @@ async function exercise(platform,darwinVersion,expectedNative){
   }else{
     assert.equal(list.items.length,1,'Non-native picker did not enumerate sources');
     assert.equal(enumerations,1,'Unexpected desktop source query count');
+  }
+  const windowItems=await ipc.get('desktop:list')({sender:windowRef.webContents},'window');
+  if(expectedNative){
+    assert.equal(windowItems.systemPicker,true);
+    assert.equal(enumerations,0);
+  }else{
+    assert.equal(windowItems.items.length,1);
+    assert.ok(windowItems.items[0].id.startsWith('window:'));
+    assert.equal(enumerations,2);
   }
   // The area picker is independent of screen capture and never calls getSources().
   const before=enumerations;
