@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id),api=window.chelrecord;
 const canvas=$('screen'),ctx=canvas.getContext('2d',{alpha:false});
 const screenVideo=$('captureVideo'),cameraVideo=$('cameraTest'),overlay=$('cameraOverlay');
 let sources=[],chosen=null,nativePicker=false,screenStream=null,camStream=null,micStream=null,testMicStream=null;
-let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false,quickStarting=false;
+let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false,quickStarting=false,lastCaptureError=null;
 const diagnosticTrail=[];
 function diagnosticNote(message){diagnosticTrail.push(new Date().toISOString()+' '+String(message));if(diagnosticTrail.length>30)diagnosticTrail.shift()}
 let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterContext=null,meterStream=null,meterRaf=0,meterTimer=null;
@@ -197,22 +197,25 @@ async function closeScreen(preserveRegion=false){
  overlay.classList.add('hidden');if(!preserveRegion)resetRegion();showMode();syncButtons();
 }
 async function startPreview(){
- if(busy||recorder)return;
+ if(busy||recorder)return false;
  if(mode()==='camera'){
   if(!cameraIsReady())await testCamera();
-  if(!cameraIsReady()){info('Camera-only preview requires a working camera.',true);return}
+  if(!cameraIsReady()){info('Camera-only preview requires a working camera.',true);return false}
   stopStream(screenStream);screenStream=null;screenVideo.srcObject=null;
   canvas.width=1280;canvas.height=720;$('stage').style.aspectRatio='16 / 9';
   preview=true;++renderToken;draw(renderToken);showMode();
-  info('Camera-only preview is active. Click Record to save camera video.');return;
+  info('Camera-only preview is active. Click Record to save camera video.');return true;
  }
  if(!chosen&&!nativePicker){await listScreens()}
- if(!chosen&&!nativePicker){info('No screen selected. Select a screen or enable macOS screen recording permission.',true);return}
+ if(!chosen&&!nativePicker){info('No screen selected. Select a screen or enable macOS screen recording permission.',true);return false}
  await closeScreen(mode()==='region');
+ lastCaptureError=null;
  try{
   info(nativePicker?'Opening macOS screen/window picker…':'Requesting screen capture…');
   const expectedSurface=desiredSurface();
-  const stream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:expectedSurface,frameRate:30},audio:false});
+  // Avoid adding display frame-rate constraints to the experimental macOS system picker.
+  // Electron uses displaySurface to choose the monitor/window picker.
+  const stream=await navigator.mediaDevices.getDisplayMedia({video:{displaySurface:expectedSurface},audio:false});
   diagnosticNote('Screen picker returned '+stream.getVideoTracks().length+' video track(s)');
   const track=stream.getVideoTracks()[0];
   if(!track)throw new Error('Screen capture returned no video track');
@@ -243,13 +246,19 @@ async function startPreview(){
    await closeScreen();info('Screen share stopped. Start preview again.',true)
   },{once:true});
   await diagnostics();
+  return true;
  }catch(err){
   await closeScreen(mode()==='region');
   // Only an actual capture rejection should present a blocking error.
   const wasCancelled=err?.name==='AbortError'||(err?.name==='NotAllowedError'&&/cancel|dismiss/i.test(String(err?.message||'')));
+  lastCaptureError={name:String(err?.name||'CaptureError'),message:String(err?.message||err),surface:desiredSurface()};
+  diagnosticNote('CAPTURE FAILURE '+JSON.stringify(lastCaptureError));
   const hint=wasCancelled?'Screen selection was cancelled. Click Start preview to try again.':
-   explain(err,'screen')+'\nIf permission was just granted, fully quit (⌘Q) and reopen ChelRecord.';
+    'Screen capture error ('+lastCaptureError.name+'): '+lastCaptureError.message+
+    '\nRequested: '+(lastCaptureError.surface==='monitor'?'entire desktop / monitor':'application window')+
+    '\nUse Device permissions → Copy diagnostic report if this persists.';
   info(hint,!wasCancelled);
+  return false;
  }
 }
 function draw(token){
@@ -410,7 +419,11 @@ async function requestRecord(){
   if(!r)return;
  }
  if(!preview||(mode()==='camera'&&!cameraIsReady())||(mode()!=='camera'&&!sourceIsReady())){
-  await startPreview();
+  const opened=await startPreview();
+  if(!opened){
+   // The specific OS error was already displayed by startPreview. Never overwrite it.
+   return;
+  }
  }
  if(mode()==='camera' ? cameraIsReady()&&preview : sourceIsReady()&&preview){
   if(mode()==='region'&&!regionIsReady()){
@@ -419,8 +432,8 @@ async function requestRecord(){
   }
   await startRecord();
  }else{
-  // A real screen source is mandatory. Never create a fake or blank recording.
-  info('Screen capture could not start. In Device permissions, copy the diagnostic report to investigate the exact OS error. A macOS screen-access permission issue can block even an enabled switch.',true);
+  // A real screen source is mandatory. Preserve any more specific error from the OS.
+  if(!lastCaptureError)info('The capture source is not ready. Start preview again, then try Record.',true);
  }
 }
 async function quickRecord(){
@@ -448,6 +461,7 @@ async function copyDiagnostics(){
    'Microphone stream active: '+Boolean(micStream?.active),
    'Preview active: '+Boolean(preview),
    'Recording active: '+Boolean(recorder),
+   'Last screen capture error: '+JSON.stringify(lastCaptureError),
    'Recent application events:',...diagnosticTrail
   ].join('\n');
   await api.copyDiagnostics(report);
