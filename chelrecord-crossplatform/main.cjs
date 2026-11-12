@@ -5,7 +5,7 @@ const path=require('node:path');
 const os=require('node:os');
 const {randomUUID}=require('node:crypto');
 const {spawn}=require('node:child_process');
-let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false,sourceKind='screen',nativeRecording=null,pipRecording=null;
+let windowRef=null,cameraFloatWindow=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false,sourceKind='screen',nativeRecording=null,pipRecording=null;
 // macOS 15+ supports the native system screen picker. Do not enumerate screen thumbnails there:
 // desktopCapturer.getSources may fail even when TCC permission is already granted.
 const nativeScreenPicker=process.platform==='darwin' && Number.parseInt(os.release().split('.')[0],10)>=24;
@@ -180,6 +180,7 @@ async function startNativeRecording({region,mic}){
  }
 }
 async function endNativeRecording(discard){
+ hideCameraFloat();
  const current=nativeRecording;
  if(!current)throw new Error('No native screen capture in progress');
  nativeRecording=null;
@@ -252,6 +253,56 @@ async function finishCameraPiP(options){
  }
 }
 
+
+function hideCameraFloat(){
+ const win=cameraFloatWindow;
+ cameraFloatWindow=null;
+ if(win&&!win.isDestroyed())win.close();
+ return true;
+}
+async function showCameraFloat(config={}){
+ if(process.platform!=='darwin'||!nativeMacBinary())return {visible:false};
+ if(!nativeRecording)throw new Error('Start native desktop recording before showing a camera window');
+ const widths={18:210,24:280,32:380};
+ const size=Number(config.size||24);
+ const position=String(config.position||'bottom-right');
+ if(!Object.prototype.hasOwnProperty.call(widths,size)||!['top-left','top-right','bottom-left','bottom-right'].includes(position))
+  throw new Error('Invalid floating camera position or size');
+ hideCameraFloat();
+ const monitor=screen.getPrimaryDisplay();
+ const area=monitor.workArea;
+ const width=widths[size],height=Math.round(width*3/4)+27,pad=24;
+ const x=position.endsWith('right')?area.x+area.width-width-pad:area.x+pad;
+ const y=position.startsWith('bottom')?area.y+area.height-height-pad:area.y+pad;
+ const float=new BrowserWindow({
+  x,y,width,height,minWidth:width,minHeight:height,maxWidth:width,maxHeight:height,
+  title:'ChelRecord Camera Preview',show:false,frame:false,
+  transparent:false,backgroundColor:'#141a23',resizable:false,movable:true,
+  focusable:true,alwaysOnTop:true,fullscreenable:false,
+  skipTaskbar:true,hasShadow:true,
+  webPreferences:{preload:path.join(__dirname,'camera-float-preload.cjs'),
+   contextIsolation:true,nodeIntegration:false,sandbox:true,webSecurity:true}
+ });
+ cameraFloatWindow=float;
+ float.setAlwaysOnTop(true,'floating');
+ if(typeof float.setVisibleOnAllWorkspaces==='function')float.setVisibleOnAllWorkspaces(true,{visibleOnFullScreen:true});
+ float.on('closed',()=>{if(cameraFloatWindow===float)cameraFloatWindow=null});
+ float.webContents.setWindowOpenHandler(()=>({action:'deny'}));
+ float.webContents.on('will-navigate',e=>e.preventDefault());
+ try{
+  await float.loadFile('camera-float.html');
+  if(cameraFloatWindow===float)float.showInactive?.();
+  return {visible:true,width,height};
+ }catch(error){hideCameraFloat();throw error}
+}
+function forwardCameraFrame(image){
+ if(!cameraFloatWindow||cameraFloatWindow.isDestroyed())return false;
+ if(typeof image!=='string'||!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(image)||image.length>850000)
+  throw new Error('Invalid camera frame');
+ cameraFloatWindow.webContents.send('camera:frame',image);
+ return true;
+}
+
 function register(){
  ipcMain.handle('app:diagnostics',async e=>{
   requireOwner(e);
@@ -286,6 +337,9 @@ function register(){
  ipcMain.handle('pip:chunk',async(e,bytes)=>{requireOwner(e);return appendCameraPiP(bytes)});
  ipcMain.handle('pip:finish',async(e,options)=>{requireOwner(e);return finishCameraPiP(options)});
  ipcMain.handle('pip:abort',async e=>{requireOwner(e);return abortCameraPiP()});
+ ipcMain.handle('camera-float:show',async(e,config)=>{requireOwner(e);return showCameraFloat(config)});
+ ipcMain.handle('camera-float:frame',async(e,image)=>{requireOwner(e);return forwardCameraFrame(image)});
+ ipcMain.handle('camera-float:hide',async e=>{requireOwner(e);return hideCameraFloat()});
  ipcMain.handle('desktop:pick-region',async e=>{requireOwner(e);return chooseDesktopRegion()});
  ipcMain.handle('desktop:list',async(e,kind='screen')=>{
   requireOwner(e);
@@ -392,7 +446,7 @@ app.whenReady().then(()=>{
  windowRef.loadFile('index.html');
  windowRef.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  windowRef.webContents.on('will-navigate',event=>event.preventDefault());
- windowRef.on('closed',()=>{if(nativeRecording){nativeRecording.child.stdin.write('stop\n');nativeRecording.child.stdin.end()}void abortCameraPiP();windowRef=null});
+ windowRef.on('closed',()=>{hideCameraFloat();if(nativeRecording){nativeRecording.child.stdin.write('stop\n');nativeRecording.child.stdin.end()}void abortCameraPiP();windowRef=null});
 }).catch(err=>{console.error('ChelRecord startup failed:',err);app.quit()});
 app.on('window-all-closed',()=>{if(process.platform!=='darwin')app.quit()});
 app.on('activate',()=>{if(!windowRef){app.relaunch();app.quit()}});
