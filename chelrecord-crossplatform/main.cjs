@@ -5,7 +5,7 @@ const path=require('node:path');
 const os=require('node:os');
 const {randomUUID}=require('node:crypto');
 const {spawn}=require('node:child_process');
-let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false,sourceKind='screen',nativeRecording=null;
+let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false,sourceKind='screen',nativeRecording=null,pipRecording=null;
 // macOS 15+ supports the native system screen picker. Do not enumerate screen thumbnails there:
 // desktopCapturer.getSources may fail even when TCC permission is already granted.
 const nativeScreenPicker=process.platform==='darwin' && Number.parseInt(os.release().split('.')[0],10)>=24;
@@ -18,6 +18,7 @@ function ffmpegExecutable(){
  if(!fs.existsSync(bin))throw new Error('FFmpeg was not included in this build: '+bin);
  return bin;
 }
+const {argsForCameraPiP}=require('./native-pip.cjs');
 function encodeMP4(input,output){
  return new Promise((resolve,reject)=>{
   const args=['-hide_banner','-y','-loglevel','error','-i',input,'-c:v','libx264',
@@ -195,6 +196,62 @@ async function endNativeRecording(discard){
  return saved;
 }
 
+
+function beginCameraPiP(){
+ if(!nativeRecording||pipRecording)throw new Error('Screen recording must be running before the camera overlay starts');
+ const temp=path.join(app.getPath('temp'),'chelrecord-camera-'+randomUUID()+'.webm');
+ pipRecording={temp,desktop:nativeRecording.output,chain:Promise.resolve(),count:0,closing:false};
+ return true;
+}
+async function appendCameraPiP(bytes){
+ const r=pipRecording;
+ if(!r||r.closing)throw new Error('Camera recording is not active');
+ if(!(bytes instanceof Uint8Array)||bytes.length>32*1024*1024)throw new Error('Invalid camera video chunk');
+ if(!bytes.length)return false;
+ const buffer=Buffer.from(bytes);
+ r.chain=r.chain.then(()=>fs.promises.appendFile(r.temp,buffer));
+ r.count+=1;
+ await r.chain;
+ return true;
+}
+async function abortCameraPiP(){
+ const r=pipRecording;pipRecording=null;
+ if(r){await r.chain.catch(()=>{});await fs.promises.unlink(r.temp).catch(()=>{});}
+ return true;
+}
+async function finishCameraPiP(options){
+ const r=pipRecording;
+ if(!r||r.closing)throw new Error('Camera capture is not available');
+ if(nativeRecording)throw new Error('Stop the native screen recorder before merging the camera');
+ r.closing=true;
+ const temporaryOutput=r.desktop.replace(/\.mp4$/i,'')+'.camera-'+randomUUID()+'.mp4';
+ let completed=false;
+ try{
+  await r.chain;
+  if(!r.count)throw new Error('Camera captured zero frames; original desktop MP4 remains intact');
+  const stats=await Promise.all([fs.promises.stat(r.desktop),fs.promises.stat(r.temp)]);
+  if(stats.some(st=>st.size<1024))throw new Error('The screen or camera file is empty');
+  const args=argsForCameraPiP(r.desktop,r.temp,temporaryOutput,options||{});
+  await new Promise((resolve,reject)=>{
+   let errors='';
+   const proc=spawn(ffmpegExecutable(),args,{windowsHide:true,stdio:['ignore','ignore','pipe']});
+   proc.stderr.on('data',p=>errors=(errors+p.toString()).slice(-5000));
+   proc.once('error',reject);
+   proc.once('close',code=>code===0?resolve():reject(new Error('Camera PiP video encoding failed ('+code+'): '+errors)));
+  });
+  const result=await fs.promises.stat(temporaryOutput);
+  if(result.size<1024)throw new Error('Merged video was empty');
+  await fs.promises.rename(temporaryOutput,r.desktop);
+  lastSavedFile=r.desktop;
+  completed=true;
+  return {filePath:r.desktop,cameraIncluded:true};
+ }finally{
+  pipRecording=null;
+  await fs.promises.unlink(r.temp).catch(()=>{});
+  if(!completed)await fs.promises.unlink(temporaryOutput).catch(()=>{});
+ }
+}
+
 function register(){
  ipcMain.handle('app:diagnostics',async e=>{
   requireOwner(e);
@@ -225,6 +282,10 @@ function register(){
  ipcMain.handle('native:start',async(e,config)=>{requireOwner(e);return startNativeRecording(config||{})});
  ipcMain.handle('native:stop',async e=>{requireOwner(e);return endNativeRecording(false)});
  ipcMain.handle('native:abort',async e=>{requireOwner(e);return endNativeRecording(true)});
+ ipcMain.handle('pip:begin',async e=>{requireOwner(e);return beginCameraPiP()});
+ ipcMain.handle('pip:chunk',async(e,bytes)=>{requireOwner(e);return appendCameraPiP(bytes)});
+ ipcMain.handle('pip:finish',async(e,options)=>{requireOwner(e);return finishCameraPiP(options)});
+ ipcMain.handle('pip:abort',async e=>{requireOwner(e);return abortCameraPiP()});
  ipcMain.handle('desktop:pick-region',async e=>{requireOwner(e);return chooseDesktopRegion()});
  ipcMain.handle('desktop:list',async(e,kind='screen')=>{
   requireOwner(e);
@@ -331,7 +392,7 @@ app.whenReady().then(()=>{
  windowRef.loadFile('index.html');
  windowRef.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  windowRef.webContents.on('will-navigate',event=>event.preventDefault());
- windowRef.on('closed',()=>{if(nativeRecording){nativeRecording.child.stdin.write('stop\n');nativeRecording.child.stdin.end()}windowRef=null});
+ windowRef.on('closed',()=>{if(nativeRecording){nativeRecording.child.stdin.write('stop\n');nativeRecording.child.stdin.end()}void abortCameraPiP();windowRef=null});
 }).catch(err=>{console.error('ChelRecord startup failed:',err);app.quit()});
 app.on('window-all-closed',()=>{if(process.platform!=='darwin')app.quit()});
 app.on('activate',()=>{if(!windowRef){app.relaunch();app.quit()}});
