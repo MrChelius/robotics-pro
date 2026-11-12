@@ -1,0 +1,69 @@
+name: ChelRecord 2.5.1 macOS independently scanned installer
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/chelrecord-crossplatform-preview
+    paths:
+      - '.github/workflows/chelrecord-mac-verified.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  mac-verification:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Retrieve original full-featured macOS installer from successful build
+        shell: bash
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh run download 43157879022 \
+            --repo MrChelius/robotics-pro \
+            -n CI-Unverified-ChelRecord-2.5.1-mac \
+            -D staging
+          find staging -type f -print
+          test "$(find staging -type f -name '*.dmg' | wc -l)" -ge 1
+      - name: Install antivirus and update its malware definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clamav clamav-freshclam
+          sudo systemctl stop clamav-freshclam.service || true
+          sudo freshclam
+          clamscan --version
+      - name: Scan macOS app and DMG without exclusions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p scan-report
+          clamscan --recursive=yes --scan-archive=yes --infected \
+            --max-filesize=500M --max-scansize=1500M --max-recursion=20 \
+            --log=scan-report/clamav-mac.log staging
+          find staging -type f -iname '*.dmg' -print0 |
+            sort -z | xargs -0 sha256sum > scan-report/SHA256SUMS.txt
+          cat > scan-report/README.txt <<'REPORT'
+          ChelRecord Studio 2.5.1 — full-featured original UI (macOS Apple Silicon).
+          Original build: https://github.com/MrChelius/robotics-pro/actions/runs/43157879022
+          These files completed ClamAV scanning with current malware definitions.
+          ClamAV not finding known signatures does NOT certify that software is virus-free.
+          This installer still uses ad-hoc signing, not Apple Developer ID and not notarized.
+          Chrome/macOS may still flag the downloaded installer for reputation reasons.
+          Do not disable browser or macOS protection to install software.
+          Windows version was NOT approved: ClamAV reported Win.Packed.Mikey-9859574-0
+          against its Electron executable; that may be an Electron false-positive but
+          requires separate verification before it can be released.
+          REPORT
+          tail -26 scan-report/clamav-mac.log
+          cat scan-report/SHA256SUMS.txt
+      - name: Publish original ChelRecord 2.5.1 macOS and scan report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChelRecord-Studio-2.5.1-mac-Scanned
+          path: |
+            staging/**/*.dmg
+            scan-report/*
+          retention-days: 30
+          if-no-files-found: error
