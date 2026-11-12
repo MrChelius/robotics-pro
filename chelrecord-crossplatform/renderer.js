@@ -1,9 +1,9 @@
 'use strict';
 const $=id=>document.getElementById(id),api=window.chelrecord;
 const canvas=$('screen'),ctx=canvas.getContext('2d',{alpha:false});
-const screenVideo=$('captureVideo'),cameraVideo=$('cameraTest'),overlay=$('cameraOverlay');
+const screenVideo=$('captureVideo'),cameraVideo=$('cameraTest'),overlay=$('cameraOverlay'),nativePreviewImage=$('nativePreview');
 let sources=[],chosen=null,nativePicker=false,screenStream=null,camStream=null,micStream=null,testMicStream=null;
-let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false,quickStarting=false,lastCaptureError=null;
+let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false,quickStarting=false,lastCaptureError=null,nativeDesktop=false,nativeActive=false,nativePreviewReady=false;
 const diagnosticTrail=[];
 function diagnosticNote(message){diagnosticTrail.push(new Date().toISOString()+' '+String(message));if(diagnosticTrail.length>30)diagnosticTrail.shift()}
 let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterContext=null,meterStream=null,meterRaf=0,meterTimer=null;
@@ -11,6 +11,7 @@ const sourceIsReady=()=>Boolean(screenStream?.active&&screenVideo.readyState>=2)
 const cameraIsReady=()=>Boolean(camStream?.active&&cameraVideo.readyState>=2);
 const mode=()=>$('mode').value;
 const desiredSurface=()=>mode()==='window'?'window':'monitor';
+const usingNativeDesktop=()=>nativeDesktop&&(mode()==='full'||mode()==='region');
 function info(msg,isError=false){
  const box=$('status');box.textContent=msg;box.classList.toggle('warning',isError);
  $('copyErrorQuick').classList.toggle('hidden',!isError);
@@ -33,11 +34,11 @@ function showMode(){
  syncButtons();
 }
 function syncButtons(){
- const isRecording=Boolean(recorder);
+ const isRecording=Boolean(recorder||nativeActive);
  const ready=preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())&&(mode()!=='region'||Boolean(region&&region.w>.025&&region.h>.025));
  $('recordBtn').disabled=isRecording||busy||quickStarting;
  $('quickRecord').disabled=isRecording||busy||quickStarting;
- $('emptyState').classList.toggle('hidden',Boolean(preview&&(mode()==='camera'?cameraIsReady():sourceIsReady())));
+ $('emptyState').classList.toggle('hidden',Boolean((nativePreviewReady&&usingNativeDesktop())||(preview&&(mode()==='camera'?cameraIsReady():sourceIsReady()))));
  $('stopBtn').disabled=!isRecording||busy;
  $('cancelBtn').disabled=!isRecording||busy;
  $('previewBtn').disabled=isRecording||busy;
@@ -61,6 +62,7 @@ function formatStatus(x){return String(x||'unknown').replace(/-/g,' ')}
 async function diagnostics(){
  try{
   const d=await api.diagnostics();
+  nativeDesktop=Boolean(d.nativeDesktopCapture);
   $('permissionStatus').textContent='Screen: '+formatStatus(d.screen)+' · Camera: '+formatStatus(d.camera)+' · Microphone: '+formatStatus(d.microphone)+
    (d.platform==='darwin'?"\nFor screen permissions use System Settings → Privacy & Security → Screen & System Audio Recording.":"");
   // The OS permission snapshot can be stale (especially after reinstalling an ad-hoc signed build).
@@ -73,6 +75,16 @@ async function diagnostics(){
 }
 async function listScreens(){
  try{
+  const report=await api.diagnostics();
+  nativeDesktop=Boolean(report.nativeDesktopCapture);
+  if(usingNativeDesktop()){
+   sources=[];chosen=null;nativePicker=false;
+   $('sourceList').replaceChildren();
+   $('refresh').textContent='Native macOS desktop recorder';
+   $('sourceHint').textContent='Captures the entire physical Mac display using Apple ScreenCaptureKit. No app-window selection is required.';
+   info('Desktop capture ready. Press Start recording to capture the Mac display.');
+   return;
+  }
   const data=await api.listSources(desiredSurface()==='window'?'window':'screen');nativePicker=Boolean(data.systemPicker);
   diagnosticNote('Picker mode: '+(nativePicker?'native macOS screen picker':'desktop source list'));
   sources=data.items||[];chosen=data.selectedId;
@@ -193,12 +205,34 @@ async function testMicrophone(){
  }catch(err){stopMicTest();$('micStatus').textContent=explain(err,'microphone');info(explain(err,'microphone'),true)}
 }
 async function closeScreen(preserveRegion=false){
+ nativePreviewReady=false;
+ nativePreviewImage.src='';nativePreviewImage.classList.add('hidden');
  ++renderToken;stopStream(screenStream);screenStream=null;screenVideo.srcObject=null;
  preview=false;
  overlay.classList.add('hidden');if(!preserveRegion)resetRegion();showMode();syncButtons();
 }
 async function startPreview(){
- if(busy||recorder)return false;
+ if(busy||recorder||nativeActive)return false;
+ if(usingNativeDesktop()){
+  busy=true;syncButtons();
+  try{
+   info('Fetching a real desktop preview from Apple ScreenCaptureKit…');
+   const result=await api.nativePreview(mode()==='region'&&regionIsReady()?region:null);
+   if(!result?.image)throw new Error('ScreenCaptureKit did not return a desktop screenshot');
+   nativePreviewImage.src=result.image;
+   nativePreviewImage.classList.remove('hidden');
+   nativePreviewReady=true;preview=true;
+   $('state').textContent='Desktop preview';
+   info('Desktop screenshot ready. Press Start recording to record the full desktop in MP4.');
+   return true;
+  }catch(error){
+   nativePreviewReady=false;nativePreviewImage.classList.add('hidden');
+   lastCaptureError={name:error.name||'NativeCaptureError',message:error.message||String(error),surface:'monitor'};
+   info('Native macOS desktop preview failed: '+lastCaptureError.message,true);
+   return false;
+  }finally{busy=false;syncButtons()}
+ }
+
  if(mode()==='camera'){
   if(!cameraIsReady())await testCamera();
   if(!cameraIsReady()){info('Camera-only preview requires a working camera.',true);return false}
@@ -354,6 +388,7 @@ async function startRecord(){
  finally{busy=false;syncButtons()}
 }
 async function stopRecord(discard=false){
+ if(nativeActive){await stopNativeRecord(discard);return}
  if(!recorder||busy)return;
  busy=true;syncButtons();clearInterval(ticker);
  const r=recorder;recorder=null;
@@ -409,12 +444,70 @@ async function selectAreaOnDesktop(){
   region=r;
   describeRegion();syncButtons();
   diagnosticNote('Desktop region selected on display '+selected.displayId+': '+JSON.stringify(r));
-  info(preview?'Screen area selected. Press Record to save or continue the ongoing capture.':'Area selected. Click RECORD NOW and choose the same monitor when macOS asks.');
+  info(usingNativeDesktop()?'Screen area selected. Press Start recording; ScreenCaptureKit will record that area directly.':(preview?'Screen area selected. Press Record to save or continue the ongoing capture.':'Area selected. Click Start recording and choose the same monitor.'));
   return region;
  }catch(err){info('Could not open the area selector: '+err.message,true);return null}
 }
+
+async function beginNativeRecord(){
+ if(busy||nativeActive)return;
+ busy=true;syncButtons();
+ try{
+  stopMicTest();
+  if($('camera').value){
+   diagnosticNote('Native desktop recording captures ScreenCaptureKit video; an Electron camera preview is not composited into this file.');
+  }
+  const config={region:mode()==='region'&&regionIsReady()?region:null,mic:Boolean($('mic').value)};
+  info('Starting macOS native desktop capture. Confirm Screen Recording permission if requested.');
+  const saved=await api.nativeStart(config);
+  if(!saved){info('Recording cancelled: no save location selected.');return}
+  nativeActive=true;
+  recordingStart=Date.now();
+  clearInterval(ticker);
+  ticker=setInterval(()=>{
+   const seconds=Math.floor((Date.now()-recordingStart)/1000);
+   $('timer').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+  },250);
+  $('state').textContent='● Recording desktop';
+  lastFile=null;$('openFile').classList.add('hidden');
+  info('Recording the real Mac desktop with Apple ScreenCaptureKit. Press Stop & save to finish.'+
+   ($('camera').value?' Camera overlay is not included in native monitor recordings.':''));
+ }catch(error){
+  lastCaptureError={name:error.name||'NativeCaptureError',message:error.message||String(error),surface:'monitor'};
+  info('macOS native screen recording failed: '+lastCaptureError.message,true);
+ }finally{busy=false;syncButtons()}
+}
+async function stopNativeRecord(discard){
+ if(!nativeActive||busy)return;
+ busy=true;syncButtons();clearInterval(ticker);
+ try{
+  if(discard){
+   await api.nativeAbort();info('Desktop recording discarded.');
+  }else{
+   info('Finalizing native H.264 MP4…');
+   const saved=await api.nativeStop();
+   lastFile=saved.filePath;
+   info('Video saved: '+lastFile);
+   $('openFile').classList.remove('hidden');
+  }
+ }catch(err){info('Could not finalize native desktop MP4: '+err.message,true)}
+ finally{
+  nativeActive=false;busy=false;
+  $('state').textContent='Ready';
+  syncButtons();
+ }
+}
+
 async function requestRecord(){
- if(recorder||busy)return;
+ if(recorder||busy||nativeActive)return;
+ if(usingNativeDesktop()){
+  if(mode()==='region'&&!regionIsReady()){
+   const result=await selectAreaOnDesktop();
+   if(!result)return;
+  }
+  await beginNativeRecord();
+  return;
+ }
  // Display-media permission must be requested from the user's Record click.
  // Opening the separate area-selection window first can consume that user activation
  // and make getDisplayMedia fail when we return from the overlay.
@@ -456,7 +549,9 @@ async function copyDiagnostics(){
    'Camera stream active: '+Boolean(camStream?.active),
    'Microphone stream active: '+Boolean(micStream?.active),
    'Preview active: '+Boolean(preview),
-   'Recording active: '+Boolean(recorder),
+   'Recording active: '+Boolean(recorder||nativeActive),
+   'Native ScreenCaptureKit installed: '+nativeDesktop,
+   'Native desktop snapshot active: '+nativePreviewReady,
    'Last screen capture error: '+JSON.stringify(lastCaptureError),
    'Recent application events:',...diagnosticTrail
   ].join('\n');
