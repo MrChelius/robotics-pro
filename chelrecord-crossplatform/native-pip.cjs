@@ -25,7 +25,7 @@ function argsForCameraPiP(desktop,camera,out,opts={}){
  const ratio=(size/100).toFixed(2);
  const filter=[
   '[1:v]fps=30,setpts=PTS-STARTPTS,',
-  'scale2ref=w=trunc(main_w*',ratio,'/2)*2:h=trunc(ow/a/2)*2[cam][base];',
+  'scale2ref=w=trunc(iw*',ratio,'/2)*2:h=trunc(ow/mdar/2)*2[cam][base];',
   '[base][cam]overlay=x=',x,':y=',y,
   ':shortest=0:eof_action=repeat,format=yuv420p[v]'
  ].join('');
