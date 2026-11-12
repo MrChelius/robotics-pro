@@ -32,6 +32,8 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npm run check
+      - name: Validate Graphite UI hierarchy, required controls and launcher icon
+        run: npm run test:layout
       - name: Test H.264/AAC MP4 encoder and decoder
         run: npm run test:media
       - name: Test UI camera and region recording flows
@@ -52,7 +54,7 @@ jobs:
         run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: ChelRecord-Studio-2.3.1-Diagnostics-${{ matrix.target }}
+          name: ChelRecord-Studio-2.4.0-Graphite-${{ matrix.target }}
           path: chelrecord-crossplatform/dist/*
           retention-days: 30
           if-no-files-found: error
