@@ -408,31 +408,26 @@ async function selectAreaOnDesktop(){
   region=r;
   describeRegion();syncButtons();
   diagnosticNote('Desktop region selected on display '+selected.displayId+': '+JSON.stringify(r));
-  info('Screen region selected. Press RECORD NOW and choose the same display in the macOS sharing picker.');
+  info(preview?'Screen area selected. Press Record to save or continue the ongoing capture.':'Area selected. Click RECORD NOW and choose the same monitor when macOS asks.');
   return region;
  }catch(err){info('Could not open the area selector: '+err.message,true);return null}
 }
 async function requestRecord(){
  if(recorder||busy)return;
- if(mode()==='region'&&!regionIsReady()){
-  const r=await selectAreaOnDesktop();
-  if(!r)return;
- }
+ // Display-media permission must be requested from the user's Record click.
+ // Opening the separate area-selection window first can consume that user activation
+ // and make getDisplayMedia fail when we return from the overlay.
  if(!preview||(mode()==='camera'&&!cameraIsReady())||(mode()!=='camera'&&!sourceIsReady())){
   const opened=await startPreview();
-  if(!opened){
-   // The specific OS error was already displayed by startPreview. Never overwrite it.
-   return;
-  }
+  if(!opened)return; // startPreview already shows the actual macOS error.
+ }
+ if(mode()==='region'&&!regionIsReady()){
+  const selected=await selectAreaOnDesktop();
+  if(!selected)return; // Cancelling the rectangle must not create a recording.
  }
  if(mode()==='camera' ? cameraIsReady()&&preview : sourceIsReady()&&preview){
-  if(mode()==='region'&&!regionIsReady()){
-   info('Screen area was not selected; try Select area directly on desktop.',true);
-   return;
-  }
   await startRecord();
  }else{
-  // A real screen source is mandatory. Preserve any more specific error from the OS.
   if(!lastCaptureError)info('The capture source is not ready. Start preview again, then try Record.',true);
  }
 }
