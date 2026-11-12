@@ -12,6 +12,7 @@ const useNativePicker=process.argv.includes('native');
 const screenStatusDenied=process.argv.includes('screen-denied');
 const simulateWrongSurface=process.argv.includes('wrong-surface');
 const simulateCaptureError=process.argv.includes('capture-error');
+const simulateNativeDesktop=process.argv.includes('native-desktop');
 const elements=new Map();
 class FakeElement{
  constructor(id=''){
@@ -30,7 +31,7 @@ class FakeElement{
  add(x){this.options.push(x)}
 }
 const element=id=>{if(!elements.has(id))elements.set(id,new FakeElement(id));return elements.get(id)};
-const ids=['screen','captureVideo','cameraTest','cameraOverlay','region','selection','areaControl','areaSummary','selectAreaBtn','emptyState','quickRecord','copyDiagnostics',
+const ids=['screen','captureVideo','cameraTest','cameraOverlay','region','selection','areaControl','areaSummary','selectAreaBtn','nativePreview','emptyState','quickRecord','copyDiagnostics',
  'status','permissionStatus','sourceList','sourceHint','desktopControls','cameraStatus','micStatus',
  'camera','mic','mode','stage','timer','state','refresh','testCam','stopCam','testMic',
  'stopMic','previewBtn','recordBtn','stopBtn','cancelBtn','openFile','settingsScreen',
@@ -45,9 +46,13 @@ function fakeStream(kind){
  getAudioTracks(){return tracks.filter(t=>t.kind==='audio')},getTracks(){return tracks},
  addTrack(t){tracks.push(t)}};
 }
-let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0,lastRequestedSurface=null;
+let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0,lastRequestedSurface=null,nativeRecordCount=0,nativeStopCount=0,nativePreviewCount=0;
 const api={
- diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:screenStatusDenied?'denied':'granted'}),
+ diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:screenStatusDenied?'denied':'granted',nativeDesktopCapture:simulateNativeDesktop}),
+ nativePreview:async()=>{nativePreviewCount++;return {image:'data:image/png;base64,aGVsbG8='}},
+ nativeStart:async()=>{nativeRecordCount++;return {filePath:'/tmp/native-desktop.mp4'}},
+ nativeStop:async()=>{nativeStopCount++;return {filePath:'/tmp/native-desktop.mp4'}},
+ nativeAbort:async()=>({discarded:true}),
  listSources:async()=>useNativePicker?{selectedId:null,systemPicker:true,items:[]}:
   {selectedId:'screen:0:0',systemPicker:false,items:[{id:'screen:0:0',name:'Desktop',thumbnail:''}]},
  chooseSource:async()=>true,requestPermission:async()=>{permissionChecks++;return 'granted'},
@@ -102,6 +107,29 @@ async function click(id){const el=element(id);assert.equal(el.disabled,false,id+
 async function fire(id,kind,event){return element(id).handlers[kind](event)}
 async function test(){
  await flush();
+ if(simulateNativeDesktop){
+  assert.match(element('sourceHint').textContent,/ScreenCaptureKit/,'macOS did not switch to native desktop mode');
+  assert.equal(element('recordBtn').disabled,false);
+  await click('recordBtn');
+  assert.equal(nativeRecordCount,1,'Full desktop recording did not call ScreenCaptureKit backend');
+  assert.equal(lastRequestedSurface,null,'Native desktop capture incorrectly requested the Electron window picker');
+  assert.equal(element('stopBtn').disabled,false,'Native recording has no Stop button');
+  await click('stopBtn');
+  assert.equal(nativeStopCount,1,'Native stop was not called');
+  assert.match(element('status').textContent,/Video saved:/i);
+  element('mode').value='region';
+  await fire('mode','change');
+  await click('recordBtn');
+  assert.equal(regionPickCount,1,'Desktop region selection did not run');
+  assert.equal(nativeRecordCount,2,'Region did not use ScreenCaptureKit');
+  await click('stopBtn');
+  assert.equal(nativeStopCount,2);
+  await click('previewBtn');
+  assert.ok(nativePreviewCount>=1,'Native desktop screenshot not returned');
+  assert.equal(lastRequestedSurface,null,'Native screenshot unexpectedly opened the Electron sharing picker');
+  console.log('PASS: native ScreenCaptureKit desktop/region recording and stop, no Electron display/window capture');
+  return;
+ }
  if(useNativePicker){
   assert.equal(element('sourceList').children.length,0,'Native macOS picker should not enumerate windows');
   assert.match(element('sourceHint').textContent,/macOS will show MONITORS|macOS will ask/i);
