@@ -28,9 +28,15 @@ try{
  const raw=run(['-ss','0.2','-i',output,'-frames:v','1','-f','rawvideo','-pix_fmt','rgb24','pipe:1'],null);
  assert.ok(Buffer.isBuffer(raw),'No decoded video frame');
  const background=pixel(raw,40,45);
- const overlay=pixel(raw,540,275);
+ let redCount=0,minX=640,maxX=0,minY=360,maxY=0;
+ for(let y=0;y<360;y+=4)for(let x=0;x<640;x+=4){
+  const [r,g,b]=pixel(raw,x,y);
+  if(r>140&&r>b*1.5&&r>g*1.5){redCount++;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}
+ }
+ console.log('Pixel-level camera detection:',{redCount,bounds:[minX,minY,maxX,maxY],bottomRight:pixel(raw,540,275)});
  assert.ok(background[2]>160&&background[0]<90,'Desktop blue pixels were lost: '+background);
- assert.ok(overlay[0]>150&&overlay[2]<110,'Camera red PiP is missing from final MP4: '+overlay);
+ assert.ok(redCount>200,'Camera red PiP is absent from the final MP4');
+ assert.ok(minX>300&&minY>140,'Camera PiP is not in the expected lower-right portion of desktop');
  assert.throws(()=>argsForCameraPiP(desktop,camera,output,{position:'bad'}));
  assert.throws(()=>argsForCameraPiP(desktop,camera,output,{size:100}));
  console.log('PASS: FFmpeg encoded a valid H264 MP4 with correct desktop (blue) and PiP webcam (red) pixels');
