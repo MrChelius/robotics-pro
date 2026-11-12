@@ -46,8 +46,16 @@ final class DisplayCapture: NSObject, SCRecordingOutputDelegate, SCStreamDelegat
             throw NSError(domain: "ChelRecordNative", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "No monitor was found by ScreenCaptureKit"])
         }
-        // Explicitly captures the whole monitor, including desktop wallpaper and other apps.
-        let filter = SCContentFilter(display: display, excludingWindows: [])
+        // Capture the real desktop while excluding ChelRecord's own floating webcam
+        // preview and control panel. The camera is composited once into MP4 by FFmpeg.
+        // Excluding the app prevents recursive screen-in-screen and double camera overlays.
+        let recorderApp = content.applications.first { $0.bundleIdentifier == "com.chelrecord.studio" }
+        let filter: SCContentFilter
+        if let recorderApp = recorderApp {
+            filter = SCContentFilter(display: display, excludingApplications: [recorderApp], exceptingWindows: [])
+        } else {
+            filter = SCContentFilter(display: display, excludingWindows: [])
+        }
         let cfg = SCStreamConfiguration()
         let scale = max(CGFloat(filter.pointPixelScale), 1.0)
         let width = max(CGFloat(filter.contentRect.width), 1.0)
