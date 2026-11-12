@@ -5,12 +5,12 @@ const files=['main.cjs','preload.cjs','renderer.js','index.html','region-picker.
 const content=Object.fromEntries(files.map(name=>[name,fs.readFileSync(path.join(root,name),'utf8')]));
 const source=files.map(n=>content[n]).join('\n');
 const forbidden=[
- [/\\brequire\\(['"](?:https?|net|tls|dgram|axios|node:net|node:https?|node:tls)['"]\\)/,'Unexpected network module'],
- [/\\b(?:fetch|XMLHttpRequest|WebSocket)\\s*\\(/,'Unexpected network call'],
- [/\\b(?:eval|Function)\\s*\\(/,'Dynamic JS evaluation'],
- [/\\b(?:execSync|execFileSync|exec)\\s*\\(/,'Arbitrary command execution'],
- [/\\bshell\\s*:\\s*true\\b/,'Shell invocation enabled'],
- [/https?:\\/\\/(?!www\\.apple\\.com\\/DTDs)/,'Unexpected web endpoint'],
+ [/\brequire\(['"](?:https?|net|tls|dgram|axios|node:net|node:https?|node:tls)['"]\)/,'Unexpected network module'],
+ [/\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/,'Unexpected network call'],
+ [/\b(?:eval|Function)\s*\(/,'Dynamic JS evaluation'],
+ [/\b(?:execSync|execFileSync|exec)\s*\(/,'Arbitrary command execution'],
+ [/\bshell\s*:\s*true\b/,'Shell invocation enabled'],
+ [/https?:\/\/(?!www\.apple\.com\/DTDs)/,'Unexpected web endpoint'],
 ];
 for(const [regex,msg] of forbidden)assert.ok(!regex.test(source),msg+': '+String(source.match(regex)?.[0]));
 const main=content['main.cjs'];
