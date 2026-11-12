@@ -52,7 +52,7 @@ jobs:
         run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: ChelRecord-Studio-2.3.0-Aurora-${{ matrix.target }}
+          name: ChelRecord-Studio-2.3.1-Diagnostics-${{ matrix.target }}
           path: chelrecord-crossplatform/dist/*
           retention-days: 30
           if-no-files-found: error
