@@ -110,7 +110,7 @@ jobs:
           set -euo pipefail
           mkdir -p security-report
           clamscan \
-            --recursive=yes --scan-archive=yes --infected=yes \
+            --recursive=yes --scan-archive=yes --infected \
             --max-filesize=500M --max-scansize=1500M --max-recursion=20 \
             --log=security-report/clamav.log staging
           cp security-report/clamav.log security-report/antivirus-result.txt
