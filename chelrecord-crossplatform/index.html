@@ -89,6 +89,7 @@ details .detail-body{font-size:11px;color:#aebbc9;line-height:1.6;padding:1px 11
 .view-state{border:1px solid var(--border);background:#1e2731;border-radius:6px;color:#a9b8ca;padding:5px 9px;font-size:11px;font-weight:540}
 .preview{background:#050708;border:1px solid #353d48;border-radius:8px;aspect-ratio:16/9;max-height:calc(100vh - 350px);overflow:hidden;position:relative;flex:1 1 auto;min-height:160px;display:flex;justify-content:center;align-items:center}
 .preview canvas{width:100%;height:100%;object-fit:contain;display:block}
+#nativePreview{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;background:#080d12}
 #region{position:absolute;inset:0;cursor:crosshair;touch-action:none;z-index:3}
 #selection{position:absolute;display:none;pointer-events:none;border:1.5px solid #a4c6e8;background:#8bb7ef20;box-shadow:0 0 0 999px #0004}
 #cameraOverlay{position:absolute;right:14px;bottom:14px;z-index:2;width:22%;min-width:105px;aspect-ratio:4/3;object-fit:cover;border:2px solid #d6dde7;border-radius:9px;box-shadow:0 7px 20px #0008}
@@ -133,7 +134,7 @@ kbd{background:#252d36;border:1px solid #414956;border-radius:4px;padding:2px 5p
   <div class="logo" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M43 12A23 23 0 1 0 43 52" stroke-width="7"/><path d="M47 14h7v8M47 50h7v-8" stroke-width="4"/><circle cx="32" cy="32" r="8" fill="#ff647f" stroke="none"/><path d="M27 32h10" stroke-width="2" stroke="#fff"/></svg></div>
   <div><div class="brand">ChelRecord <em>Studio</em></div><div class="brand-sub">SCREEN RECORDER</div></div>
  </div>
- <div class="top-actions"><span class="status-badge">On-device recording</span><span class="version">2.4 Preview</span></div>
+ <div class="top-actions"><span class="status-badge">On-device recording</span><span class="version">2.5 Native Desktop</span></div>
 </header>
 <main class="shell">
  <aside class="sidebar" aria-label="Capture controls">
@@ -187,12 +188,13 @@ kbd{background:#252d36;border:1px solid #414956;border-radius:4px;padding:2px 5p
    <div class="view-header"><h2>Live preview</h2><span class="view-state">Display monitor</span></div>
    <div class="preview" id="stage">
     <canvas id="screen" width="1280" height="720"></canvas>
+    <img id="nativePreview" class="hidden" alt="Screenshot of the selected Mac desktop" />
     <div class="empty-state" id="emptyState"><div class="empty-illustration"><svg viewBox="0 0 40 40"><rect x="6" y="8" width="28" height="22" rx="4"/><path d="M12 35h16M20 30v5m-7-16h14m-10-4 7 4-7 4z"/></svg></div><h3>Nothing to preview yet</h3><p>Choose a source and select Preview to see what will be recorded.</p></div>
     <video id="cameraOverlay" autoplay muted playsinline class="hidden"></video>
     <div id="region" class="hidden"><div id="selection"></div></div>
    </div>
    <div class="footer-controls"><div id="timer" class="clock">00:00</div><div id="state">Idle</div></div>
-   <div class="guide">For a selected area, choose <b>Custom desktop region</b> and draw a rectangle on your screen.</div>
+   <div class="guide">For a selected area, choose <b>Custom desktop region</b> and draw a rectangle on your screen. On macOS 15+, desktop recording uses Apple ScreenCaptureKit directly.</div>
   </section>
   <section class="panel action-panel">
    <div class="action-header"><strong><span class="record-dot"></span> Recording controls</strong><span>MP4 • H.264</span></div>
