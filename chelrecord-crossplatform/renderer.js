@@ -6,7 +6,7 @@ let sources=[],chosen=null,nativePicker=false,screenStream=null,camStream=null,m
 let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false,quickStarting=false,lastCaptureError=null,nativeDesktop=false,nativeActive=false,nativePreviewReady=false;
 const diagnosticTrail=[];
 function diagnosticNote(message){diagnosticTrail.push(new Date().toISOString()+' '+String(message));if(diagnosticTrail.length>30)diagnosticTrail.shift()}
-let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterContext=null,meterStream=null,meterRaf=0,meterTimer=null;
+let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterContext=null,meterStream=null,meterRaf=0,meterTimer=null,nativeCameraRecorder=null,nativeCameraWriting=Promise.resolve(),nativeCameraError=null,nativeCameraConfigured=false;
 const sourceIsReady=()=>Boolean(screenStream?.active&&screenVideo.readyState>=2);
 const cameraIsReady=()=>Boolean(camStream?.active&&cameraVideo.readyState>=2);
 const mode=()=>$('mode').value;
@@ -47,6 +47,8 @@ function syncButtons(){
  $('refresh').disabled=isRecording||busy;
  $('camera').disabled=isRecording||busy;
  $('mic').disabled=isRecording||busy;
+ $('pipPosition').disabled=isRecording||busy;
+ $('pipSize').disabled=isRecording||busy;
  $('testCam').disabled=isRecording||busy;
  $('stopCam').disabled=isRecording||busy;
  $('testMic').disabled=isRecording||busy;
@@ -449,18 +451,75 @@ async function selectAreaOnDesktop(){
  }catch(err){info('Could not open the area selector: '+err.message,true);return null}
 }
 
+
+async function startNativeCameraCapture(){
+ if(!camStream?.active||!camStream.getVideoTracks().some(t=>t.readyState!=='ended'))
+  throw new Error('Camera is not ready. Test the camera or select an available camera first.');
+ if(!window.MediaRecorder)throw new Error('Camera recording requires MediaRecorder support.');
+ const mime=['video/webm;codecs=vp8','video/webm;codecs=vp9','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+ if(!mime)throw new Error('This Electron build cannot encode camera WebM video.');
+ await api.pipBegin();
+ nativeCameraWriting=Promise.resolve();
+ nativeCameraError=null;
+ try{
+  const cameraRecorder=new MediaRecorder(camStream,{mimeType:mime,videoBitsPerSecond:2_500_000});
+  nativeCameraRecorder=cameraRecorder;
+  cameraRecorder.addEventListener('dataavailable',event=>{
+   if(!event.data?.size)return;
+   nativeCameraWriting=nativeCameraWriting.then(async()=>{
+    await api.pipChunk(new Uint8Array(await event.data.arrayBuffer()));
+   }).catch(error=>{nativeCameraError=error});
+  });
+  cameraRecorder.addEventListener('error',event=>{nativeCameraError=event.error||new Error('Camera MediaRecorder failed')});
+  cameraRecorder.start(500);
+  nativeCameraConfigured=true;
+ }catch(error){
+  nativeCameraRecorder=null;nativeCameraConfigured=false;
+  await api.pipAbort().catch(()=>{});
+  throw error;
+ }
+}
+async function finishNativeCameraCapture(){
+ const recording=nativeCameraRecorder;
+ if(!recording)return;
+ if(recording.state!=='inactive'){
+  await new Promise((resolve,reject)=>{
+   recording.addEventListener('stop',resolve,{once:true});
+   recording.addEventListener('error',event=>reject(event.error||new Error('Camera encoder failed')),{once:true});
+   try{recording.stop()}catch(error){reject(error)}
+  });
+ }
+ nativeCameraRecorder=null;
+ await nativeCameraWriting;
+ if(nativeCameraError)throw nativeCameraError;
+}
 async function beginNativeRecord(){
  if(busy||nativeActive)return;
+ const wantsCamera=Boolean($('camera').value);
+ if(wantsCamera&&!camStream?.active){
+  await testCamera();
+  if(!camStream?.active){
+   info('Cannot record with your camera: select a functioning camera and press Preview camera first.',true);
+   return;
+  }
+ }
  busy=true;syncButtons();
+ let nativeStarted=false;
  try{
   stopMicTest();
-  if($('camera').value){
-   diagnosticNote('Native desktop recording captures ScreenCaptureKit video; an Electron camera preview is not composited into this file.');
-  }
   const config={region:mode()==='region'&&regionIsReady()?region:null,mic:Boolean($('mic').value)};
-  info('Starting macOS native desktop capture. Confirm Screen Recording permission if requested.');
+  info('Starting native macOS screen capture…');
   const saved=await api.nativeStart(config);
   if(!saved){info('Recording cancelled: no save location selected.');return}
+  nativeStarted=true;
+  if(wantsCamera){
+   try{await startNativeCameraCapture()}
+   catch(error){
+    await api.nativeAbort().catch(()=>{});
+    nativeStarted=false;
+    throw new Error('Cannot start webcam picture-in-picture: '+error.message);
+   }
+  }else nativeCameraConfigured=false;
   nativeActive=true;
   recordingStart=Date.now();
   clearInterval(ticker);
@@ -468,33 +527,57 @@ async function beginNativeRecord(){
    const seconds=Math.floor((Date.now()-recordingStart)/1000);
    $('timer').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
   },250);
-  $('state').textContent='● Recording desktop';
+  $('state').textContent='● Recording desktop'+(wantsCamera?' + camera':'');
   lastFile=null;$('openFile').classList.add('hidden');
-  info('Recording the real Mac desktop with Apple ScreenCaptureKit. Press Stop & save to finish.'+
-   ($('camera').value?' Camera overlay is not included in native monitor recordings.':''));
+  info('Recording Mac desktop'+(wantsCamera?' and camera picture-in-picture':'')+'. Stop & save creates the final MP4.');
  }catch(error){
+  if(nativeStarted)await api.nativeAbort().catch(()=>{});
+  await api.pipAbort().catch(()=>{});
+  nativeCameraConfigured=false;nativeCameraRecorder=null;
   lastCaptureError={name:error.name||'NativeCaptureError',message:error.message||String(error),surface:'monitor'};
-  info('macOS native screen recording failed: '+lastCaptureError.message,true);
+  info('Screen recording failed: '+lastCaptureError.message,true);
  }finally{busy=false;syncButtons()}
 }
 async function stopNativeRecord(discard){
  if(!nativeActive||busy)return;
  busy=true;syncButtons();clearInterval(ticker);
+ const withCamera=nativeCameraConfigured;
+ let cameraError=null;
  try{
+  if(withCamera)try{await finishNativeCameraCapture()}catch(e){cameraError=e}
   if(discard){
-   await api.nativeAbort();info('Desktop recording discarded.');
+   await api.nativeAbort();
+   if(withCamera)await api.pipAbort().catch(()=>{});
+   info('Desktop and camera recordings discarded.');
   }else{
-   info('Finalizing native H.264 MP4…');
-   const saved=await api.nativeStop();
-   lastFile=saved.filePath;
-   info('Video saved: '+lastFile);
+   info('Finalizing desktop recording…');
+   const original=await api.nativeStop();
+   lastFile=original.filePath;
+   if(withCamera){
+    if(cameraError){
+     await api.pipAbort().catch(()=>{});
+     info('Desktop MP4 saved, but camera failed: '+cameraError.message+'. Original screen video: '+lastFile,true);
+    }else{
+     info('Adding camera picture-in-picture to the MP4. Original desktop recording stays safe until composition finishes…');
+     try{
+      const merged=await api.pipFinish({position:$('pipPosition').value,size:Number($('pipSize').value)});
+      if(!merged.cameraIncluded)throw new Error('Camera overlay was not confirmed in output');
+      lastFile=merged.filePath;
+      info('Video saved: '+lastFile+' (with camera picture-in-picture).');
+     }catch(error){
+      await api.pipAbort().catch(()=>{});
+      info('Desktop video saved, but camera overlay could not be encoded: '+error.message+'. Screen video: '+lastFile,true);
+     }
+    }
+   }else info('Video saved: '+lastFile);
    $('openFile').classList.remove('hidden');
   }
- }catch(err){info('Could not finalize native desktop MP4: '+err.message,true)}
- finally{
-  nativeActive=false;busy=false;
-  $('state').textContent='Ready';
-  syncButtons();
+ }catch(error){
+  await api.pipAbort().catch(()=>{});
+  info('Could not finalize recording: '+error.message,true);
+ }finally{
+  nativeCameraConfigured=false;nativeCameraRecorder=null;
+  nativeActive=false;busy=false;$('state').textContent='Ready';syncButtons();
  }
 }
 
@@ -552,6 +635,8 @@ async function copyDiagnostics(){
    'Recording active: '+Boolean(recorder||nativeActive),
    'Native ScreenCaptureKit installed: '+nativeDesktop,
    'Native desktop snapshot active: '+nativePreviewReady,
+   'Native camera PiP enabled: '+nativeCameraConfigured,
+   'Native camera recorder active: '+Boolean(nativeCameraRecorder),
    'Last screen capture error: '+JSON.stringify(lastCaptureError),
    'Recent application events:',...diagnosticTrail
   ].join('\n');
