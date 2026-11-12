@@ -13,6 +13,7 @@ const mode=()=>$('mode').value;
 const desiredSurface=()=>mode()==='window'?'window':'monitor';
 function info(msg,isError=false){
  const box=$('status');box.textContent=msg;box.classList.toggle('warning',isError);
+ $('copyErrorQuick').classList.toggle('hidden',!isError);
  box.classList.toggle('success',!isError&&/saved:|saved recording|video saved/i.test(msg));
  diagnosticNote((isError?'ERROR ':'INFO ')+msg);
 }
@@ -465,4 +466,5 @@ async function copyDiagnostics(){
 }
 $('quickRecord').onclick=quickRecord;
 $('copyDiagnostics').onclick=copyDiagnostics;
+$('copyErrorQuick').onclick=copyDiagnostics;
 showMode();listScreens();listMedia();diagnostics();
