@@ -1,4 +1,4 @@
-name: ChelRecord 2.6 Mac Camera PiP — Build and Scan
+name: ChelRecord 2.7 Live Camera — Verified Mac Build
 on:
   workflow_dispatch:
   push:
@@ -44,20 +44,20 @@ jobs:
             -framework AppKit -framework CoreMedia -framework CoreGraphics \
             native/mac-screen-recorder.swift -o build/chelrecord-sck
           chmod 755 build/chelrecord-sck
-      - name: Build full-featured ChelRecord 2.6 macOS DMG
+      - name: Build full-featured ChelRecord 2.7 macOS DMG
         run: npm run dist:mac
       - name: Inspect packaged app and verify local signing
         shell: bash
         run: |
           test -x "dist/mac-arm64/ChelRecord Studio.app/Contents/Resources/native/chelrecord-sck"
           codesign --verify --deep --strict --verbose=2 "dist/mac-arm64/ChelRecord Studio.app"
-          test -s "dist/ChelRecord-Studio-2.6.0-CameraPiP-mac-arm64.dmg"
-          shasum -a 256 "dist/ChelRecord-Studio-2.6.0-CameraPiP-mac-arm64.dmg"
+          test -s "dist/ChelRecord-Studio-2.7.0-LiveCamera-mac-arm64.dmg"
+          shasum -a 256 "dist/ChelRecord-Studio-2.7.0-LiveCamera-mac-arm64.dmg"
           find "dist/mac-arm64/ChelRecord Studio.app" -type f -name '*pip*' | head
       - uses: actions/upload-artifact@v4
         with:
-          name: ChelRecord-2.6-mac-unverified
-          path: chelrecord-crossplatform/dist/ChelRecord-Studio-2.6.0-CameraPiP-mac-arm64.dmg
+          name: ChelRecord-2.7-mac-internal
+          path: chelrecord-crossplatform/dist/ChelRecord-Studio-2.7.0-LiveCamera-mac-arm64.dmg
           retention-days: 30
           if-no-files-found: error
   scan:
@@ -65,10 +65,11 @@ jobs:
     needs: build
     permissions:
       contents: read
+      actions: write
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: ChelRecord-2.6-mac-unverified
+          name: ChelRecord-2.7-mac-internal
           path: staging
       - name: Update ClamAV definitions and scan actual DMG
         shell: bash
@@ -84,22 +85,35 @@ jobs:
             --log=result/scan.txt staging
           sha256sum staging/*.dmg > result/SHA256SUMS.txt
           cat > result/README.txt <<'EOF'
-          ChelRecord Studio 2.6 Camera Picture-in-Picture
+          ChelRecord Studio 2.7 LIVE Camera Desktop Recording
           Includes native macOS ScreenCaptureKit desktop video and
           a second locally captured camera video stream composited via FFmpeg.
           All features are unchanged from the 2.5 Graphite version.
           ClamAV scan is not a guarantee that any software is virus-free.
           Ad-hoc signing only. Not Apple Developer ID signed or notarized.
           Do not bypass security warnings from Chrome or macOS.
-          End-to-end camera hardware testing on the user's Mac is still required.
+          Floating camera overlay appears on Mac desktop during recording.
+          The camera is independently composited once into the saved MP4.
+          End-to-end camera and macOS TCC hardware testing on the user's Mac is still required.
           EOF
           tail -28 result/scan.txt
       - name: Publish scanned Mac installer with report
         uses: actions/upload-artifact@v4
         with:
-          name: ChelRecord-Studio-2.6-CameraPiP-mac-Scanned
+          name: ChelRecord-Studio-2.7-LiveCamera-mac-Scanned
           path: |
             staging/*.dmg
             result/*
           retention-days: 30
           if-no-files-found: error
+      - name: Keep only the single verified installer artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          id=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" \
+            --jq '.artifacts[] | select(.name == "ChelRecord-2.7-mac-internal") | .id')
+          test -n "$id"
+          gh api --method DELETE "repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}"
+          echo "Removed intermediate artifact; only the scanned installer remains for download."
