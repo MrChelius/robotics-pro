@@ -5,7 +5,7 @@ const path=require('node:path');
 const os=require('node:os');
 const {randomUUID}=require('node:crypto');
 const {spawn}=require('node:child_process');
-let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false,sourceKind='screen';
+let windowRef=null,selectedSourceId=null,sourceIndex=new Map(),recording=null,lastSavedFile=null,selectionOpen=false,sourceKind='screen',nativeRecording=null;
 // macOS 15+ supports the native system screen picker. Do not enumerate screen thumbnails there:
 // desktopCapturer.getSources may fail even when TCC permission is already granted.
 const nativeScreenPicker=process.platform==='darwin' && Number.parseInt(os.release().split('.')[0],10)>=24;
@@ -96,12 +96,111 @@ async function chooseDesktopRegion(){
  });
 }
 
+
+// ScreenCaptureKit is the primary whole-desktop recorder on macOS 15+.
+// It does not use Chromium's experimental sharing picker.
+function nativeMacBinary(){
+ if(process.platform!=='darwin'||!app.isPackaged)return null;
+ const file=path.join(process.resourcesPath,'native','chelrecord-sck');
+ return fs.existsSync(file)?file:null;
+}
+function validatedNativeRect(rect){
+ if(rect==null)return [];
+ if(typeof rect!=='object'||!['x','y','w','h'].every(k=>Number.isFinite(rect[k])&&rect[k]>=0&&rect[k]<=1)||
+    rect.w<.02||rect.h<.02||rect.x+rect.w>1.001||rect.y+rect.h>1.001)
+   throw new Error('Invalid desktop capture region');
+ return [rect.x,rect.y,rect.w,rect.h].map(String);
+}
+async function runNativeSnapshot(rect){
+ const binary=nativeMacBinary();
+ if(!binary)throw new Error('Native ScreenCaptureKit recorder is not available. Install the macOS build of ChelRecord Studio 2.5 or later.');
+ const temp=path.join(app.getPath('temp'),'chelrecord-desktop-'+randomUUID()+'.png');
+ const args=['screenshot',temp,...validatedNativeRect(rect)];
+ try{
+  await new Promise((resolve,reject)=>{
+   let stderr='';
+   const child=spawn(binary,args,{stdio:['ignore','pipe','pipe']});
+   child.stderr.on('data',part=>{stderr=(stderr+part.toString()).slice(-3500)});
+   child.once('error',reject);
+   child.once('close',code=>code===0?resolve():reject(new Error(stderr||'Desktop preview returned status '+code)));
+  });
+  const buffer=await fs.promises.readFile(temp);
+  if(!buffer.length)throw new Error('Native screenshot was empty');
+  return {image:'data:image/png;base64,'+buffer.toString('base64')};
+ }finally{await fs.promises.unlink(temp).catch(()=>{})}
+}
+async function startNativeRecording({region,mic}){
+ const bin=nativeMacBinary();
+ if(!bin)throw new Error('macOS native desktop capture is not installed');
+ if(nativeRecording||recording)throw new Error('Another recording is active');
+ const argsRegion=validatedNativeRect(region);
+ const choice=await dialog.showSaveDialog(windowRef,{
+  title:'Save desktop recording',
+  defaultPath:path.join(app.getPath('videos'),'ChelRecord-Desktop-'+new Date().toISOString().replace(/[:.]/g,'-')+'.mp4'),
+  filters:[{name:'MP4 video',extensions:['mp4']}],
+  properties:['createDirectory','showOverwriteConfirmation']
+ });
+ if(choice.canceled||!choice.filePath)return null;
+ const output=choice.filePath.toLowerCase().endsWith('.mp4')?choice.filePath:choice.filePath+'.mp4';
+ const args=['record',output,mic?'1':'0',...argsRegion];
+ let child;
+ let buffer='';
+ let stderr='';
+ let settled=false;
+ const launched=new Promise((resolve,reject)=>{
+  child=spawn(bin,args,{stdio:['pipe','pipe','pipe']});
+  nativeRecording={child,output,done:null};
+  child.stdout.on('data',part=>{
+   buffer+=part.toString();
+   if(buffer.includes('READY\n')&&!settled){settled=true;resolve({filePath:output})}
+   buffer=buffer.slice(-4000);
+  });
+  child.stderr.on('data',part=>{stderr=(stderr+part.toString()).slice(-5000)});
+  child.once('error',err=>{if(!settled){settled=true;reject(err)}});
+  child.once('close',code=>{
+   if(!settled){settled=true;reject(new Error(stderr||'Native desktop capture stopped before it was ready: '+code))}
+  });
+ });
+ const done=new Promise((resolve,reject)=>{
+  // Created after child spawn synchronously; a single close will resolve even
+  // if the application is quit during the recording.
+  child.once('close',async code=>{
+   const size=await fs.promises.stat(output).then(st=>st.size).catch(()=>0);
+   if(code===0&&size>1024)resolve({filePath:output});
+   else reject(new Error(stderr||'ScreenCaptureKit exited without a valid MP4 file (exit '+code+')'));
+  });
+  child.once('error',reject);
+ });
+ nativeRecording.done=done;
+ try{return await launched}
+ catch(err){
+  if(nativeRecording?.child===child){nativeRecording=null;child.kill()}
+  throw err;
+ }
+}
+async function endNativeRecording(discard){
+ const current=nativeRecording;
+ if(!current)throw new Error('No native screen capture in progress');
+ nativeRecording=null;
+ if(discard){
+  current.child.kill('SIGTERM');
+  try{await current.done}catch{}
+  await fs.promises.unlink(current.output).catch(()=>{});
+  return {discarded:true};
+ }
+ current.child.stdin.write('stop\n');
+ current.child.stdin.end();
+ const saved=await current.done;
+ lastSavedFile=saved.filePath;
+ return saved;
+}
+
 function register(){
  ipcMain.handle('app:diagnostics',async e=>{
   requireOwner(e);
   return {platform:process.platform,camera:status('camera'),microphone:status('microphone'),
    screen:status('screen'),chosenSource:selectedSourceId,packaged:app.isPackaged,
-   systemPicker:nativeScreenPicker,sourceKind};
+   systemPicker:nativeScreenPicker,sourceKind,nativeDesktopCapture:Boolean(nativeMacBinary())};
  });
  ipcMain.handle('permissions:request',async(e,kind)=>{
   requireOwner(e);
@@ -122,6 +221,10 @@ function register(){
   }
   return true;
  });
+ ipcMain.handle('native:preview',async(e,rect)=>{requireOwner(e);return runNativeSnapshot(rect)});
+ ipcMain.handle('native:start',async(e,config)=>{requireOwner(e);return startNativeRecording(config||{})});
+ ipcMain.handle('native:stop',async e=>{requireOwner(e);return endNativeRecording(false)});
+ ipcMain.handle('native:abort',async e=>{requireOwner(e);return endNativeRecording(true)});
  ipcMain.handle('desktop:pick-region',async e=>{requireOwner(e);return chooseDesktopRegion()});
  ipcMain.handle('desktop:list',async(e,kind='screen')=>{
   requireOwner(e);
@@ -228,7 +331,7 @@ app.whenReady().then(()=>{
  windowRef.loadFile('index.html');
  windowRef.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  windowRef.webContents.on('will-navigate',event=>event.preventDefault());
- windowRef.on('closed',()=>{windowRef=null});
+ windowRef.on('closed',()=>{if(nativeRecording){nativeRecording.child.stdin.write('stop\n');nativeRecording.child.stdin.end()}windowRef=null});
 }).catch(err=>{console.error('ChelRecord startup failed:',err);app.quit()});
 app.on('window-all-closed',()=>{if(process.platform!=='darwin')app.quit()});
 app.on('activate',()=>{if(!windowRef){app.relaunch();app.quit()}});
