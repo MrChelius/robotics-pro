@@ -16,7 +16,7 @@ jobs:
       - name: Retrieve original full-featured macOS installer from successful build
         shell: bash
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           gh run download 43157879022 \
