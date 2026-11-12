@@ -188,30 +188,30 @@ final class CaptureController: NSObject, ObservableObject, SCRecordingOutputDele
             }
         } catch {
             recording = false
-            stream = nil
+            self.stream = nil
             recordingOutput = nil
             status = "Recording failed: \(error.localizedDescription)"
         }
     }
 
-    func recordingOutputDidStartRecording(_ recordingOutput: SCRecordingOutput) {
+    nonisolated func recordingOutputDidStartRecording(_ recordingOutput: SCRecordingOutput) {
         Task { @MainActor in status = "Recording the entire macOS desktop." }
     }
 
-    func recordingOutputDidFinishRecording(_ recordingOutput: SCRecordingOutput) {
+    nonisolated func recordingOutputDidFinishRecording(_ recordingOutput: SCRecordingOutput) {
         Task { @MainActor in
             if recording { status = "Capture finished. Stop & Save to finalize." }
         }
     }
 
-    func recordingOutput(_ recordingOutput: SCRecordingOutput, didFailWithError error: any Error) {
+    nonisolated func recordingOutput(_ recordingOutput: SCRecordingOutput, didFailWithError error: any Error) {
         Task { @MainActor in
             stopError = error
             status = "ScreenCaptureKit error: \(error.localizedDescription)"
         }
     }
 
-    func stream(_ stream: SCStream, didStopWithError error: any Error) {
+    nonisolated func stream(_ stream: SCStream, didStopWithError error: any Error) {
         Task { @MainActor in
             stopError = error
             status = "Capture stopped: \(error.localizedDescription)"
