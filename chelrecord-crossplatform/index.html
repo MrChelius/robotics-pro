@@ -1,219 +1,146 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
-<title>ChelRecord Studio — Capture beautifully</title>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">
+<title>ChelRecord Studio — Professional screen recorder</title>
 <style>
-:root{color-scheme:dark;--bg:#080c16;--surface:#111827;--panel:#151e30;--panel2:#0c1525;--edge:rgba(154,180,220,.13);--text:#f3f7ff;--muted:#a0afc9;--cyan:#58dcfb;--accent:#6c82ff;--violet:#a284ff;--green:#60dfae;--red:#fa647b;--r:18px}
+
+:root{color-scheme:dark;--bg:#101318;--top:#12161c;--surface:#191e25;--surface2:#20262f;--mutedSurface:#14191f;--border:#303844;--border2:#3b4655;--text:#eef1f5;--muted:#96a2b1;--soft:#c4cbd5;--accent:#8bb7ef;--accentBg:#263a52;--red:#e8666b;--green:#87bea6}
 *{box-sizing:border-box}
-html,body{min-height:100%;margin:0}
-body{font:14px/1.48 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Arial,sans-serif;color:var(--text);background:var(--bg);overflow:hidden}
-body:before{content:"";z-index:-1;position:fixed;inset:0;background:radial-gradient(circle at 77% -16%,rgba(92,111,255,.18),transparent 38%),radial-gradient(circle at 10% 100%,rgba(38,179,214,.09),transparent 40%)}
+html,body{width:100%;height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:13px/1.52 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;letter-spacing:.02px;overflow:hidden}
 button,select{font:inherit}
 button{cursor:pointer}
-button:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.2)}
-button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid rgba(88,220,251,.5);outline-offset:2px}
+button:disabled{opacity:.42;cursor:not-allowed}
+button:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .hidden{display:none!important}
-.topbar{height:77px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--edge);background:rgba(12,17,30,.92)}
-.identity{display:flex;align-items:center;gap:14px}
-.logo{display:grid;place-items:center;height:43px;width:43px;border-radius:13px;background:linear-gradient(135deg,#21e5ff,#526afe 58%,#ba70fe);box-shadow:0 6px 24px #4a69ff42}
-.logo svg{width:31px;height:31px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.brand{font-size:21px;line-height:1.14;font-weight:800;letter-spacing:-.7px}
-.brand em{font-style:normal;color:#74e7ff}
-.brand-sub{font-size:10px;letter-spacing:1.8px;color:#93a5c4;font-weight:700;margin-top:4px}
-.top-actions{display:flex;align-items:center;gap:12px}
-.status-badge{border:1px solid rgba(95,222,194,.3);color:#9ff6d9;background:rgba(43,188,146,.1);border-radius:30px;font-weight:800;letter-spacing:.3px;padding:7px 13px;font-size:11px}
-.status-badge:before{content:"";display:inline-block;height:7px;width:7px;border-radius:50%;background:#55deab;margin-right:8px;box-shadow:0 0 10px #55deab7a}
-.version{font-weight:750;padding:7px 12px;border-radius:30px;color:#c5d0e8;background:#1b2538;font-size:11px}
-.shell{display:grid;grid-template-columns:376px minmax(440px,1fr);gap:20px;padding:21px;max-width:1700px;margin:0 auto;height:calc(100vh - 77px);min-height:500px}
-.sidebar,.stage-pane{min-width:0}
-.sidebar{overflow-y:auto;padding-right:5px;scrollbar-color:#344761 transparent;scrollbar-width:thin}
-.sidebar::-webkit-scrollbar{width:6px}
-.sidebar::-webkit-scrollbar-thumb{background:#33415a;border-radius:10px}
-.panel{border:1px solid var(--edge);border-radius:var(--r);background:linear-gradient(180deg,rgba(28,38,59,.91),rgba(15,23,38,.94));box-shadow:0 14px 35px #0000001e}
-.configuration{padding:21px}
-.kicker{font-size:10px;letter-spacing:2px;color:#6ddcf4;font-weight:850;text-transform:uppercase}
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:19px}
-.section-head h2{margin:5px 0 0;font-size:21px;line-height:1.2;letter-spacing:-.6px}
-.step-number{display:flex;justify-content:center;align-items:center;background:#202f49;border:1px solid #3d5172;color:#a4d8fa;font-size:11px;font-weight:900;border-radius:10px;width:34px;height:34px}
-label{display:block;margin:17px 0 8px;color:#c5d2e8;font-weight:800;font-size:12px;letter-spacing:.1px}
-select{width:100%;background:#0c1629;border:1px solid #30425f;color:#f0f5ff;border-radius:12px;padding:12px 15px;min-height:47px}
-select:hover{border-color:#4a6285}
-.control{display:grid;gap:8px}
-.btn,button{transition:background .16s,border-color .16s,transform .12s}
-.btn{min-height:45px;width:100%;padding:10px 14px;border-radius:11px;border:1px solid #3a4b68;background:#1b2c47;color:#e5eeff;font-weight:800}
-.btn:hover:not(:disabled){border-color:#6d95c8;background:#253c5c}
-.btn:active:not(:disabled){transform:scale(.992)}
-.btn.primary{border:none;color:#fff;background:linear-gradient(100deg,#4274ff,#7961fb);box-shadow:0 9px 26px #5667ef2d}
-.btn.primary:hover:not(:disabled){background:linear-gradient(100deg,#5287ff,#8b6fff)}
-.btn.danger{border:1px solid #913d59;color:#ffbdc9;background:#4e2339}
-.btn.danger:hover:not(:disabled){background:#6b2c47}
-.btn.subtle{background:#121f34;border-color:#30435e;color:#bbcced}
-.btn.utility{font-size:12px;padding:7px 8px;min-height:36px;border:1px solid #304563;border-radius:9px;background:#182841;color:#c5d7f4;font-weight:750}
-.btn.utility:hover{border-color:#6184b7}
-.row{display:flex;gap:9px}.row>*{min-width:0;flex:1}
-.micro{font-size:11px;line-height:1.55;color:#94a7c7}
-.source-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;max-height:220px;overflow:auto}
-.source-list button{width:100%;background:#111d31;border:1px solid #2e4665;padding:6px 6px 9px;border-radius:11px;color:#dce9ff;font-size:11px;font-weight:750;overflow-wrap:anywhere}
-.source-list button.active{border-color:#59dffa;box-shadow:inset 0 0 0 1px #59dffa70;background:#1b3b54}
-.source-list img{display:block;width:100%;height:70px;object-fit:cover;border-radius:7px;margin-bottom:7px}
-.source-hint{background:rgba(57,92,149,.16);color:#a9c7e7;border:1px solid #314865;padding:10px 11px;border-radius:10px;margin-top:10px}
-.device-card{padding:17px 18px;margin-top:14px}
-.device-head{display:flex;align-items:center;gap:10px;margin-bottom:11px}
-.device-icon{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:#22344e;color:#79dffc;font-size:16px}
-.device-head h3{font-size:14px;margin:0;letter-spacing:-.2px}
-.device-head .micro{margin-left:auto}
-.device-card label{margin-top:11px}
-.device-card .btn{font-size:12px;min-height:39px}
-#cameraTest{height:126px;width:100%;display:block;object-fit:cover;background:repeating-linear-gradient(45deg,#0b1424,#0b1424 12px,#101c2d 12px,#101c2d 24px);border:1px solid #31435e;border-radius:11px;margin-top:12px}
-#cameraStatus,#micStatus{margin-top:7px}
-#meter{height:8px;background:#0b1828;border-radius:20px;overflow:hidden;border:1px solid #243f5b;margin-top:11px}
-#meterBar{height:100%;background:linear-gradient(90deg,#42e9a8,#d0fb7c);width:0%;transition:width .15s}
-details{border:1px solid #32435f;background:rgba(27,43,71,.5);border-radius:13px;margin-top:14px}
-summary{padding:12px 14px;color:#b1dbfa;font-weight:800;cursor:pointer;font-size:12px}
-details .detail-body{padding:0 15px 14px;color:#b1c0d6;font-size:12px;line-height:1.65}
-details ol{margin:8px 0;padding-left:17px}
-.action-panel{padding:18px;margin-top:15px;border:1px solid rgba(124,141,250,.25);background:linear-gradient(150deg,rgba(51,68,116,.48),rgba(16,26,44,.95))}
-.action-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
-.action-header strong{font-size:15px}
-.action-header span{font-size:11px;color:#94a9c8}
-.record-dot{display:inline-block;width:10px;height:10px;background:#ff6b7e;border-radius:50%;margin-right:7px;box-shadow:0 0 0 5px #ff6b7e1d}
-#recordBtn{font-size:15px}
-#quickRecord{border-color:#7363fa;color:#e8e6ff;background:rgba(91,81,169,.35);font-weight:800}
-.notice{margin-top:13px;border-radius:12px;border:1px solid #315275;background:#102b45;color:#b8e2fa;white-space:pre-wrap;line-height:1.5;padding:12px 13px;font-size:12px}
-.notice.warning{background:#473020;color:#ffe0b2;border-color:#936435}
-.notice.success{background:rgba(25,112,86,.3);color:#b5f5d9;border-color:#3f9b7d}
-#openFile{margin-top:10px}
-.permissions{padding:15px;margin-top:14px}
-.permissions summary{padding:0;font-weight:850;color:#c6d5ee}
-.permissions .detail-body{padding:9px 0 0}
-.settings-row{display:flex;gap:7px;margin-top:11px}
-.settings-row .btn{font-size:10px;min-height:36px;padding:6px}
-#permissionStatus{font-size:11px;white-space:pre-wrap;color:#9fbbda}
-.stage-pane{display:flex;flex-direction:column;gap:15px;min-height:0}
-.hero{padding:23px 25px;display:flex;align-items:center;justify-content:space-between;gap:25px}
-.hero h1{margin:5px 0 6px;font-size:clamp(22px,2.5vw,34px);letter-spacing:-1.15px;line-height:1.15;font-weight:850}
-.hero h1 em{font-style:normal;background:linear-gradient(95deg,#5ee2f7,#b0a1ff);background-clip:text;-webkit-background-clip:text;color:transparent}
-.hero p{color:#97aac8;margin:0;font-size:13px;max-width:530px}
-.hero-stats{display:flex;gap:9px;flex-shrink:0}
-.stat{min-width:86px;padding:10px 13px;text-align:center;border:1px solid #31415e;border-radius:12px;background:#15233a}
-.stat b{display:block;color:#e7f0ff;font-size:15px}.stat small{color:#849cba;font-size:10px;letter-spacing:.4px}
-.viewport-panel{padding:20px;flex:1;min-height:0;display:flex;flex-direction:column}
-.view-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.view-header h2{font-size:14px;margin:0;letter-spacing:.1px}
-.view-state{font-size:11px;font-weight:800;color:#9ed2ed;padding:6px 10px;border:1px solid #385878;border-radius:20px;background:#12304c}
-.preview{aspect-ratio:16/9;background:#050a13;border:1px solid #344561;border-radius:15px;position:relative;overflow:hidden;flex:0 1 auto;max-height:calc(100vh - 325px)}
-.preview canvas{display:block;width:100%;height:100%;object-fit:contain}
+.topbar{height:64px;background:var(--top);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 26px}
+.identity,.top-actions{display:flex;align-items:center}
+.identity{gap:12px}
+.logo{height:36px;width:36px;background:#242d39;border:1px solid #41546a;border-radius:10px;display:grid;place-items:center;box-shadow:none}
+.logo svg{height:25px;width:25px;fill:none;stroke:#bfd6ed;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.brand{font-weight:740;letter-spacing:-.45px;font-size:18px;line-height:1.15}
+.brand em{color:var(--text);font-style:normal;font-weight:480}
+.brand-sub{font-size:10px;letter-spacing:1px;font-weight:550;color:var(--muted);margin-top:2px}
+.top-actions{gap:11px}
+.status-badge{border:1px solid #345544;background:#182a24;border-radius:20px;padding:6px 11px;color:#aad7bd;white-space:nowrap;font-size:11px;font-weight:640}
+.status-badge:before{content:"";display:inline-block;width:6px;height:6px;background:#74bd92;margin-right:7px;border-radius:50%}
+.version{font-size:11px;color:#8994a4}
+.shell{height:calc(100vh - 64px);display:grid;grid-template-columns:318px minmax(0,1fr);gap:0;min-height:550px}
+.sidebar{background:var(--mutedSurface);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3d4654 transparent;border-right:1px solid var(--border);padding:18px 14px 24px;display:flex;flex-direction:column;gap:11px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:13px;box-shadow:none}
+.configuration{padding:17px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}
+.kicker{font-size:10px;letter-spacing:1.15px;color:var(--muted);font-weight:670;text-transform:uppercase}
+.section-head h2{font-size:16px;letter-spacing:-.3px;font-weight:650;margin:4px 0 0}
+.step-number{display:none}
+label{color:var(--soft);font-size:12px;font-weight:600;display:block;margin:12px 0 7px}
+select{background:#11171f;color:var(--text);border:1px solid #46505e;border-radius:8px;padding:11px 12px;width:100%;min-height:43px;max-width:100%;text-overflow:ellipsis}
+select:hover{border-color:#6c7d90}
+.btn{width:100%;border:1px solid #495361;border-radius:9px;background:#27303b;color:#e1e7ed;min-height:41px;padding:9px 12px;font-weight:610;transition:background .12s,border-color .12s}
+.btn:hover:not(:disabled){background:#34404e;border-color:#65798f}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn.subtle{background:#252d38;color:#d4dce6;border-color:#404c5b}
+.btn.primary{background:var(--red);border-color:var(--red);color:#16191d;font-weight:750}
+.btn.primary:hover:not(:disabled){background:#f18083;border-color:#f18083}
+.btn.danger{background:#382328;color:#eeb2b4;border-color:#6d3b41}
+.btn.danger:hover:not(:disabled){background:#512c32}
+.btn.utility{font-size:11px;font-weight:600;padding:7px 9px;min-height:33px;border-radius:7px;background:#222b36}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.micro{font-size:11px;line-height:1.6;color:var(--muted)}
+.source-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;max-height:190px;overflow-y:auto}
+.source-list button{min-width:0;padding:5px;color:var(--soft);background:#181f29;border:1px solid var(--border);border-radius:9px;overflow-wrap:anywhere;font-size:11px}
+.source-list button.active{border-color:var(--accent);background:var(--accentBg)}
+.source-list img{width:100%;height:64px;object-fit:cover;border-radius:5px;display:block;margin-bottom:4px}
+.source-hint{margin-top:9px;border-left:2px solid #4a617b;color:#a6b4c4;background:#202a36;padding:9px 10px;border-radius:0 7px 7px 0}
+.area-control{background:#192532;border:1px solid #3d5976;border-radius:9px;padding:11px;margin-top:11px}
+.area-button{background:#28435c;border-color:#4d708e;color:#ddefff}
+#areaSummary{margin-top:7px;color:#a6bdcf}
+.device-card{padding:13px 16px;margin:0}
+.device-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.device-head h3{font-size:13px;margin:0;font-weight:650;letter-spacing:-.1px}
+.device-head .micro{margin-left:auto;white-space:nowrap;font-size:10px}
+.device-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:#263644;color:#b5d6e6;font-size:14px}
+.device-card label{margin:9px 0 6px}
+.device-card .btn{font-size:11px;min-height:35px;padding:6px 8px}
+#cameraTest{display:block;width:100%;height:114px;object-fit:cover;background:#0e141b;border:1px solid var(--border);border-radius:8px;margin-top:9px}
+#cameraStatus,#micStatus{margin-top:6px}
+#meter{height:6px;background:#111820;border:1px solid #293844;border-radius:20px;overflow:hidden;margin-top:11px}
+#meterBar{height:100%;width:0;background:#88ba9e;transition:width .1s}
+details{border:1px solid #343f4e;border-radius:8px;background:#1b222b;margin-top:12px}
+summary{color:#c6d3df;font-weight:610;padding:10px 11px;cursor:pointer;font-size:11px}
+details .detail-body{font-size:11px;color:#aebbc9;line-height:1.6;padding:1px 11px 12px}
+.permissions{padding:10px 13px;margin:0}
+.permissions summary{padding:4px 1px}
+.permissions .detail-body{padding:7px 0 0}
+#permissionStatus{white-space:pre-wrap;color:var(--muted);font-size:11px}
+.settings-row{display:flex;gap:5px}
+.settings-row .btn{flex:1;min-width:0;font-size:10px;padding:7px 3px}
+.stage-pane{background:#101318;min-width:0;min-height:0;display:flex;flex-direction:column;padding:22px 26px;gap:14px}
+.hero{padding:0 2px 4px;display:flex;align-items:center;justify-content:space-between;gap:15px;min-height:40px}
+.hero h1{margin:1px 0 0;font-weight:690;font-size:20px;line-height:1.25;letter-spacing:-.6px}
+.hero h1 em{color:var(--text);font-style:normal}
+.hero p{margin:3px 0 0;font-size:11px;color:var(--muted)}
+.hero-stats{display:flex;gap:6px}
+.stat{min-width:74px;padding:6px 10px;border-left:1px solid var(--border);text-align:center}
+.stat b{font-size:12px;color:var(--soft);display:block;font-weight:700}.stat small{font-size:9px;color:var(--muted);letter-spacing:.3px}
+.viewport-panel{padding:15px 16px 12px;display:flex;flex:1 1 auto;min-height:0;flex-direction:column}
+.view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.view-header h2{margin:0;font-size:13px;font-weight:650}
+.view-state{border:1px solid var(--border);background:#1e2731;border-radius:6px;color:#a9b8ca;padding:5px 9px;font-size:11px;font-weight:540}
+.preview{background:#050708;border:1px solid #353d48;border-radius:8px;aspect-ratio:16/9;max-height:calc(100vh - 350px);overflow:hidden;position:relative;flex:1 1 auto;min-height:160px;display:flex;justify-content:center;align-items:center}
+.preview canvas{width:100%;height:100%;object-fit:contain;display:block}
 #region{position:absolute;inset:0;cursor:crosshair;touch-action:none;z-index:3}
-#selection{position:absolute;pointer-events:none;display:none;border:2px solid #5de1ff;background:#5de1ff27;box-shadow:0 0 0 999px rgba(0,0,0,.23),inset 0 0 0 1px #fff5}
-#cameraOverlay{position:absolute;z-index:2;right:15px;bottom:15px;width:20%;min-width:110px;aspect-ratio:4/3;object-fit:cover;border:2px solid #e7f9ff;border-radius:14px;box-shadow:0 10px 30px #0009}
-.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:13px;padding:30px;z-index:1;pointer-events:none;background:radial-gradient(circle at center,rgba(61,91,143,.14),transparent 65%)}
-.empty-illustration{width:84px;height:62px;border:1px solid #496387;border-radius:13px;display:grid;place-items:center;position:relative;box-shadow:0 20px 60px #0b1126;transform:rotate(-3deg)}
-.empty-illustration:after{content:"";width:32px;height:4px;border-radius:5px;position:absolute;bottom:-11px;background:#526884}
-.empty-illustration svg{width:38px;height:38px;stroke:#74c9f8;fill:none;stroke-width:1.8;stroke-linecap:round}
-.empty-state h3{font-size:19px;margin:13px 0 0;letter-spacing:-.4px}
-.empty-state p{max-width:330px;color:#7f95b2;margin:0;font-size:12px}
-.footer-controls{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:12px}
-.clock{font-size:30px;letter-spacing:-.8px;font-variant-numeric:tabular-nums;font-weight:820;color:#f5f9ff}
-#state{display:inline-flex;align-items:center;font-size:12px;gap:7px;font-weight:800;color:#99bdd6}
-#state:before{content:"";width:8px;height:8px;border-radius:50%;background:#6c86a5}
-.guide{border:1px solid #2d3f5b;border-radius:12px;padding:12px 15px;background:#0f1b2f;font-size:12px;color:#92a8c6;line-height:1.6;margin-top:14px}
-.shortcuts{margin-top:auto;padding:13px 19px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#101b2d;border:1px solid #263952;border-radius:13px;font-size:11px;color:#91a6c3}
-.shortcuts strong{color:#c2d2e9}
-kbd{background:#25344b;color:#d9e7ff;padding:3px 6px;border-radius:5px;border:1px solid #3a4e69;font:600 11px inherit}
-@media(max-width:1200px){.shell{grid-template-columns:338px minmax(400px,1fr);gap:12px;padding:12px}.hero{padding:19px}.configuration{padding:16px}.hero-stats{display:none}.topbar{padding:0 18px}}
-@media(max-width:870px){body{overflow:auto}.shell{display:flex;flex-direction:column;height:auto}.sidebar{overflow:visible;order:2}.stage-pane{order:1}.preview{max-height:none}.topbar{height:70px}.top-actions{gap:5px}.hero{padding:17px}}
+#selection{position:absolute;display:none;pointer-events:none;border:1.5px solid #a4c6e8;background:#8bb7ef20;box-shadow:0 0 0 999px #0004}
+#cameraOverlay{position:absolute;right:14px;bottom:14px;z-index:2;width:22%;min-width:105px;aspect-ratio:4/3;object-fit:cover;border:2px solid #d6dde7;border-radius:9px;box-shadow:0 7px 20px #0008}
+.empty-state{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;pointer-events:none;gap:11px;background:#0c1117e8;padding:22px;z-index:1}
+.empty-illustration{width:70px;height:50px;border:1px solid #465668;border-radius:9px;display:grid;place-items:center}
+.empty-illustration:after{display:none}
+.empty-illustration svg{width:30px;height:30px;fill:none;stroke:#8daecb;stroke-width:1.6}
+.empty-state h3{font-size:15px;font-weight:600;margin:0}.empty-state p{font-size:12px;color:var(--muted);margin:0;max-width:330px}
+.footer-controls{display:flex;align-items:center;justify-content:space-between;margin-top:9px}
+.clock{font-size:22px;line-height:1.2;font-weight:700;color:#e5eaf0;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+#state{font-size:11px;font-weight:600;color:var(--muted)}
+#state:before{content:"";display:inline-block;width:7px;height:7px;background:#748392;margin-right:6px;border-radius:50%}
+.guide{background:transparent;border:0;border-top:1px solid var(--border);padding:8px 2px 0;margin-top:9px;color:var(--muted);font-size:10px;line-height:1.45}
+.action-panel{padding:13px 16px;flex-shrink:0}
+.action-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.action-header strong{font-size:13px;font-weight:660}
+.action-header>span{font-size:11px;color:var(--muted)}
+.record-dot{display:inline-block;width:9px;height:9px;background:var(--red);border-radius:50%;margin-right:8px}
+#recordBtn{font-size:13px;min-height:42px;white-space:nowrap}
+#previewBtn{font-size:12px}
+#quickRecord{margin-top:0}
+#stopBtn,#cancelBtn{font-size:11px;min-height:33px}
+.advanced{margin-top:9px;background:transparent;border-color:var(--border)}
+.advanced summary{padding:7px 8px;font-size:10px;color:var(--muted)}
+.advanced .detail-body{padding:3px 8px 9px}
+.notice{white-space:pre-wrap;background:#1c2835;border:1px solid #34495a;color:#c9dbe8;border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.5;margin-top:10px;max-height:94px;overflow-y:auto}
+.notice.warning{background:#352821;border-color:#70543f;color:#f2d3b6}
+.notice.success{background:#1d302a;border-color:#3b6958;color:#c1e5d5}
+#openFile,#copyErrorQuick{margin-top:7px;font-size:11px}
+.shortcuts{background:transparent;border:0;padding:0 3px;display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:10px}
+.shortcuts strong{color:#b0bbc9;font-weight:600}
+kbd{background:#252d36;border:1px solid #414956;border-radius:4px;padding:2px 5px;color:#c1c8d2;font-size:10px}
+@media(max-width:1150px){.shell{grid-template-columns:285px minmax(0,1fr)}.stage-pane{padding:16px}.hero-stats{display:none}.preview{max-height:calc(100vh - 340px)}}
+@media(max-height:750px){.stage-pane{gap:9px;padding-top:12px;padding-bottom:11px}.hero p{display:none}.viewport-panel{padding:11px}.preview{max-height:calc(100vh - 292px)}.guide{display:none}}
+@media(max-width:760px){body{overflow:auto;height:auto}.shell{display:flex;flex-direction:column;height:auto}.stage-pane{order:1;padding:12px}.sidebar{order:2;overflow:visible;border-right:0}.preview{max-height:none;min-height:240px;flex:none}.viewport-panel{min-height:390px}.topbar{padding:0 14px}}
 
-/* Studio 2.1 visual refinement: high-contrast controls, clearer source selection. */
-body{background:#080b13}
-.panel{border-color:#293953;box-shadow:0 10px 44px #0000002a}
-.configuration{border-left:3px solid #59c6f3}
-.action-panel{margin:0 0 15px;background:linear-gradient(146deg,#252843,#141b30 58%,#0f1829);border:1px solid #6d72cf66;box-shadow:0 13px 48px #4b3e8725}
-.action-header strong{font-size:17px;letter-spacing:-.3px}
-#recordBtn{background:linear-gradient(120deg,#ff5e75,#ee447a 52%,#ad49d6);color:white;box-shadow:0 9px 25px #ec47734d;font-size:16px;letter-spacing:.1px;min-height:51px}
-#recordBtn:hover:not(:disabled){background:linear-gradient(120deg,#ff788a,#fc5f90 54%,#bd61e2);box-shadow:0 11px 28px #ff507659}
-#quickRecord{border:1px solid #8c87ff85;background:linear-gradient(100deg,#454a8a,#2e3476);color:#f2efff;font-weight:800}
-#previewBtn{background:#1e314b;color:#e7f5ff}
-.area-control{padding:12px;border:1px solid #4a6182;border-radius:13px;background:#0d2139;margin:13px 0}
-.area-button{background:linear-gradient(110deg,#167fad,#3557ab);border:1px solid #47c5f891;color:#fff}
-.area-button:hover{background:#217db2}
-#areaSummary{margin-top:8px;color:#bed5ee;font-weight:600;line-height:1.5}
-.source-hint{font-size:11px}
-.topbar{border-bottom:1px solid #415577}
-.view-state{border-color:#477194}
-.shortcuts{flex-shrink:0}
-
-/* ChelRecord Aurora: visual-only upgrade; preserve existing capture control IDs and events. */
-:root{--bg:#070817;--surface:#0e1126;--panel:#151a34;--panel2:#10152c;--edge:rgba(151,140,255,.23);--cyan:#7bdcff;--accent:#8061ff;--violet:#bf62fa;--green:#4df0b2;--red:#ff5c83;--r:22px}
-body{background:#070817;letter-spacing:.05px}
-body:before{z-index:0;pointer-events:none;background:radial-gradient(ellipse at 83% -8%,rgba(152,53,251,.24),transparent 48%),radial-gradient(ellipse at -10% 98%,rgba(25,130,252,.2),transparent 46%)}
-.topbar{position:relative;z-index:1;height:82px;background:rgba(11,12,29,.95);border-bottom:1px solid #53478b65;box-shadow:0 4px 32px #0005}
-.shell{position:relative;z-index:1;grid-template-columns:minmax(335px,370px) minmax(440px,1fr);gap:18px;height:calc(100vh - 82px);padding:20px}
-.logo{height:49px;width:49px;border-radius:16px;background:linear-gradient(140deg,#1bd5f7 0%,#5d63ff 46%,#d448f7 100%);box-shadow:0 8px 26px #7c49f77d}
-.logo svg{width:37px;height:37px;stroke:#fff;stroke-width:3.5}
-.brand{font-size:24px;letter-spacing:-1.2px}
-.brand em{color:#75e9ff}
-.brand-sub{letter-spacing:2.1px}
-.version{background:#262044;color:#d8caff;border:1px solid #554787}
-.panel{border:1px solid #57518a70;border-radius:22px;background:linear-gradient(155deg,rgba(29,32,64,.97),rgba(12,17,37,.97));box-shadow:0 14px 44px #0005}
-.configuration{border-left:2px solid #8a70ff}
-.action-panel{background:linear-gradient(150deg,#30274f,#181a3a 65%,#10152b);border-color:#8664ef85}
-.action-header strong{font-size:18px}
-.kicker{color:#ab90ff}
-.section-head h2{font-size:22px}
-.btn{border-radius:13px;border-color:#56537e;background:#272c51;min-height:46px}
-.btn:hover:not(:disabled){background:#383c69;border-color:#ab8cff}
-.btn.primary{background:linear-gradient(100deg,#ff527f,#cc48d3,#7959ff)}
-#recordBtn{background:linear-gradient(105deg,#ff627e,#f044a2 48%,#8758ff);box-shadow:0 9px 28px #d13bba59;border-radius:14px}
-#quickRecord{background:linear-gradient(100deg,#4c3886,#3b367a);border-color:#8e7bf0}
-select{background:#0d122b;border-color:#514c7e;border-radius:14px}
-select:hover{border-color:#b087ff}
-.device-card{border-color:#46477680}
-.device-icon{background:#352b61;color:#c5a2ff}
-.hero{min-height:155px;background:radial-gradient(ellipse at 90% 0%,#6232a547,transparent 60%),linear-gradient(130deg,#1d2245,#10162c)}
-.hero h1{font-size:clamp(23px,2.7vw,37px);letter-spacing:-1.4px}
-.hero h1 em{background:linear-gradient(90deg,#62d7ff,#c479ff,#ff78d1);background-clip:text;-webkit-background-clip:text}
-.hero p{font-size:13px;color:#b4badb}
-.stat{background:#1d2444;border-color:#575483}
-.viewport-panel{background:linear-gradient(160deg,#1c2240,#0c1329)}
-.preview{border-color:#6557a2;border-radius:18px;box-shadow:0 0 0 5px #080d20}
-.view-state{background:#242454;color:#d5c5ff;border-color:#7663c3}
-.guide{background:#171c39;border-color:#454574;color:#b5b6d5}
-.shortcuts{background:#11172d;border-color:#38365f}
-.notice{background:#17274b;border-color:#4468a1}
-.notice.warning{background:#473020}
-.area-control{background:#141e3f;border-color:#605ba5}
-.area-button{background:linear-gradient(110deg,#5165f9,#9259e9)}
-#cameraOverlay{border-color:#dfb9ff;box-shadow:0 0 0 4px #6c40b14d,0 14px 40px #000a}
-#state:before{background:#a78bfa}
-.sidebar{scrollbar-color:#62548d transparent}
-@media(max-width:1200px){.shell{grid-template-columns:325px minmax(380px,1fr);padding:12px;gap:12px}}
-@media(max-width:870px){.shell{height:auto;display:flex;flex-direction:column}.stage-pane{order:1}.sidebar{order:2}}
 </style>
 </head>
 <body>
 <header class="topbar">
  <div class="identity">
   <div class="logo" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M43 12A23 23 0 1 0 43 52" stroke-width="7"/><path d="M47 14h7v8M47 50h7v-8" stroke-width="4"/><circle cx="32" cy="32" r="8" fill="#ff647f" stroke="none"/><path d="M27 32h10" stroke-width="2" stroke="#fff"/></svg></div>
-  <div><div class="brand">Chel<em>Record</em></div><div class="brand-sub">STUDIO · SCREEN & CAMERA</div></div>
+  <div><div class="brand">ChelRecord <em>Studio</em></div><div class="brand-sub">SCREEN RECORDER</div></div>
  </div>
- <div class="top-actions"><span class="status-badge">LOCAL RECORDING</span><span class="version">2.3 Studio · Aurora</span></div>
+ <div class="top-actions"><span class="status-badge">On-device recording</span><span class="version">2.4 Preview</span></div>
 </header>
 <main class="shell">
  <aside class="sidebar" aria-label="Capture controls">
-  <section class="panel action-panel">
-   <div class="action-header"><strong><span class="record-dot"></span> Start recording</strong><span>LOCAL · MP4</span></div>
-   <div class="row"><button class="btn subtle" id="previewBtn">▶ Start preview</button><button class="btn primary" id="recordBtn">● RECORD NOW</button></div>
-   <button class="btn" id="quickRecord" style="margin-top:9px">⚡ Capture and record automatically</button>
-   <div class="row" style="margin-top:9px"><button class="btn danger" id="stopBtn" disabled>■ Stop & save MP4</button><button class="btn subtle" id="cancelBtn" disabled>Discard</button></div>
-   <div id="status" class="notice" role="status">Ready. Press RECORD NOW; ChelRecord will open the source picker automatically.</div>
-   <button class="btn utility hidden" id="copyErrorQuick" style="margin-top:9px">Copy technical error details</button>
-   <button class="btn subtle hidden" id="openFile">Show saved recording</button>
-  </section>
+
   <section class="panel configuration">
-   <div class="section-head"><div><div class="kicker">01 / Capture</div><h2>Choose your capture</h2></div><div class="step-number">01</div></div>
-   <label for="mode">What would you like to capture?</label>
+   <div class="section-head"><div><div class="kicker">Source</div><h2>Capture settings</h2></div></div>
+   <label for="mode">Recording mode</label>
    <select id="mode"><option value="full">▣  Entire desktop / monitor</option><option value="window">▤  Single application window</option><option value="region">▧  Custom desktop region</option><option value="camera">◉  Camera only</option></select>
    <div id="areaControl" class="area-control hidden">
     <button class="btn area-button" id="selectAreaBtn">▧ Select area directly on desktop</button>
@@ -223,7 +150,7 @@ select:hover{border-color:#b087ff}
   </section>
 
   <section class="panel device-card">
-   <div class="device-head"><div class="device-icon">◉</div><h3>Camera & iPhone</h3><span class="micro">Picture-in-picture</span></div>
+   <div class="device-head"><div class="device-icon">◉</div><h3>Camera & iPhone</h3><span class="micro">Video overlay</span></div>
    <label for="camera">Camera source</label><select id="camera"><option value="">Camera off</option><option value="auto">Default camera</option></select>
    <div class="row" style="margin-top:9px"><button class="btn" id="testCam">▶ Preview camera</button><button class="btn subtle" id="stopCam">Stop</button></div>
    <video id="cameraTest" autoplay muted playsinline></video><div id="cameraStatus" class="micro">Select a camera to test it.</div>
@@ -235,7 +162,7 @@ select:hover{border-color:#b087ff}
   </section>
 
   <section class="panel device-card">
-   <div class="device-head"><div class="device-icon">♬</div><h3>Microphone</h3><span class="micro">Voice capture</span></div>
+   <div class="device-head"><div class="device-icon">♬</div><h3>Microphone</h3><span class="micro">Audio input</span></div>
    <label for="mic">Audio input</label><select id="mic"><option value="">Microphone off</option><option value="auto">Default microphone</option></select>
    <div class="row" style="margin-top:9px"><button class="btn" id="testMic">▶ Test input</button><button class="btn subtle" id="stopMic">Stop</button></div>
    <div id="meter"><div id="meterBar"></div></div><div id="micStatus" class="micro">Test to see your voice level.</div>
@@ -253,21 +180,30 @@ select:hover{border-color:#b087ff}
  </aside>
 
  <div class="stage-pane">
-  <section class="panel hero"><div><div class="kicker">CAPTURE WORKSPACE</div><h1>Your recording studio. <em>Reimagined.</em></h1><p>Capture your entire desktop, a selected area, a window or your camera. Keep complete control over your microphone and picture-in-picture.</p></div>
+  <section class="panel hero"><div><div class="kicker">WORKSPACE</div><h1>Capture preview</h1><p>Screen, window, region or camera — recorded locally.</p></div>
   <div class="hero-stats"><div class="stat"><b>30</b><small>FPS TARGET</small></div><div class="stat"><b>MP4</b><small>EXPORT</small></div><div class="stat"><b>LOCAL</b><small>PRIVATE</small></div></div></section>
 
   <section class="panel viewport-panel">
-   <div class="view-header"><h2>Live preview</h2><span class="view-state">● Preview monitor</span></div>
+   <div class="view-header"><h2>Live preview</h2><span class="view-state">Display monitor</span></div>
    <div class="preview" id="stage">
     <canvas id="screen" width="1280" height="720"></canvas>
-    <div class="empty-state" id="emptyState"><div class="empty-illustration"><svg viewBox="0 0 40 40"><rect x="6" y="8" width="28" height="22" rx="4"/><path d="M12 35h16M20 30v5m-7-16h14m-10-4 7 4-7 4z"/></svg></div><h3>Your stage is ready</h3><p>Press Start preview to see your screen here. Camera-only mode works without capturing the desktop.</p></div>
+    <div class="empty-state" id="emptyState"><div class="empty-illustration"><svg viewBox="0 0 40 40"><rect x="6" y="8" width="28" height="22" rx="4"/><path d="M12 35h16M20 30v5m-7-16h14m-10-4 7 4-7 4z"/></svg></div><h3>Nothing to preview yet</h3><p>Choose a source and select Preview to see what will be recorded.</p></div>
     <video id="cameraOverlay" autoplay muted playsinline class="hidden"></video>
     <div id="region" class="hidden"><div id="selection"></div></div>
    </div>
    <div class="footer-controls"><div id="timer" class="clock">00:00</div><div id="state">Idle</div></div>
-   <div class="guide">To record the desktop, choose <b>Entire desktop / monitor</b>. For a rectangle, use <b>Custom desktop region → Select area</b>. App-window capture is a separate mode.</div>
+   <div class="guide">For a selected area, choose <b>Custom desktop region</b> and draw a rectangle on your screen.</div>
   </section>
-  <div class="shortcuts"><span><strong>Private by design.</strong> Files stay on your computer; no recording is uploaded.</span><span>Video <kbd>H.264</kbd> Audio <kbd>AAC</kbd></span></div>
+  <section class="panel action-panel">
+   <div class="action-header"><strong><span class="record-dot"></span> Recording controls</strong><span>MP4 • H.264</span></div>
+   <div class="row"><button class="btn subtle" id="previewBtn">Preview</button><button class="btn primary" id="recordBtn">● Start recording</button></div>
+   <details class="advanced"><summary>Advanced capture options</summary><div class="detail-body"><button class="btn subtle" id="quickRecord">Start automatic capture &amp; recording</button></div></details>
+   <div class="row" style="margin-top:9px"><button class="btn danger" id="stopBtn" disabled>■ Stop &amp; save</button><button class="btn subtle" id="cancelBtn" disabled>Discard</button></div>
+   <div id="status" class="notice" role="status">Choose a source, then start recording.</div>
+   <button class="btn utility hidden" id="copyErrorQuick" style="margin-top:9px">Copy technical error details</button>
+   <button class="btn subtle hidden" id="openFile">Show saved recording</button>
+  </section>
+  <div class="shortcuts"><span><strong>Local by default.</strong> Recordings are saved on your computer.</span><span><kbd>H.264</kbd> video · <kbd>AAC</kbd> audio</span></div>
  </div>
 </main>
 <video id="captureVideo" autoplay muted playsinline style="display:none"></video>
