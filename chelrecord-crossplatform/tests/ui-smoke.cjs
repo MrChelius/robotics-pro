@@ -29,6 +29,7 @@ class FakeElement{
  play(){this.readyState=3;return Promise.resolve()}
  getContext(){return {fillRect(){},drawImage(){},fillStyle:''}}
  captureStream(){return fakeStream('canvas')}
+ toDataURL(){return 'data:image/jpeg;base64,aGVsbG8='}
  add(x){this.options.push(x)}
 }
 const element=id=>{if(!elements.has(id))elements.set(id,new FakeElement(id));return elements.get(id)};
@@ -48,7 +49,7 @@ function fakeStream(kind){
  getAudioTracks(){return tracks.filter(t=>t.kind==='audio')},getTracks(){return tracks},
  addTrack(t){tracks.push(t)}};
 }
-let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0,lastRequestedSurface=null,nativeRecordCount=0,nativeStopCount=0,nativePreviewCount=0,pipBeginCount=0,pipChunks=0,pipFinishCount=0,lastPipOptions=null;
+let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0,lastRequestedSurface=null,nativeRecordCount=0,nativeStopCount=0,nativePreviewCount=0,pipBeginCount=0,pipChunks=0,pipFinishCount=0,lastPipOptions=null,cameraFloatShows=0,cameraFloatHides=0,cameraFloatFrames=0;
 const api={
  diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:screenStatusDenied?'denied':'granted',nativeDesktopCapture:simulateNativeDesktop}),
  nativePreview:async()=>{nativePreviewCount++;return {image:'data:image/png;base64,aGVsbG8='}},
@@ -59,6 +60,9 @@ const api={
  pipChunk:async()=>{pipChunks++;return true},
  pipFinish:async options=>{pipFinishCount++;lastPipOptions=options;return {filePath:'/tmp/native-desktop.mp4',cameraIncluded:true}},
  pipAbort:async()=>true,
+ cameraFloatShow:async options=>{cameraFloatShows++;return {visible:true,width:280,height:237}},
+ cameraFloatFrame:async()=>{cameraFloatFrames++;return true},
+ cameraFloatHide:async()=>{cameraFloatHides++;return true},
  listSources:async()=>useNativePicker?{selectedId:null,systemPicker:true,items:[]}:
   {selectedId:'screen:0:0',systemPicker:false,items:[{id:'screen:0:0',name:'Desktop',thumbnail:''}]},
  chooseSource:async()=>true,requestPermission:async()=>{permissionChecks++;return 'granted'},
@@ -121,10 +125,16 @@ async function test(){
   assert.equal(nativeRecordCount,1,'Full desktop recording did not call ScreenCaptureKit backend');
   assert.equal(lastRequestedSurface,null,'Native desktop capture incorrectly requested the Electron window picker');
   assert.equal(element('stopBtn').disabled,false,'Native recording has no Stop button');
+  if(simulateNativePiP){
+   assert.equal(cameraFloatShows,1,'Live camera did not appear over the desktop');
+   await flush();
+   assert.ok(cameraFloatFrames>=1,'No camera frame was sent to floating desktop preview');
+  }
   await click('stopBtn');
   assert.equal(nativeStopCount,1,'Native stop was not called');
   assert.match(element('status').textContent,/Video saved:/i);
   if(simulateNativePiP){
+   assert.ok(cameraFloatHides>=1,'Floating webcam did not close after recording');
    assert.equal(pipBeginCount,1,'Native desktop failed to start webcam recording');
    assert.ok(pipChunks>=1,'Webcam produced no captured video chunks');
    assert.equal(pipFinishCount,1,'Webcam PiP was not composited into desktop MP4');
@@ -139,7 +149,7 @@ async function test(){
   assert.equal(nativeRecordCount,2,'Region did not use ScreenCaptureKit');
   await click('stopBtn');
   assert.equal(nativeStopCount,2);
-  if(simulateNativePiP){assert.equal(pipFinishCount,2);assert.ok(pipChunks>=2)}
+  if(simulateNativePiP){assert.equal(pipFinishCount,2);assert.ok(pipChunks>=2);assert.equal(cameraFloatShows,2)}
   await click('previewBtn');
   assert.ok(nativePreviewCount>=1,'Native desktop screenshot not returned');
   assert.equal(lastRequestedSurface,null,'Native screenshot unexpectedly opened the Electron sharing picker');
