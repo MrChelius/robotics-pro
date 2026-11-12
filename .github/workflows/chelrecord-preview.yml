@@ -51,6 +51,12 @@ jobs:
       - name: Build macOS installer
         if: matrix.target == 'mac'
         run: npm run dist:mac
+      - name: Verify native desktop recorder is inside macOS application
+        if: matrix.target == 'mac'
+        shell: bash
+        run: |
+          test -x "dist/mac-arm64/ChelRecord Studio.app/Contents/Resources/native/chelrecord-sck"
+          file "dist/mac-arm64/ChelRecord Studio.app/Contents/Resources/native/chelrecord-sck"
       - name: Verify macOS app signature
         if: matrix.target == 'mac'
         shell: bash
