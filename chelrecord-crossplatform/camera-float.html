@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChelRecord Camera Preview</title><style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#141a23;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f1f5f9}
+header{height:27px;display:flex;justify-content:space-between;align-items:center;padding:0 12px;cursor:grab;user-select:none;-webkit-app-region:drag;background:#1d2834;border-bottom:1px solid #334455;font-size:11px;font-weight:650;letter-spacing:.1px}
+.live{color:#f2c9ce}.live::before{display:inline-block;content:'';width:7px;height:7px;border-radius:50%;background:#eb6268;margin-right:7px}
+main{width:100%;height:calc(100% - 27px);background:#0c1219;display:grid;place-items:center;position:relative}
+img{width:100%;height:100%;display:block;object-fit:cover;transform:scaleX(-1);background:#0d1218}
+#empty{position:absolute;color:#9dadbd;font-size:12px;text-align:center;max-width:80%}#empty.hidden{display:none}
+</style></head><body><header><span>CHELRECORD · CAMERA</span><span class="live">LIVE PREVIEW</span></header><main><img id="camera" alt="Live camera preview" /><div id="empty">Camera preview is connecting…</div></main><script>
+const img=document.getElementById('camera'),empty=document.getElementById('empty');
+window.cameraFloat.onFrame(data=>{img.src=data;empty.classList.add('hidden')});
+</script></body></html>
