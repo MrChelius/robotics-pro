@@ -10,7 +10,7 @@
     "dist:mac": "node generate-icons.cjs && electron-builder --mac dmg --arm64",
     "dist:win": "node generate-icons.cjs && electron-builder --win nsis --x64",
     "test:media": "node tests/verify-ffmpeg.cjs",
-    "test:ui": "node tests/ui-smoke.cjs && node tests/ui-smoke.cjs native && node tests/ui-smoke.cjs native screen-denied && node tests/ui-smoke.cjs native wrong-surface && node tests/ui-smoke.cjs native capture-error",
+    "test:ui": "node tests/ui-smoke.cjs && node tests/ui-smoke.cjs native && node tests/ui-smoke.cjs native screen-denied && node tests/ui-smoke.cjs native wrong-surface && node tests/ui-smoke.cjs native capture-error && node tests/ui-smoke.cjs native-desktop",
     "test:picker": "node tests/native-picker.cjs",
     "test:layout": "node tests/layout-check.cjs"
   },
