@@ -53,6 +53,8 @@ async function exercise(platform,darwinVersion,expectedNative){
       if(id==='electron')return electron;
       if(id==='node:os')return {release:()=>darwinVersion};
       if(id==='ffmpeg-static')return '/tmp/fake-ffmpeg';
+      if(id==='./native-pip.cjs')return require(path.join(__dirname,'../native-pip.cjs'));
+
       return require(id);
     },
     process:{platform}, __dirname:path.resolve(__dirname,'..'), console, Buffer
