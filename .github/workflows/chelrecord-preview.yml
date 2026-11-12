@@ -45,7 +45,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p build
-          swiftc -O -target arm64-apple-macos15.0 -framework ScreenCaptureKit -framework AVFoundation -framework AppKit -framework CoreMedia -framework CoreGraphics native/mac-screen-recorder.swift -o build/chelrecord-sck
+          swiftc -parse-as-library -O -target arm64-apple-macos15.0 -framework ScreenCaptureKit -framework AVFoundation -framework AppKit -framework CoreMedia -framework CoreGraphics native/mac-screen-recorder.swift -o build/chelrecord-sck
           chmod 755 build/chelrecord-sck
           file build/chelrecord-sck
       - name: Build macOS installer
