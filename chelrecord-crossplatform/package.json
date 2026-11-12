@@ -1,8 +1,8 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "2.4.0-rc.1",
+  "version": "2.5.0-rc.1",
   "private": true,
-  "description": "ChelRecord Studio Graphite: professional desktop screen recorder with restrained interface and original app icon",
+  "description": "ChelRecord Studio native ScreenCaptureKit desktop recorder for macOS, Electron capture for Windows",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
@@ -59,7 +59,13 @@
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
       "darkModeSupport": true,
-      "icon": "build/icon.icns"
+      "icon": "build/icon.icns",
+      "extraResources": [
+        {
+          "from": "build/chelrecord-sck",
+          "to": "native/chelrecord-sck"
+        }
+      ]
     },
     "win": {
       "target": [
@@ -71,6 +77,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-Studio-2.4.0-Graphite-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-Studio-2.5.0-NativeDisplay-${os}-${arch}.${ext}"
   }
 }
