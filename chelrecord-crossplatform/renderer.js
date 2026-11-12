@@ -6,7 +6,7 @@ let sources=[],chosen=null,nativePicker=false,screenStream=null,camStream=null,m
 let renderToken=0,region=null,anchor=null,preview=false,recorder=null,busy=false,quickStarting=false,lastCaptureError=null,nativeDesktop=false,nativeActive=false,nativePreviewReady=false;
 const diagnosticTrail=[];
 function diagnosticNote(message){diagnosticTrail.push(new Date().toISOString()+' '+String(message));if(diagnosticTrail.length>30)diagnosticTrail.shift()}
-let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterContext=null,meterStream=null,meterRaf=0,meterTimer=null,nativeCameraRecorder=null,nativeCameraWriting=Promise.resolve(),nativeCameraError=null,nativeCameraConfigured=false;
+let writing=Promise.resolve(),recordingStart=0,ticker=null,lastFile=null,meterContext=null,meterStream=null,meterRaf=0,meterTimer=null,nativeCameraRecorder=null,nativeCameraWriting=Promise.resolve(),nativeCameraError=null,nativeCameraConfigured=false,cameraFloatInterval=null,cameraFloatVisible=false,cameraFloatBusy=false;
 const sourceIsReady=()=>Boolean(screenStream?.active&&screenVideo.readyState>=2);
 const cameraIsReady=()=>Boolean(camStream?.active&&cameraVideo.readyState>=2);
 const mode=()=>$('mode').value;
@@ -493,6 +493,38 @@ async function finishNativeCameraCapture(){
  await nativeCameraWriting;
  if(nativeCameraError)throw nativeCameraError;
 }
+
+async function showLiveCameraOnDesktop(){
+ if(!camStream?.active||cameraVideo.readyState<2)throw new Error('Camera must display a live preview before starting a desktop overlay');
+ const response=await api.cameraFloatShow({position:$('pipPosition').value,size:Number($('pipSize').value)});
+ if(!response?.visible)throw new Error('The floating camera preview could not be created on this Mac');
+ cameraFloatVisible=true;
+ const frameCanvas=document.createElement('canvas');
+ frameCanvas.width=320;frameCanvas.height=240;
+ const frameContext=frameCanvas.getContext('2d',{alpha:false});
+ if(!frameContext)throw new Error('Camera preview canvas could not be opened');
+ const push=async()=>{
+  if(!cameraFloatVisible||cameraFloatBusy||!camStream?.active||cameraVideo.readyState<2)return;
+  cameraFloatBusy=true;
+  try{
+   const w=cameraVideo.videoWidth||640,h=cameraVideo.videoHeight||480;
+   frameCanvas.width=320;
+   frameCanvas.height=Math.max(100,Math.round(320*h/w));
+   frameContext.drawImage(cameraVideo,0,0,frameCanvas.width,frameCanvas.height);
+   await api.cameraFloatFrame(frameCanvas.toDataURL('image/jpeg',0.65));
+  }catch(error){diagnosticNote('Camera floating preview frame: '+error.message)}
+  finally{cameraFloatBusy=false}
+ };
+ void push();
+ cameraFloatInterval=setInterval(()=>{void push()},150);
+ diagnosticNote('Live floating camera preview opened on desktop');
+}
+async function hideLiveCameraOnDesktop(){
+ cameraFloatVisible=false;
+ clearInterval(cameraFloatInterval);cameraFloatInterval=null;
+ try{await api.cameraFloatHide()}catch(error){diagnosticNote('Cannot hide camera preview: '+error.message)}
+}
+
 async function beginNativeRecord(){
  if(busy||nativeActive)return;
  const wantsCamera=Boolean($('camera').value);
@@ -513,13 +545,13 @@ async function beginNativeRecord(){
   if(!saved){info('Recording cancelled: no save location selected.');return}
   nativeStarted=true;
   if(wantsCamera){
-   try{await startNativeCameraCapture()}
+   try{await startNativeCameraCapture();await showLiveCameraOnDesktop()}
    catch(error){
     await api.nativeAbort().catch(()=>{});
     nativeStarted=false;
     throw new Error('Cannot start webcam picture-in-picture: '+error.message);
    }
-  }else nativeCameraConfigured=false;
+  }else {nativeCameraConfigured=false;await hideLiveCameraOnDesktop()}
   nativeActive=true;
   recordingStart=Date.now();
   clearInterval(ticker);
@@ -529,8 +561,9 @@ async function beginNativeRecord(){
   },250);
   $('state').textContent='● Recording desktop'+(wantsCamera?' + camera':'');
   lastFile=null;$('openFile').classList.add('hidden');
-  info('Recording Mac desktop'+(wantsCamera?' and camera picture-in-picture':'')+'. Stop & save creates the final MP4.');
+  info('Recording Mac desktop'+(wantsCamera?' with your LIVE floating camera preview; the camera is also embedded in the MP4':'')+'. Stop & save creates the final MP4.');
  }catch(error){
+  await hideLiveCameraOnDesktop();
   if(nativeStarted)await api.nativeAbort().catch(()=>{});
   await api.pipAbort().catch(()=>{});
   nativeCameraConfigured=false;nativeCameraRecorder=null;
@@ -544,6 +577,7 @@ async function stopNativeRecord(discard){
  const withCamera=nativeCameraConfigured;
  let cameraError=null;
  try{
+  await hideLiveCameraOnDesktop();
   if(withCamera)try{await finishNativeCameraCapture()}catch(e){cameraError=e}
   if(discard){
    await api.nativeAbort();
@@ -576,6 +610,7 @@ async function stopNativeRecord(discard){
   await api.pipAbort().catch(()=>{});
   info('Could not finalize recording: '+error.message,true);
  }finally{
+  await hideLiveCameraOnDesktop();
   nativeCameraConfigured=false;nativeCameraRecorder=null;
   nativeActive=false;busy=false;$('state').textContent='Ready';syncButtons();
  }
@@ -637,6 +672,7 @@ async function copyDiagnostics(){
    'Native desktop snapshot active: '+nativePreviewReady,
    'Native camera PiP enabled: '+nativeCameraConfigured,
    'Native camera recorder active: '+Boolean(nativeCameraRecorder),
+   'Live floating webcam preview open: '+cameraFloatVisible,
    'Last screen capture error: '+JSON.stringify(lastCaptureError),
    'Recent application events:',...diagnosticTrail
   ].join('\n');
