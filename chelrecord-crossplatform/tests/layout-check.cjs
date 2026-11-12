@@ -16,7 +16,7 @@ for(const id of ['mode','desktopControls','sourceList','sourceHint','selectAreaB
 }
 assert.ok(html.includes('grid-template-columns:318px minmax(0,1fr)'), 'Studio workspace columns unavailable');
 assert.ok(html.indexOf('class="panel viewport-panel"')<html.indexOf('class="panel action-panel"'), 'Recording transport must be beneath live preview');
-assert.match(html,/#recordBtn\{[^}]*background:var\(--red\)/,'Primary action must be prominent but restrained');
+assert.match(html,/\.btn\.primary\{[^}]*background:var\(--red\)/,'Primary action must be prominent but restrained');
 assert.match(html,/<option value="full">[^<]*Entire desktop/i);
 assert.match(html,/<option value="window">[^<]*Single application window/i);
 assert.match(html,/<option value="region">[^<]*Custom desktop region/i);
