@@ -1,0 +1,105 @@
+name: ChelRecord 2.6 Mac Camera PiP — Build and Scan
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/chelrecord-crossplatform-preview
+    paths:
+      - 'chelrecord-crossplatform/**'
+      - '.github/workflows/chelrecord-camera-pip-mac.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: chelrecord-crossplatform
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install and audit dependencies
+        run: |
+          npm install --no-audit --no-fund
+          npm audit --omit=dev --audit-level=high
+      - name: Syntax, security, and functional regression checks
+        run: |
+          npm run check
+          npm run test:security
+          npm run test:layout
+          npm run test:ui
+          npm run test:picker
+          npm run test:media
+          npm run test:pip
+      - name: Build native macOS screen capture backend
+        shell: bash
+        run: |
+          mkdir -p build
+          swiftc -parse-as-library -O -target arm64-apple-macos15.0 \
+            -framework ScreenCaptureKit -framework AVFoundation \
+            -framework AppKit -framework CoreMedia -framework CoreGraphics \
+            native/mac-screen-recorder.swift -o build/chelrecord-sck
+          chmod 755 build/chelrecord-sck
+      - name: Build full-featured ChelRecord 2.6 macOS DMG
+        run: npm run dist:mac
+      - name: Inspect packaged app and verify local signing
+        shell: bash
+        run: |
+          test -x "dist/mac-arm64/ChelRecord Studio.app/Contents/Resources/native/chelrecord-sck"
+          codesign --verify --deep --strict --verbose=2 "dist/mac-arm64/ChelRecord Studio.app"
+          test -s "dist/ChelRecord-Studio-2.6.0-CameraPiP-mac-arm64.dmg"
+          shasum -a 256 "dist/ChelRecord-Studio-2.6.0-CameraPiP-mac-arm64.dmg"
+          find "dist/mac-arm64/ChelRecord Studio.app" -type f -name '*pip*' | head
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ChelRecord-2.6-mac-unverified
+          path: chelrecord-crossplatform/dist/ChelRecord-Studio-2.6.0-CameraPiP-mac-arm64.dmg
+          retention-days: 30
+          if-no-files-found: error
+  scan:
+    runs-on: ubuntu-24.04
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ChelRecord-2.6-mac-unverified
+          path: staging
+      - name: Update ClamAV definitions and scan actual DMG
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clamav clamav-freshclam
+          sudo systemctl stop clamav-freshclam.service || true
+          sudo freshclam
+          mkdir -p result
+          clamscan --recursive=yes --scan-archive=yes --infected \
+            --max-filesize=500M --max-scansize=1500M --max-recursion=20 \
+            --log=result/scan.txt staging
+          sha256sum staging/*.dmg > result/SHA256SUMS.txt
+          cat > result/README.txt <<'EOF'
+          ChelRecord Studio 2.6 Camera Picture-in-Picture
+          Includes native macOS ScreenCaptureKit desktop video and
+          a second locally captured camera video stream composited via FFmpeg.
+          All features are unchanged from the 2.5 Graphite version.
+          ClamAV scan is not a guarantee that any software is virus-free.
+          Ad-hoc signing only. Not Apple Developer ID signed or notarized.
+          Do not bypass security warnings from Chrome or macOS.
+          End-to-end camera hardware testing on the user's Mac is still required.
+          EOF
+          tail -28 result/scan.txt
+      - name: Publish scanned Mac installer with report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChelRecord-Studio-2.6-CameraPiP-mac-Scanned
+          path: |
+            staging/*.dmg
+            result/*
+          retention-days: 30
+          if-no-files-found: error
