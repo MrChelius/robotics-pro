@@ -1,8 +1,8 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "2.3.1-rc.1",
+  "version": "2.4.0-rc.1",
   "private": true,
-  "description": "ChelRecord Studio Aurora: macOS capture diagnostics and corrected region recording activation",
+  "description": "ChelRecord Studio Graphite: professional minimalist UI and unique restrained app identity",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
@@ -69,6 +69,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-Studio-2.3.1-Diagnostics-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-Studio-2.4.0-Graphite-${os}-${arch}.${ext}"
   }
 }
