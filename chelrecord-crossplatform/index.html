@@ -126,6 +126,7 @@ kbd{background:#252d36;border:1px solid #414956;border-radius:4px;padding:2px 5p
 @media(max-height:750px){.stage-pane{gap:9px;padding-top:12px;padding-bottom:11px}.hero p{display:none}.viewport-panel{padding:11px}.preview{max-height:calc(100vh - 292px)}.guide{display:none}}
 @media(max-width:760px){body{overflow:auto;height:auto}.shell{display:flex;flex-direction:column;height:auto}.stage-pane{order:1;padding:12px}.sidebar{order:2;overflow:visible;border-right:0}.preview{max-height:none;min-height:240px;flex:none}.viewport-panel{min-height:390px}.topbar{padding:0 14px}}
 
+.pip-options{margin-top:12px;border-top:1px solid var(--border);padding-top:10px}.pip-options label{margin:8px 0 4px}
 </style>
 </head>
 <body>
@@ -151,10 +152,26 @@ kbd{background:#252d36;border:1px solid #414956;border-radius:4px;padding:2px 5p
   </section>
 
   <section class="panel device-card">
-   <div class="device-head"><div class="device-icon">◉</div><h3>Camera & iPhone</h3><span class="micro">Video overlay</span></div>
+   <div class="device-head"><div class="device-icon">◉</div><h3>Camera & iPhone</h3><span class="micro">MP4 picture-in-picture</span></div>
    <label for="camera">Camera source</label><select id="camera"><option value="">Camera off</option><option value="auto">Default camera</option></select>
    <div class="row" style="margin-top:9px"><button class="btn" id="testCam">▶ Preview camera</button><button class="btn subtle" id="stopCam">Stop</button></div>
    <video id="cameraTest" autoplay muted playsinline></video><div id="cameraStatus" class="micro">Select a camera to test it.</div>
+   <div class="pip-options">
+     <label for="pipPosition">Camera position in saved video</label>
+     <select id="pipPosition">
+       <option value="bottom-right">Bottom right</option>
+       <option value="bottom-left">Bottom left</option>
+       <option value="top-right">Top right</option>
+       <option value="top-left">Top left</option>
+     </select>
+     <label for="pipSize">Camera window size</label>
+     <select id="pipSize">
+       <option value="18">Small (18%)</option>
+       <option value="24" selected>Medium (24%)</option>
+       <option value="32">Large (32%)</option>
+     </select>
+     <div class="micro" style="margin-top:8px">When recording the Mac desktop, your selected camera will be embedded in the final MP4. MP4 export takes longer while the camera is combined with your screen.</div>
+   </div>
    <details><summary>Connect iPhone or phone camera</summary><div class="detail-body">
      <strong>iPhone on Mac:</strong> Turn on Continuity Camera in iPhone Settings → General → AirPlay & Continuity. Use the same Apple Account, turn on Bluetooth/Wi-Fi, then optionally connect by USB and tap Trust. Select the iPhone from Camera source when macOS exposes it.
      <br><br><strong>Windows:</strong> Set up your phone as a connected/virtual webcam in Windows. If Windows detects it as a camera, ChelRecord can select it.
