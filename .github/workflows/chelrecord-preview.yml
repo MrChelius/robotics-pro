@@ -1,4 +1,4 @@
-name: ChelRecord cross-platform preview
+name: ChelRecord Studio full-featured security-reviewed build
 on:
   workflow_dispatch:
   push:
@@ -31,6 +31,10 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-audit --no-fund
+      - name: Dependency vulnerability audit (production)
+        run: npm audit --omit=dev --audit-level=high
+      - name: First-party security source review
+        run: npm run test:security
       - run: npm run check
       - name: Validate Graphite UI hierarchy, required controls and launcher icon
         run: npm run test:layout
@@ -68,7 +72,63 @@ jobs:
         run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: ChelRecord-Studio-2.5.0-NativeDisplay-${{ matrix.target }}
+          name: CI-Unverified-ChelRecord-2.5.1-${{ matrix.target }}
           path: chelrecord-crossplatform/dist/*
+          retention-days: 30
+          if-no-files-found: error
+
+  security:
+    name: Anti-malware scan of built macOS and Windows installers
+    needs: package
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: CI-Unverified-ChelRecord-2.5.1-*
+          path: staging
+      - name: List actual installers
+        shell: bash
+        run: |
+          set -euo pipefail
+          find staging -type f -print
+          test "$(find staging -type f -name '*.dmg' | wc -l)" -ge 1
+          test "$(find staging -type f -name '*.exe' | wc -l)" -ge 1
+      - name: Install ClamAV malware scanner and current signatures
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clamav clamav-freshclam
+          sudo systemctl stop clamav-freshclam.service || true
+          sudo freshclam
+          clamscan --version
+      - name: Scan packaged installers (FAIL if malware is detected)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p security-report
+          clamscan \
+            --recursive=yes --scan-archive=yes --infected=yes \
+            --max-filesize=500M --max-scansize=1500M --max-recursion=20 \
+            --log=security-report/clamav.log staging
+          cp security-report/clamav.log security-report/antivirus-result.txt
+          find staging -type f \( -iname '*.dmg' -o -iname '*.exe' \) -print0 |
+            sort -z | xargs -0 sha256sum > security-report/SHA256SUMS.txt
+          echo "ClamAV found no matching known malware signatures in scanned files." > security-report/README.txt
+          echo "This does not certify that software is virus-free. Browser Safe Browsing warnings may remain."
+          echo "macOS app is ad-hoc signed, not Apple Developer ID signed/notarized." >> security-report/README.txt
+          echo "Windows installer lacks trusted publisher code signature." >> security-report/README.txt
+          cat security-report/SHA256SUMS.txt
+          tail -30 security-report/clamav.log
+      - name: Publish security-reviewed installers and verification report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChelRecord-Studio-2.5.1-Security-Reviewed
+          path: |
+            staging/**/*.dmg
+            staging/**/*.exe
+            security-report/*
           retention-days: 30
           if-no-files-found: error
