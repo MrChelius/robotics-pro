@@ -40,6 +40,14 @@ jobs:
         run: npm run test:ui
       - name: Test system picker and legacy source enumeration
         run: npm run test:picker
+      - name: Build native ScreenCaptureKit desktop recorder
+        if: matrix.target == 'mac'
+        shell: bash
+        run: |
+          mkdir -p build
+          swiftc -O -target arm64-apple-macos15.0 -framework ScreenCaptureKit -framework AVFoundation -framework AppKit -framework CoreMedia -framework CoreGraphics native/mac-screen-recorder.swift -o build/chelrecord-sck
+          chmod 755 build/chelrecord-sck
+          file build/chelrecord-sck
       - name: Build macOS installer
         if: matrix.target == 'mac'
         run: npm run dist:mac
@@ -54,7 +62,7 @@ jobs:
         run: npm run dist:win
       - uses: actions/upload-artifact@v4
         with:
-          name: ChelRecord-Studio-2.4.0-Graphite-${{ matrix.target }}
+          name: ChelRecord-Studio-2.5.0-NativeDisplay-${{ matrix.target }}
           path: chelrecord-crossplatform/dist/*
           retention-days: 30
           if-no-files-found: error
