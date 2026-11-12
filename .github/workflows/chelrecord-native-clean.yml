@@ -1,0 +1,95 @@
+name: ChelRecord Native macOS clean build
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/chelrecord-crossplatform-preview
+    paths:
+      - 'chelrecord-native-clean/**'
+      - '.github/workflows/chelrecord-native-clean.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile dependency-free native ScreenCaptureKit GUI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "build/ChelRecord Native.app/Contents/MacOS" "build/ChelRecord Native.app/Contents/Resources"
+          swiftc -parse-as-library -swift-version 5 -O -target arm64-apple-macos15.0 \
+            -framework SwiftUI -framework AppKit -framework ScreenCaptureKit \
+            -framework CoreGraphics -framework CoreMedia -framework CoreVideo \
+            "chelrecord-native-clean/ChelRecordNative.swift" \
+            -o "build/ChelRecord Native.app/Contents/MacOS/ChelRecord Native"
+      - name: Generate app metadata
+        shell: bash
+        run: |
+          cat > "build/ChelRecord Native.app/Contents/Info.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+          <key>CFBundleDevelopmentRegion</key><string>en</string>
+          <key>CFBundleExecutable</key><string>ChelRecord Native</string>
+          <key>CFBundleIdentifier</key><string>com.chelrecord.native.clean</string>
+          <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+          <key>CFBundleName</key><string>ChelRecord Native</string>
+          <key>CFBundleDisplayName</key><string>ChelRecord Native</string>
+          <key>CFBundlePackageType</key><string>APPL</string>
+          <key>CFBundleShortVersionString</key><string>0.1.0</string>
+          <key>CFBundleVersion</key><string>1</string>
+          <key>LSMinimumSystemVersion</key><string>15.0</string>
+          <key>NSHighResolutionCapable</key><true/>
+          <key>NSScreenCaptureUsageDescription</key><string>Record the desktop monitor you explicitly select.</string>
+          <key>NSMicrophoneUsageDescription</key><string>Record the default microphone only when enabled.</string>
+          </dict></plist>
+          PLIST
+          plutil -lint "build/ChelRecord Native.app/Contents/Info.plist"
+      - name: Check package contains only own app plus Apple framework links
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x "build/ChelRecord Native.app/Contents/MacOS/ChelRecord Native"
+          echo "All executable files:"
+          find "build/ChelRecord Native.app" -type f -perm +111 -print || true
+          file "build/ChelRecord Native.app/Contents/MacOS/ChelRecord Native"
+          otool -L "build/ChelRecord Native.app/Contents/MacOS/ChelRecord Native"
+          # This native app must not bundle Electron, FFmpeg, npm, dylibs, plugins or other executables.
+          test "$(find 'build/ChelRecord Native.app' -type f | wc -l | tr -d ' ')" = "2"
+          test "$(find 'build/ChelRecord Native.app' -name '*.dylib' -o -name '*.framework' | wc -l | tr -d ' ')" = "0"
+          ! grep -Ei 'curl|http://|https://|npm|ffmpeg|electron|analytics|telemetry' "chelrecord-native-clean/ChelRecordNative.swift" | grep -v -E 'No Electron|FFmpeg|analytics|third-party' || true
+      - name: Test-build signature (not Apple Developer ID / not notarized)
+        shell: bash
+        run: |
+          set -euo pipefail
+          codesign --force --deep --sign - "build/ChelRecord Native.app"
+          codesign --verify --deep --strict --verbose=2 "build/ChelRecord Native.app"
+          codesign -dv --verbose=2 "build/ChelRecord Native.app" 2>&1
+      - name: Package clean native app and SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent "build/ChelRecord Native.app" "dist/ChelRecord-Native-0.1-mac-arm64.zip"
+          shasum -a 256 "dist/ChelRecord-Native-0.1-mac-arm64.zip" > "dist/SHA256SUMS.txt"
+          cp "chelrecord-native-clean/ChelRecordNative.swift" "dist/ChelRecordNative.source.swift"
+          cat > dist/PLEASE-READ.txt <<'INFO'
+          ChelRecord Native 0.1 clean macOS build.
+          macOS 15+; Apple Silicon.
+          Contains a single Swift executable and Info.plist, with no third-party
+          binaries, automatic updates, tracking, network clients, or npm.
+          Functionality: whole-desktop capture, region crop, optional default mic.
+          Not included: camera overlays, Windows, app-window capture.
+          This is an ad-hoc signed development build; NOT notarized by Apple.
+          Do not bypass browser or macOS security warnings.
+          Before public distribution: sign with Apple Developer ID and notarize.
+          INFO
+          ls -lh dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ChelRecord-Native-0.1-Clean-mac
+          path: dist/*
+          retention-days: 30
+          if-no-files-found: error
