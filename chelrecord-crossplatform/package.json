@@ -1,12 +1,12 @@
 {
   "name": "chelrecord-crossplatform",
-  "version": "2.6.0-rc.1",
+  "version": "2.7.0-rc.1",
   "private": true,
-  "description": "ChelRecord Studio: native macOS desktop + webcam picture-in-picture recording and MP4 output",
+  "description": "ChelRecord Studio: full desktop screen recording with live floating webcam and saved MP4 picture-in-picture",
   "main": "main.cjs",
   "scripts": {
     "start": "electron .",
-    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js && node --check generate-icons.cjs && node --check tests/verify-ffmpeg.cjs && node --check tests/ui-smoke.cjs && node --check tests/native-picker.cjs && node --check tests/layout-check.cjs && node --check tests/security-review.cjs && node --check native-pip.cjs && node --check tests/verify-pip.cjs",
+    "check": "node --check main.cjs && node --check preload.cjs && node --check renderer.js && node --check generate-icons.cjs && node --check tests/verify-ffmpeg.cjs && node --check tests/ui-smoke.cjs && node --check tests/native-picker.cjs && node --check tests/layout-check.cjs && node --check tests/security-review.cjs && node --check native-pip.cjs && node --check tests/verify-pip.cjs && node --check camera-float-preload.cjs",
     "dist:mac": "node generate-icons.cjs && electron-builder --mac dmg --arm64",
     "dist:win": "node generate-icons.cjs && electron-builder --win nsis --x64",
     "test:media": "node tests/verify-ffmpeg.cjs",
@@ -45,7 +45,9 @@
       "region-picker.html",
       "build/icon.png",
       "tests/layout-check.cjs",
-      "native-pip.cjs"
+      "native-pip.cjs",
+      "camera-float.html",
+      "camera-float-preload.cjs"
     ],
     "mac": {
       "target": [
@@ -80,6 +82,6 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
-    "artifactName": "ChelRecord-Studio-2.6.0-CameraPiP-${os}-${arch}.${ext}"
+    "artifactName": "ChelRecord-Studio-2.7.0-LiveCamera-${os}-${arch}.${ext}"
   }
 }
