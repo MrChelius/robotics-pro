@@ -12,7 +12,8 @@ const useNativePicker=process.argv.includes('native');
 const screenStatusDenied=process.argv.includes('screen-denied');
 const simulateWrongSurface=process.argv.includes('wrong-surface');
 const simulateCaptureError=process.argv.includes('capture-error');
-const simulateNativeDesktop=process.argv.includes('native-desktop');
+const simulateNativePiP=process.argv.includes('native-pip');
+const simulateNativeDesktop=process.argv.includes('native-desktop')||simulateNativePiP;
 const elements=new Map();
 class FakeElement{
  constructor(id=''){
@@ -35,9 +36,10 @@ const ids=['screen','captureVideo','cameraTest','cameraOverlay','region','select
  'status','permissionStatus','sourceList','sourceHint','desktopControls','cameraStatus','micStatus',
  'camera','mic','mode','stage','timer','state','refresh','testCam','stopCam','testMic',
  'stopMic','previewBtn','recordBtn','stopBtn','cancelBtn','openFile','settingsScreen',
- 'settingsCam','settingsMic','checkPermissions','meterBar'];
+ 'settingsCam','settingsMic','checkPermissions','meterBar','pipPosition','pipSize'];
 ids.forEach(element);
 element('mode').value='full';element('camera').value='auto';element('mic').value='';
+element('pipPosition').value='bottom-left';element('pipSize').value='32';
 const track=kind=>({kind,label:'Synthetic '+kind,stop(){},addEventListener(){},
  getSettings(){return {width:1280,height:720}}});
 function fakeStream(kind){
@@ -46,13 +48,17 @@ function fakeStream(kind){
  getAudioTracks(){return tracks.filter(t=>t.kind==='audio')},getTracks(){return tracks},
  addTrack(t){tracks.push(t)}};
 }
-let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0,lastRequestedSurface=null,nativeRecordCount=0,nativeStopCount=0,nativePreviewCount=0;
+let writeCount=0,exportCount=0,permissionChecks=0,copiedReport='',regionPickCount=0,lastRequestedSurface=null,nativeRecordCount=0,nativeStopCount=0,nativePreviewCount=0,pipBeginCount=0,pipChunks=0,pipFinishCount=0,lastPipOptions=null;
 const api={
  diagnostics:async()=>({platform:'darwin',camera:'granted',microphone:'granted',screen:screenStatusDenied?'denied':'granted',nativeDesktopCapture:simulateNativeDesktop}),
  nativePreview:async()=>{nativePreviewCount++;return {image:'data:image/png;base64,aGVsbG8='}},
  nativeStart:async()=>{nativeRecordCount++;return {filePath:'/tmp/native-desktop.mp4'}},
  nativeStop:async()=>{nativeStopCount++;return {filePath:'/tmp/native-desktop.mp4'}},
  nativeAbort:async()=>({discarded:true}),
+ pipBegin:async()=>{pipBeginCount++;return true},
+ pipChunk:async()=>{pipChunks++;return true},
+ pipFinish:async options=>{pipFinishCount++;lastPipOptions=options;return {filePath:'/tmp/native-desktop.mp4',cameraIncluded:true}},
+ pipAbort:async()=>true,
  listSources:async()=>useNativePicker?{selectedId:null,systemPicker:true,items:[]}:
   {selectedId:'screen:0:0',systemPicker:false,items:[{id:'screen:0:0',name:'Desktop',thumbnail:''}]},
  chooseSource:async()=>true,requestPermission:async()=>{permissionChecks++;return 'granted'},
@@ -108,6 +114,7 @@ async function fire(id,kind,event){return element(id).handlers[kind](event)}
 async function test(){
  await flush();
  if(simulateNativeDesktop){
+  if(!simulateNativePiP)element('camera').value='';
   assert.match(element('sourceHint').textContent,/ScreenCaptureKit/,'macOS did not switch to native desktop mode');
   assert.equal(element('recordBtn').disabled,false);
   await click('recordBtn');
@@ -117,6 +124,14 @@ async function test(){
   await click('stopBtn');
   assert.equal(nativeStopCount,1,'Native stop was not called');
   assert.match(element('status').textContent,/Video saved:/i);
+  if(simulateNativePiP){
+   assert.equal(pipBeginCount,1,'Native desktop failed to start webcam recording');
+   assert.ok(pipChunks>=1,'Webcam produced no captured video chunks');
+   assert.equal(pipFinishCount,1,'Webcam PiP was not composited into desktop MP4');
+   assert.equal(lastPipOptions.position,'bottom-left');
+   assert.equal(lastPipOptions.size,32);
+   assert.match(element('status').textContent,/with camera picture-in-picture/i);
+  }else assert.equal(pipBeginCount,0,'Camera off should not produce PiP video');
   element('mode').value='region';
   await fire('mode','change');
   await click('recordBtn');
@@ -124,6 +139,7 @@ async function test(){
   assert.equal(nativeRecordCount,2,'Region did not use ScreenCaptureKit');
   await click('stopBtn');
   assert.equal(nativeStopCount,2);
+  if(simulateNativePiP){assert.equal(pipFinishCount,2);assert.ok(pipChunks>=2)}
   await click('previewBtn');
   assert.ok(nativePreviewCount>=1,'Native desktop screenshot not returned');
   assert.equal(lastRequestedSurface,null,'Native screenshot unexpectedly opened the Electron sharing picker');
