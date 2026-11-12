@@ -11,6 +11,7 @@ for(const required of ['mode','camera','mic','testCam','testMic','previewBtn','r
 const useNativePicker=process.argv.includes('native');
 const screenStatusDenied=process.argv.includes('screen-denied');
 const simulateWrongSurface=process.argv.includes('wrong-surface');
+const simulateCaptureError=process.argv.includes('capture-error');
 const elements=new Map();
 class FakeElement{
  constructor(id=''){
@@ -76,6 +77,7 @@ const devices={
  getUserMedia:async(constraints)=>fakeStream(constraints.video?'camera':'mic'),
  getDisplayMedia:async options=>{
   lastRequestedSurface=options?.video?.displaySurface;
+  if(simulateCaptureError){const e=new Error('Could not start video source');e.name='NotReadableError';throw e;}
   const stream=fakeStream('screen');
   for(const track of stream.getVideoTracks()){
    const originalSettings=track.getSettings();
@@ -109,6 +111,16 @@ async function test(){
  assert.doesNotMatch(element('status').textContent,/macOS blocked screen capture/);
  await click('previewBtn');
  assert.equal(lastRequestedSurface,'monitor','Entire desktop must request only a monitor from the native macOS picker');
+ if(simulateCaptureError){
+  assert.match(element('status').textContent,/NotReadableError.*Could not start video source/i,'Detailed macOS error was hidden');
+  await click('recordBtn');
+  assert.match(element('status').textContent,/NotReadableError.*Could not start video source/i,'Record button replaced the detailed OS error');
+  assert.doesNotMatch(element('status').textContent,/Screen capture could not start\. In Device permissions/i,'Old generic warning reappeared');
+  await click('copyDiagnostics');
+  assert.match(copiedReport,/Could not start video source/,'Diagnostic report missed real capture error');
+  console.log('PASS: macOS NotReadableError preserved by preview and Record');
+  return;
+ }
  if(simulateWrongSurface){
   assert.match(element('status').textContent,/Wrong screen source selected/i,'Window capture was accepted in desktop-only mode');
   assert.doesNotMatch(element('status').textContent,/preview active/i,'Wrong window source was reported as active');
